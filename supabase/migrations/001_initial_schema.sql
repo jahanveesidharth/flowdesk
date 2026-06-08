@@ -294,7 +294,7 @@ create trigger set_updated_at before update on booking_policies for each row exe
 -- ─── AUTO-CREATE PROFILE ON SIGNUP ───────────────────────────────────────────
 
 create or replace function handle_new_user()
-returns trigger language plpgsql security definer as $$
+returns trigger language plpgsql security definer set search_path = public as $$
 begin
   insert into profiles (id, name, email, role)
   values (
