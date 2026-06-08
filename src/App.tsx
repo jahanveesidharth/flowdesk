@@ -18,6 +18,7 @@ import { AdminUsers } from './pages/admin/AdminUsers';
 import { Analytics } from './pages/admin/Analytics';
 import { AdminPolicies } from './pages/admin/AdminPolicies';
 import { AdminSettings } from './pages/admin/AdminSettings';
+import { Toaster } from 'react-hot-toast';
 
 export default function App() {
   return (
@@ -49,6 +50,14 @@ export default function App() {
           <Route path="*"                    element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: { borderRadius: '10px', fontSize: '14px', fontFamily: 'Inter, sans-serif' },
+          success: { iconTheme: { primary: '#f04a16', secondary: 'white' } },
+        }}
+      />
     </BrowserRouter>
   );
 }

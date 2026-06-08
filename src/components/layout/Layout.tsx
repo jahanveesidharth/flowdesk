@@ -3,7 +3,6 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { useAppStore } from '../../store/useAppStore';
 import { cn } from '../../lib/utils';
-import { Toaster } from 'react-hot-toast';
 
 export function Layout() {
   const { sidebarOpen } = useAppStore();
@@ -16,14 +15,6 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: { borderRadius: '10px', fontSize: '14px', fontFamily: 'Inter, sans-serif' },
-          success: { iconTheme: { primary: '#f04a16', secondary: 'white' } },
-        }}
-      />
     </div>
   );
 }
