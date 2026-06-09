@@ -8,6 +8,8 @@ import { useAppStore } from '../../store/useAppStore';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import { Tooltip } from '../ui/Tooltip';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import toast from 'react-hot-toast';
 
 const EMPLOYEE_NAV = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -35,37 +37,45 @@ export function Sidebar() {
 
   return (
     <aside className={cn(
-      'fixed top-0 left-0 h-screen bg-white border-r border-gray-200 flex flex-col transition-all duration-300 z-40',
+      'fixed top-0 left-0 h-screen bg-white/85 dark:bg-gray-950/85 border-r border-gray-200/60 dark:border-gray-850/80 flex flex-col transition-all duration-300 z-40 backdrop-blur-md',
       sidebarOpen ? 'w-56' : 'w-16',
     )}>
       {/* Logo */}
-      <div className="flex items-center h-16 px-4 border-b border-gray-100 shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center shrink-0">
+      <div className="flex items-center h-16 px-4 border-b border-gray-100 dark:border-gray-850/80 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8.5 h-8.5 bg-gradient-to-br from-brand-500 to-orange-500 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-brand-500/10">
             <Building2 className="w-4 h-4 text-white" />
           </div>
-          {sidebarOpen && <span className="font-bold text-gray-900 text-base">DeskFlow</span>}
+          {sidebarOpen && <span className="font-extrabold text-gray-900 dark:text-white text-base tracking-tight">DeskFlow</span>}
         </div>
       </div>
 
       {/* Role badge */}
       {sidebarOpen && (
-        <div className="px-3 pt-3 pb-1">
+        <div className="px-3.5 pt-3.5 pb-1">
           <button
             onClick={switchRole}
             className={cn(
-              'w-full text-xs py-1.5 px-3 rounded-lg font-medium transition-all',
-              isAdminMode ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+              'w-full text-[11px] py-2 px-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-between shadow-sm border',
+              isAdminMode 
+                ? 'bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/10 text-orange-700 dark:text-orange-400 border-orange-200/50 dark:border-orange-900/30' 
+                : 'bg-gradient-to-r from-gray-50 to-white dark:from-gray-900/60 dark:to-gray-950/60 text-gray-650 dark:text-gray-300 border-gray-200/40 dark:border-gray-800/60',
             )}
           >
-            {isAdminMode ? '🛡 Admin Mode' : '👤 Employee Mode'}
+            <span className="truncate">{isAdminMode ? '🛡 Admin Panel' : '👤 Workspace'}</span>
+            <span className={cn(
+              "px-1.5 py-0.5 rounded-md text-[9px] uppercase tracking-wider shrink-0 font-bold ml-2",
+              isAdminMode ? "bg-orange-200/60 dark:bg-orange-900/50 text-orange-850 dark:text-orange-300" : "bg-gray-200/60 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+            )}>
+              Switch
+            </span>
           </button>
         </div>
       )}
       {!sidebarOpen && (
-        <div className="px-2 pt-2">
+        <div className="px-2 pt-2 flex justify-center">
           <Tooltip content={isAdminMode ? 'Admin Mode' : 'Employee Mode'} side="right">
-            <button onClick={switchRole} className={cn('w-10 h-7 rounded-md text-xs font-bold', isAdminMode ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600')}>
+            <button onClick={switchRole} className={cn('w-9 h-7 rounded-lg text-[10px] font-extrabold shadow-sm transition-all border flex items-center justify-center', isAdminMode ? 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-orange-200/30' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200/30')}>
               {isAdminMode ? 'A' : 'E'}
             </button>
           </Tooltip>
@@ -73,65 +83,115 @@ export function Sidebar() {
       )}
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-0.5">
+      <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-1.5">
         {nav.map(({ to, icon: Icon, label }) => (
           <Tooltip key={to} content={sidebarOpen ? null : label} side="right">
             <NavLink
               to={to}
               className={({ isActive }) => cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group',
+                'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group duration-200',
                 isActive
-                  ? 'bg-brand-50 text-brand-600'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                  ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50/60 dark:hover:bg-gray-900/40 hover:text-gray-950 dark:hover:text-white',
                 !sidebarOpen && 'justify-center px-2',
               )}
             >
-              <Icon className="w-4.5 h-4.5 shrink-0" />
-              {sidebarOpen && <span className="truncate">{label}</span>}
+              {({ isActive }) => (
+                <>
+                  <Icon className={cn("w-4.5 h-4.5 shrink-0 transition-colors", isActive ? "text-brand-500" : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300")} />
+                  {sidebarOpen && <span className="truncate">{label}</span>}
+                  {isActive && (
+                    <span className="absolute left-0 top-1/4 bottom-1/4 w-0.75 bg-brand-500 rounded-r-md" />
+                  )}
+                </>
+              )}
             </NavLink>
           </Tooltip>
         ))}
       </nav>
 
       {/* Bottom actions */}
-      <div className="border-t border-gray-100 p-2 flex flex-col gap-0.5">
+      <div className="border-t border-gray-100 dark:border-gray-850/80 p-2 flex flex-col gap-1">
         <Tooltip content={sidebarOpen ? null : 'Notifications'} side="right">
           <NavLink to="/notifications" className={({ isActive }) => cn(
-            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all',
-            isActive ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-100',
+            'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+            isActive 
+              ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold' 
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50/60 dark:hover:bg-gray-900/40',
             !sidebarOpen && 'justify-center px-2',
           )}>
-            <div className="relative">
-              <Bell className="w-4.5 h-4.5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-brand-500 text-white text-xs rounded-full flex items-center justify-center leading-none">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </div>
-            {sidebarOpen && <span>Notifications</span>}
+            {({ isActive }) => (
+              <>
+                <div className="relative">
+                  <Bell className={cn("w-4.5 h-4.5 transition-colors", isActive ? "text-brand-500" : "text-gray-400")} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-brand-500 text-white text-[10px] rounded-full flex items-center justify-center leading-none ring-2 ring-white dark:ring-gray-950">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </div>
+                {sidebarOpen && <span>Notifications</span>}
+                {isActive && (
+                  <span className="absolute left-0 top-1/4 bottom-1/4 w-0.75 bg-brand-500 rounded-r-md" />
+                )}
+              </>
+            )}
           </NavLink>
         </Tooltip>
 
         <Tooltip content={sidebarOpen ? null : 'Settings'} side="right">
           <NavLink to="/settings" className={({ isActive }) => cn(
-            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all',
-            isActive ? 'bg-brand-50 text-brand-600' : 'text-gray-600 hover:bg-gray-100',
+            'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+            isActive 
+              ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold' 
+              : 'text-gray-650 dark:text-gray-400 hover:bg-gray-50/60 dark:hover:bg-gray-900/40',
             !sidebarOpen && 'justify-center px-2',
           )}>
-            <Settings className="w-4.5 h-4.5" />
-            {sidebarOpen && <span>Settings</span>}
+            {({ isActive }) => (
+              <>
+                <Settings className={cn("w-4.5 h-4.5 transition-colors", isActive ? "text-brand-500" : "text-gray-400")} />
+                {sidebarOpen && <span>Settings</span>}
+                {isActive && (
+                  <span className="absolute left-0 top-1/4 bottom-1/4 w-0.75 bg-brand-500 rounded-r-md" />
+                )}
+              </>
+            )}
           </NavLink>
+        </Tooltip>
+
+        <Tooltip content={sidebarOpen ? null : 'Log Out'} side="right">
+          <button
+            onClick={async () => {
+              if (isSupabaseConfigured()) {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                  toast.error(`Logout error: ${error.message}`);
+                } else {
+                  toast.success('Logged out successfully');
+                }
+              } else {
+                toast.success('Logged out (Demo Mode)');
+              }
+            }}
+            className={cn(
+              'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full text-left',
+              'text-gray-650 dark:text-gray-400 hover:bg-rose-50/20 dark:hover:bg-rose-950/10 hover:text-rose-600 dark:hover:text-rose-400',
+              !sidebarOpen && 'justify-center px-2',
+            )}
+          >
+            <LogOut className="w-4.5 h-4.5 shrink-0" />
+            {sidebarOpen && <span>Log Out</span>}
+          </button>
         </Tooltip>
       </div>
 
       {/* User profile */}
-      <div className={cn('border-t border-gray-100 p-3 flex items-center', sidebarOpen ? 'gap-2' : 'justify-center')}>
-        <Avatar name={currentUser.name} size="sm" />
+      <div className={cn('border-t border-gray-100 dark:border-gray-855/80 p-3.5 flex items-center', sidebarOpen ? 'gap-3' : 'justify-center')}>
+        <Avatar name={currentUser.name} size="sm" className="ring-2 ring-brand-500/10 shrink-0" />
         {sidebarOpen && (
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-gray-900 truncate">{currentUser.name}</p>
-            <p className="text-xs text-gray-500 truncate">{currentUser.department}</p>
+            <p className="text-xs font-bold text-gray-900 dark:text-white truncate leading-tight">{currentUser.name}</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate mt-1 capitalize leading-none">{currentUser.role}</p>
           </div>
         )}
       </div>
@@ -139,7 +199,7 @@ export function Sidebar() {
       {/* Collapse toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all z-50 text-gray-400 hover:text-gray-600"
+        className="absolute -right-3 top-20 w-6 h-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-850 rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700 transition-all z-50 text-gray-400 hover:text-gray-600"
       >
         {sidebarOpen ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
       </button>

@@ -9,7 +9,7 @@ import { Avatar } from '../components/ui/Avatar';
 import toast from 'react-hot-toast';
 
 export function SettingsPage() {
-  const { currentUser, switchRole, isAdminMode } = useAppStore();
+  const { currentUser, switchRole, isAdminMode, floors } = useAppStore();
   const [tab, setTab] = useState('profile');
   const [name, setName] = useState(currentUser.name);
   const [email, setEmail] = useState(currentUser.email);
@@ -118,11 +118,12 @@ export function SettingsPage() {
                 ))}
               </div>
             </div>
-            <Select label="Default Floor" value={currentUser.preferences.defaultFloorId || ''} onChange={() => {}} options={[
-              { value: 'f1', label: 'Ground Floor' },
-              { value: 'f2', label: 'First Floor' },
-              { value: 'f3', label: 'Second Floor' },
-            ]} />
+            <Select 
+              label="Default Floor" 
+              value={currentUser.preferences.defaultFloorId || ''} 
+              onChange={() => {}} 
+              options={floors.map(f => ({ value: f.id, label: f.name }))} 
+            />
             <Button onClick={handleSave}>Save Preferences</Button>
           </CardContent>
         </Card>

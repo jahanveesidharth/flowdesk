@@ -1,13 +1,25 @@
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { useAppStore } from '../../store/useAppStore';
 import { cn } from '../../lib/utils';
+import { DatabaseSync } from './DatabaseSync';
 
 export function Layout() {
-  const { sidebarOpen } = useAppStore();
+  const { sidebarOpen, theme } = useAppStore();
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <DatabaseSync />
       <Sidebar />
       <div className={cn('flex flex-col flex-1 min-w-0 transition-all duration-300', sidebarOpen ? 'ml-56' : 'ml-16')}>
         <Header />

@@ -9,11 +9,9 @@ import { Badge } from '../components/ui/Badge';
 import { cn, formatDate } from '../lib/utils';
 
 export function TeamPage() {
-  const { users, bookings, floors, desks, currentUser } = useAppStore();
+  const { users, bookings, floors, desks, currentUser, attendancePlans } = useAppStore();
   const [search, setSearch] = useState('');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-
-  const today = format(new Date(), 'yyyy-MM-dd');
 
   const filteredUsers = users.filter(u =>
     u.id !== currentUser.id &&
@@ -26,10 +24,20 @@ export function TeamPage() {
     const booking = bookings.find(b =>
       b.userId === userId && b.date === date && !['cancelled', 'completed', 'no_show'].includes(b.status)
     );
-    if (!booking) return { status: 'unknown' as const, text: 'Unknown', floor: null, desk: null };
-    const floor = floors.find(f => f.id === booking.floorId);
-    const desk = booking.resourceType === 'desk' ? desks.find(d => d.id === booking.resourceId) : null;
-    return { status: 'office' as const, text: 'In Office', floor, desk, booking };
+    const plan = attendancePlans.find(ap => ap.userId === userId && ap.date === date);
+    
+    const status: 'office' | 'remote' | 'off' | 'unknown' = 
+      booking ? 'office' : (plan ? plan.status : 'unknown');
+
+    const floor = booking ? floors.find(f => f.id === booking.floorId) : null;
+    const desk = booking && booking.resourceType === 'desk' ? desks.find(d => d.id === booking.resourceId) : null;
+
+    let text = 'Unknown';
+    if (status === 'office') text = 'In Office';
+    if (status === 'remote') text = 'Working Remotely';
+    if (status === 'off') text = 'Out of Office';
+
+    return { status, text, floor, desk, booking };
   };
 
   // Group by department
@@ -37,7 +45,8 @@ export function TeamPage() {
 
   const inOfficeToday = users.filter(u => {
     if (u.id === currentUser.id) return false;
-    return bookings.some(b => b.userId === u.id && b.date === selectedDate && !['cancelled', 'completed', 'no_show'].includes(b.status));
+    const { status } = getUserStatus(u.id, selectedDate);
+    return status === 'office';
   });
 
   return (
@@ -92,46 +101,62 @@ export function TeamPage() {
                 const { status, text, floor, desk, booking } = getUserStatus(user.id, selectedDate);
                 const isInOffice = status === 'office';
                 return (
-                  <Card key={user.id} hover className={cn(isInOffice && 'border-green-200')}>
+                  <Card key={user.id} hover className={cn(isInOffice && 'border-green-200/80 shadow-sm shadow-green-500/2')}>
                     <div className="flex items-start gap-3">
                       <div className="relative">
                         <Avatar name={user.name} size="lg" />
                         <div className={cn(
-                          'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white',
-                          isInOffice ? 'bg-green-400' : 'bg-gray-300',
+                          'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-950',
+                          status === 'office' && 'bg-green-500',
+                          status === 'remote' && 'bg-blue-500',
+                          status === 'off' && 'bg-rose-500',
+                          status === 'unknown' && 'bg-gray-300 dark:bg-gray-700',
                         )} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-sm text-gray-900 truncate">{user.name}</p>
+                          <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{user.name}</p>
                           {user.role === 'manager' && <Badge variant="info" size="sm">Manager</Badge>}
                           {user.role === 'admin' && <Badge variant="warning" size="sm">Admin</Badge>}
                         </div>
-                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                        <p className="text-xs text-gray-550 dark:text-gray-400 truncate">{user.email}</p>
                         <div className="mt-2 space-y-1">
-                          {isInOffice ? (
+                          {status === 'office' && (
                             <>
-                              <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                              <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-semibold">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                 In Office
                               </div>
                               {floor && (
-                                <div className="flex items-center gap-1 text-xs text-gray-500">
-                                  <MapPin className="w-3 h-3" />
+                                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                  <MapPin className="w-3 h-3 text-gray-400" />
                                   {floor.name}{desk ? ` · ${desk.label}` : ''}
                                 </div>
                               )}
                               {booking && (
-                                <div className="flex items-center gap-1 text-xs text-gray-400">
+                                <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                                   <Calendar className="w-3 h-3" />
                                   {booking.startTime} – {booking.endTime}
                                 </div>
                               )}
                             </>
-                          ) : (
-                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                              <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-                              Not in office {formatDate(selectedDate)}
+                          )}
+                          {status === 'remote' && (
+                            <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-semibold">
+                              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                              Working Remotely
+                            </div>
+                          )}
+                          {status === 'off' && (
+                            <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold">
+                              <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                              Out of Office
+                            </div>
+                          )}
+                          {status === 'unknown' && (
+                            <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+                              <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-750" />
+                              Not in office today
                             </div>
                           )}
                         </div>

@@ -6,6 +6,7 @@ import { StatusBadge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useState } from 'react';
 import { ConfirmModal } from '../ui/Modal';
+import { QrCheckInModal } from './QrCheckInModal';
 import toast from 'react-hot-toast';
 
 interface BookingCardProps {
@@ -17,6 +18,7 @@ interface BookingCardProps {
 export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
   const { desks, rooms, parkingSpaces, lockers, floors, users, cancelBooking, checkIn, checkOut, currentUser } = useAppStore();
   const [showCancel, setShowCancel] = useState(false);
+  const [showQrCheckIn, setShowQrCheckIn] = useState(false);
 
   const getResource = () => {
     if (booking.resourceType === 'desk') return desks.find(d => d.id === booking.resourceId);
@@ -119,10 +121,10 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
         </div>
 
         {isMyBooking && (canCheckIn || canCheckOut || canCancel) && (
-          <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+          <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
             {canCheckIn && (
-              <Button size="xs" variant="success" iconLeft={<LogIn className="w-3.5 h-3.5" />} onClick={handleCheckIn}>
-                Check In
+              <Button size="xs" variant="success" iconLeft={<LogIn className="w-3.5 h-3.5" />} onClick={() => setShowQrCheckIn(true)}>
+                Check In / QR
               </Button>
             )}
             {canCheckOut && (
@@ -131,7 +133,7 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
               </Button>
             )}
             {canCancel && (
-              <Button size="xs" variant="outline" className="ml-auto text-red-500 hover:text-red-600 border-red-200" onClick={() => setShowCancel(true)}>
+              <Button size="xs" variant="outline" className="ml-auto text-red-500 hover:text-red-600 border-red-200 dark:border-red-900/60" onClick={() => setShowCancel(true)}>
                 Cancel
               </Button>
             )}
@@ -147,6 +149,12 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
         message={`Are you sure you want to cancel your booking for ${resourceLabel} on ${formatDate(booking.date)}?`}
         confirmLabel="Cancel Booking"
         variant="danger"
+      />
+
+      <QrCheckInModal
+        isOpen={showQrCheckIn}
+        onClose={() => setShowQrCheckIn(false)}
+        booking={booking}
       />
     </>
   );

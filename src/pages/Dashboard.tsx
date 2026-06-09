@@ -1,33 +1,42 @@
-import { useState } from 'react';
-import { format, addDays, parseISO } from 'date-fns';
-import { Calendar, Clock, MapPin, TrendingUp, Users, CheckCircle, ArrowRight, Plus, Bell, BookOpen } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { format, addDays } from 'date-fns';
+import { 
+  Calendar, Clock, MapPin, Users, ArrowRight, Plus, 
+  Bell, Sun, CloudSun, Compass, ShieldAlert, Sparkles,
+  ChevronRight, Laptop, UserCheck, AlertCircle
+} from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge, StatusBadge } from '../components/ui/Badge';
-import { Avatar, AvatarGroup } from '../components/ui/Avatar';
+import { Avatar } from '../components/ui/Avatar';
 import { BookingCard } from '../components/booking/BookingCard';
 import { BookingWizard } from '../components/booking/BookingWizard';
-import { formatDate, formatTimeRange, formatTimeAgo } from '../lib/utils';
+import { formatTimeRange, formatTimeAgo } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
 export function Dashboard() {
-  const { currentUser, bookings, notifications, users, floors, desks, rooms } = useAppStore();
+  const { currentUser, bookings, notifications, users, floors, desks } = useAppStore();
   const navigate = useNavigate();
   const [showBooking, setShowBooking] = useState(false);
+  const [time, setTime] = useState(new Date());
+
+  // Real-time Clock
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const today = format(new Date(), 'yyyy-MM-dd');
-  const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
 
   const myBookings = bookings.filter(b => b.userId === currentUser.id && b.status !== 'cancelled');
   const todayBookings = myBookings.filter(b => b.date === today);
   const upcomingBookings = myBookings.filter(b => b.date > today).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3);
-  const todayCheckedIn = todayBookings.find(b => b.status === 'checked_in');
   const todayDesk = todayBookings.find(b => b.resourceType === 'desk');
 
   const unreadNotifs = notifications.filter(n => !n.read && n.userId === currentUser.id);
-  const recentNotifs = notifications.filter(n => n.userId === currentUser.id).slice(0, 5);
+  const recentNotifs = notifications.filter(n => n.userId === currentUser.id).slice(0, 4);
 
   // Team in office today
   const teamInOffice = users.filter(u => {
@@ -35,195 +44,319 @@ export function Dashboard() {
     return bookings.some(b => b.userId === u.id && b.date === today && !['cancelled', 'completed'].includes(b.status));
   });
 
-  // Floor availability
+  // Floor availability (Circular Ring Stats)
   const floorStats = floors.slice(0, 3).map(floor => {
     const floorDesks = desks.filter(d => d.floorId === floor.id);
-    const occupied = bookings.filter(b => b.date === today && b.floorId === floor.id && b.resourceType === 'desk' && !['cancelled', 'completed', 'no_show'].includes(b.status)).length;
+    const occupied = bookings.filter(
+      b => b.date === today && 
+      b.floorId === floor.id && 
+      b.resourceType === 'desk' && 
+      !['cancelled', 'completed', 'no_show'].includes(b.status)
+    ).length;
     const rate = floorDesks.length > 0 ? Math.round((occupied / floorDesks.length) * 100) : 0;
     return { floor, floorDesks: floorDesks.length, occupied, rate };
   });
 
+  // Dynamic Greeting Greeting
+  const getGreeting = () => {
+    const hrs = new Date().getHours();
+    if (hrs < 12) return 'Good morning';
+    if (hrs < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Greeting */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {currentUser.name.split(' ')[0]} 👋
-          </h1>
-          <p className="text-gray-500 mt-1">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
+    <div className="space-y-8 animate-fade-in">
+      
+      {/* 1. Premium Greeting Hero Banner */}
+      <div className={cn(
+        "relative overflow-hidden rounded-2xl border p-6 md:p-8 shadow-xl transition-all duration-500",
+        "bg-gradient-to-br from-brand-600 via-brand-500 to-orange-500 text-white border-transparent",
+        "dark:from-gray-900 dark:via-gray-950 dark:to-orange-950/20 dark:border-orange-500/20 dark:shadow-orange-950/10"
+      )}>
+        {/* Background glowing decorations */}
+        <div className="absolute top-0 right-0 -mt-6 -mr-6 w-56 h-56 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-10 w-44 h-44 rounded-full bg-orange-400/20 blur-2xl pointer-events-none" />
+
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6 z-10">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-white/90 border border-white/10">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+              <span>Workspace Hub</span>
+            </div>
+            
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              {getGreeting()}, {currentUser.name.split(' ')[0]} 👋
+            </h1>
+            
+            <p className="text-white/80 dark:text-gray-400 text-sm md:text-base font-medium max-w-xl">
+              {todayDesk 
+                ? `You sit at desk ${desks.find(d => d.id === todayDesk.resourceId)?.label || '—'} on ${floors.find(f => f.id === todayDesk.floorId)?.name || 'the office floor'} today.`
+                : "Coordinate with teammates and book a workstation or meeting room in seconds."
+              }
+            </p>
+          </div>
+
+          {/* Interactive Date & Clock Panel */}
+          <div className="flex flex-col items-start md:items-end justify-center bg-black/10 dark:bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4 shrink-0 min-w-[200px]">
+            <span className="text-xs font-semibold tracking-wider uppercase opacity-75">{format(time, 'EEEE, d MMMM')}</span>
+            <span className="text-2xl md:text-3xl font-extrabold tracking-tight tabular-nums mt-0.5">{format(time, 'hh:mm:ss')} <span className="text-sm font-normal uppercase">{format(time, 'a')}</span></span>
+            <div className="flex items-center gap-1.5 mt-2 text-xs text-white/90">
+              <CloudSun className="w-4 h-4 text-amber-300" />
+              <span>Bangalore Office · 24°C</span>
+            </div>
+          </div>
         </div>
-        <Button iconLeft={<Plus className="w-4 h-4" />} onClick={() => setShowBooking(true)}>
-          Book a Space
-        </Button>
       </div>
 
-      {/* Top stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 2. Stat Widgets Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         <StatCard
           icon="🪑"
           label="Today's Desk"
-          value={todayDesk ? desks.find(d => d.id === todayDesk.resourceId)?.label || '—' : '—'}
-          sublabel={todayDesk ? formatTimeRange(todayDesk.startTime, todayDesk.endTime) : 'No desk booked'}
+          value={todayDesk ? desks.find(d => d.id === todayDesk.resourceId)?.label || '—' : 'Not Booked'}
+          sublabel={todayDesk ? formatTimeRange(todayDesk.startTime, todayDesk.endTime) : 'No desk selected'}
+          badgeText={todayDesk ? 'Active' : 'Unassigned'}
+          badgeVariant={todayDesk ? 'success' : 'warning'}
           color="blue"
-          action={!todayDesk ? { label: 'Book now', onClick: () => setShowBooking(true) } : undefined}
+          onClick={() => setShowBooking(true)}
         />
         <StatCard
           icon="📅"
-          label="Upcoming"
-          value={String(upcomingBookings.length)}
-          sublabel="bookings this week"
+          label="My Schedule"
+          value={`${upcomingBookings.length} Bookings`}
+          sublabel="upcoming this week"
+          badgeText="Calendar"
+          badgeVariant="info"
           color="green"
+          onClick={() => navigate('/my-bookings')}
         />
         <StatCard
           icon="👥"
-          label="Team In Office"
-          value={String(teamInOffice.length)}
-          sublabel="colleagues today"
+          label="Office Presence"
+          value={`${teamInOffice.length} In-Office`}
+          sublabel="teammates sitting today"
+          badgeText="Active"
+          badgeVariant="success"
           color="purple"
-          action={{ label: 'View team', onClick: () => navigate('/team') }}
+          onClick={() => navigate('/team')}
         />
         <StatCard
           icon="🔔"
-          label="Notifications"
-          value={String(unreadNotifs.length)}
-          sublabel="unread"
+          label="Recent Updates"
+          value={`${unreadNotifs.length} Unread`}
+          sublabel="notifications pending"
+          badgeText={unreadNotifs.length > 0 ? 'Action' : 'Up to date'}
+          badgeVariant={unreadNotifs.length > 0 ? 'error' : 'neutral'}
           color="orange"
-          action={unreadNotifs.length > 0 ? { label: 'View all', onClick: () => navigate('/notifications') } : undefined}
+          onClick={() => navigate('/notifications')}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Today's Bookings */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">Today's Bookings</h2>
+      {/* 3. Main Dashboard Sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        
+        {/* Left Column: Bookings Feed */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between border-b border-gray-150 dark:border-gray-800/80 pb-3">
+            <div className="flex items-center gap-2">
+              <Laptop className="w-5 h-5 text-brand-500" />
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Today's Schedule</h2>
+            </div>
             <Button variant="ghost" size="sm" iconRight={<ArrowRight className="w-4 h-4" />} onClick={() => navigate('/my-bookings')}>
-              View all
+              Full list
             </Button>
           </div>
+
           {todayBookings.length === 0 ? (
-            <Card className="text-center py-10">
-              <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">No bookings for today.</p>
-              <Button className="mt-4" size="sm" onClick={() => setShowBooking(true)} iconLeft={<Plus className="w-4 h-4" />}>Book a space</Button>
-            </Card>
+            <div className="flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm">
+              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4 text-gray-400">
+                <Calendar className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-gray-850 dark:text-gray-200 text-sm">No reservations for today</h3>
+              <p className="text-gray-400 text-xs mt-1 max-w-xs">Need to sit near teammates or hold a meeting? Book a space now.</p>
+              <Button className="mt-4" size="sm" onClick={() => setShowBooking(true)} iconLeft={<Plus className="w-4 h-4" />}>
+                Book a space
+              </Button>
+            </div>
           ) : (
-            <div className="space-y-3">
-              {todayBookings.map(b => <BookingCard key={b.id} booking={b} />)}
+            <div className="space-y-4">
+              {todayBookings.map(b => (
+                <div key={b.id} className="transition-all hover:scale-[1.01] duration-300">
+                  <BookingCard booking={b} />
+                </div>
+              ))}
             </div>
           )}
 
-          {/* Upcoming */}
+          {/* Upcoming bookings list */}
           {upcomingBookings.length > 0 && (
-            <>
-              <h2 className="text-base font-semibold text-gray-900 pt-2">Upcoming</h2>
-              <div className="space-y-2">
-                {upcomingBookings.map(b => <BookingCard key={b.id} booking={b} compact />)}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2 border-b border-gray-150 dark:border-gray-800/80 pb-3">
+                <Calendar className="w-5 h-5 text-emerald-500" />
+                <h2 className="text-base font-bold text-gray-900 dark:text-white">Coming Up Next</h2>
               </div>
-            </>
+              <div className="space-y-3">
+                {upcomingBookings.map(b => (
+                  <BookingCard key={b.id} booking={b} compact />
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Right column */}
-        <div className="space-y-4">
-          {/* Quick actions */}
-          <Card>
-            <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
+        {/* Right Column: Widgets */}
+        <div className="space-y-6 md:space-y-8">
+          
+          {/* Quick Action Widgets */}
+          <Card className="dark:bg-gray-950 dark:border-gray-800/80">
+            <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-3">
+              <div className="flex items-center gap-2">
+                <Compass className="w-4.5 h-4.5 text-brand-500" />
+                <CardTitle>Launchpad</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2.5">
               {[
-                { label: 'Book a desk', icon: '🪑', onClick: () => setShowBooking(true) },
-                { label: 'View my bookings', icon: '📅', onClick: () => navigate('/my-bookings') },
-                { label: 'Find teammates', icon: '👥', onClick: () => navigate('/team') },
-                { label: 'View floor map', icon: '🗺', onClick: () => navigate('/floor-map') },
-                { label: 'Plan my week', icon: '📆', onClick: () => navigate('/my-week') },
-              ].map(a => (
-                <button key={a.label} onClick={a.onClick}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-sm text-gray-700 text-left transition-colors"
+                { label: 'Book a desk', desc: 'Interactive visual seat map', icon: '🪑', color: 'bg-blue-50 dark:bg-blue-950/20 text-blue-500', onClick: () => setShowBooking(true) },
+                { label: 'View my bookings', desc: 'Manage your active reservations', icon: '📅', color: 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500', onClick: () => navigate('/my-bookings') },
+                { label: 'Find teammates', desc: 'See coworker seating locations', icon: '👥', color: 'bg-purple-50 dark:bg-purple-950/20 text-purple-500', onClick: () => navigate('/team') },
+                { label: 'Interactive floor map', desc: 'Full building occupancy layout', icon: '🗺', color: 'bg-amber-50 dark:bg-amber-950/20 text-amber-500', onClick: () => navigate('/floor-map') },
+                { label: 'Plan my week', desc: 'Hybrid remote & office scheduler', icon: '📆', color: 'bg-pink-50 dark:bg-pink-950/20 text-pink-500', onClick: () => navigate('/my-week') },
+              ].map((a, idx) => (
+                <button
+                  key={idx}
+                  onClick={a.onClick}
+                  className={cn(
+                    "w-full flex items-center gap-3.5 p-2.5 rounded-xl text-left border border-transparent",
+                    "hover:border-gray-200 dark:hover:border-gray-800 hover:bg-gray-50/60 dark:hover:bg-gray-900/60 transition-all group"
+                  )}
                 >
-                  <span className="text-base">{a.icon}</span>
-                  {a.label}
-                  <ArrowRight className="w-3.5 h-3.5 ml-auto text-gray-400" />
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0", a.color)}>
+                    {a.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors truncate">{a.label}</p>
+                    <p className="text-xs text-gray-400 truncate mt-0.5">{a.desc}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-650 group-hover:text-gray-500 group-hover:translate-x-1.5 transition-all" />
                 </button>
               ))}
             </CardContent>
           </Card>
 
-          {/* Floor availability */}
-          <Card>
-            <CardHeader><CardTitle>Floor Availability</CardTitle></CardHeader>
+          {/* Circular Gauges for Floor Availability */}
+          <Card className="dark:bg-gray-950 dark:border-gray-800/80">
+            <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-3">
+              <div className="flex items-center gap-2">
+                <Laptop className="w-4.5 h-4.5 text-brand-500" />
+                <CardTitle>Floor Capacity</CardTitle>
+              </div>
+            </CardHeader>
             <CardContent className="space-y-3">
               {floorStats.map(({ floor, floorDesks, occupied, rate }) => (
-                <div key={floor.id}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="font-medium text-gray-700">{floor.name}</span>
-                    <span className={cn('text-xs font-medium', rate > 80 ? 'text-red-600' : rate > 60 ? 'text-yellow-600' : 'text-green-600')}>
-                      {floorDesks - occupied} free
-                    </span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className={cn('h-full rounded-full transition-all', rate > 80 ? 'bg-red-400' : rate > 60 ? 'bg-yellow-400' : 'bg-green-400')}
-                      style={{ width: `${rate}%` }}
-                    />
-                  </div>
-                  <div className="text-xs text-gray-400 mt-0.5">{rate}% occupied</div>
-                </div>
+                <FloorCircularGauge
+                  key={floor.id}
+                  name={floor.name}
+                  free={floorDesks - occupied}
+                  rate={rate}
+                />
               ))}
             </CardContent>
           </Card>
 
-          {/* Team locations */}
-          <Card>
-            <CardHeader>
+          {/* Team Locations */}
+          <Card className="dark:bg-gray-950 dark:border-gray-800/80">
+            <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-3">
               <div className="flex items-center justify-between">
-                <CardTitle>Team Today</CardTitle>
-                <Badge variant="info" size="sm">{teamInOffice.length} in office</Badge>
+                <div className="flex items-center gap-2">
+                  <UserCheck className="w-4.5 h-4.5 text-brand-500" />
+                  <CardTitle>Team Presence</CardTitle>
+                </div>
+                <Badge variant="success" className="animate-pulse">{teamInOffice.length} sitting</Badge>
               </div>
             </CardHeader>
             <CardContent>
               {teamInOffice.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-2">No teammates in office today.</p>
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <AlertCircle className="w-8 h-8 text-gray-300 mb-2" />
+                  <p className="text-xs text-gray-400">No teammates sitting in office today.</p>
+                </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {teamInOffice.slice(0, 5).map(user => {
-                    const userBooking = bookings.find(b => b.userId === user.id && b.date === today && !['cancelled', 'completed'].includes(b.status));
+                    const userBooking = bookings.find(
+                      b => b.userId === user.id && b.date === today && !['cancelled', 'completed'].includes(b.status)
+                    );
                     const floor = userBooking ? floors.find(f => f.id === userBooking.floorId) : null;
                     return (
-                      <div key={user.id} className="flex items-center gap-2">
-                        <Avatar name={user.name} size="sm" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">{user.name}</p>
-                          {floor && <p className="text-xs text-gray-400 truncate">{floor.name}</p>}
+                      <div key={user.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800/60 hover:bg-gray-100/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={user.name} size="sm" className="ring-2 ring-brand-500/10" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-gray-850 dark:text-gray-200 truncate">{user.name}</p>
+                            <p className="text-[10px] text-gray-400 truncate mt-0.5">{user.department}</p>
+                          </div>
                         </div>
-                        <div className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
+                        <div className="flex items-center gap-2">
+                          {floor && (
+                            <span className="text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-300 rounded px-1.5 py-0.5">
+                              {floor.name}
+                            </span>
+                          )}
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-900 shadow-sm shrink-0" />
+                        </div>
                       </div>
                     );
                   })}
-                  {teamInOffice.length > 5 && <p className="text-xs text-gray-400 text-center">+{teamInOffice.length - 5} more</p>}
+                  {teamInOffice.length > 5 && (
+                    <button onClick={() => navigate('/team')} className="w-full text-center text-xs font-semibold text-brand-500 hover:text-brand-600 transition-colors mt-2">
+                      View all {teamInOffice.length} sitting teammates
+                    </button>
+                  )}
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Recent notifications */}
-          <Card>
-            <CardHeader>
+          {/* Activity Timeline */}
+          <Card className="dark:bg-gray-950 dark:border-gray-800/80">
+            <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-3">
               <div className="flex items-center justify-between">
-                <CardTitle>Recent Activity</CardTitle>
-                <button onClick={() => navigate('/notifications')} className="text-xs text-brand-500 hover:underline">See all</button>
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4.5 h-4.5 text-brand-500" />
+                  <CardTitle>Activity Timeline</CardTitle>
+                </div>
+                <button onClick={() => navigate('/notifications')} className="text-xs text-brand-500 hover:underline">Log</button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {recentNotifs.slice(0, 4).map(n => (
-                <div key={n.id} className={cn('flex items-start gap-2 text-xs p-2 rounded-lg', !n.read && 'bg-brand-50')}>
-                  <Bell className={cn('w-3.5 h-3.5 mt-0.5 shrink-0', n.read ? 'text-gray-400' : 'text-brand-500')} />
-                  <div className="flex-1 min-w-0">
-                    <p className={cn('font-medium truncate', n.read ? 'text-gray-600' : 'text-gray-900')}>{n.title}</p>
-                    <p className="text-gray-400">{formatTimeAgo(n.createdAt)}</p>
-                  </div>
+            <CardContent>
+              {recentNotifs.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-4">No recent activity.</p>
+              ) : (
+                <div className="relative pl-4 border-l border-gray-100 dark:border-gray-800 space-y-5">
+                  {recentNotifs.map(n => (
+                    <div key={n.id} className="relative group">
+                      {/* Timeline dot */}
+                      <span className={cn(
+                        "absolute -left-[20.5px] top-1 w-2.5 h-2.5 rounded-full ring-4 ring-white dark:ring-gray-950 shrink-0",
+                        n.read ? "bg-gray-300 dark:bg-gray-700" : "bg-brand-500 animate-pulse"
+                      )} />
+                      
+                      <div className="min-w-0">
+                        <p className={cn(
+                          "text-xs font-semibold truncate", 
+                          n.read ? "text-gray-500 dark:text-gray-400" : "text-gray-800 dark:text-gray-255"
+                        )}>
+                          {n.title}
+                        </p>
+                        <p className="text-[10px] text-gray-400 mt-0.5 truncate">{n.message}</p>
+                        <span className="text-[9px] text-gray-300 dark:text-gray-500 block mt-1">{formatTimeAgo(n.createdAt)}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
         </div>
@@ -234,31 +367,101 @@ export function Dashboard() {
   );
 }
 
-function StatCard({ icon, label, value, sublabel, color, action }: {
-  icon: string; label: string; value: string; sublabel: string; color: string;
-  action?: { label: string; onClick: () => void };
+function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color, onClick }: {
+  icon: string; label: string; value: string; sublabel: string; 
+  badgeText: string; badgeVariant: 'default' | 'success' | 'warning' | 'error' | 'info' | 'neutral';
+  color: 'blue' | 'green' | 'purple' | 'orange';
+  onClick: () => void;
 }) {
-  const colorMap: Record<string, string> = {
-    blue: 'bg-blue-50',
-    green: 'bg-green-50',
-    purple: 'bg-purple-50',
-    orange: 'bg-orange-50',
+  const colorMap = {
+    blue: {
+      card: 'bg-white hover:border-blue-200 dark:hover:border-blue-900/40 hover:shadow-blue-500/5',
+      iconBg: 'bg-blue-50 dark:bg-blue-950/40 text-blue-500'
+    },
+    green: {
+      card: 'bg-white hover:border-emerald-200 dark:hover:border-emerald-900/40 hover:shadow-emerald-500/5',
+      iconBg: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500'
+    },
+    purple: {
+      card: 'bg-white hover:border-purple-200 dark:hover:border-purple-900/40 hover:shadow-purple-500/5',
+      iconBg: 'bg-purple-50 dark:bg-purple-950/40 text-purple-500'
+    },
+    orange: {
+      card: 'bg-white hover:border-orange-200 dark:hover:border-orange-900/40 hover:shadow-orange-500/5',
+      iconBg: 'bg-orange-50 dark:bg-orange-950/40 text-orange-500'
+    },
   };
+
+  const scheme = colorMap[color];
+
   return (
-    <Card className={cn(colorMap[color] || 'bg-gray-50', 'border-0')}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{sublabel}</p>
-        </div>
-        <span className="text-2xl">{icon}</span>
-      </div>
-      {action && (
-        <button onClick={action.onClick} className="text-xs text-brand-600 font-medium mt-2 hover:underline flex items-center gap-1">
-          {action.label} <ArrowRight className="w-3 h-3" />
-        </button>
+    <div
+      onClick={onClick}
+      className={cn(
+        "group relative flex flex-col justify-between p-5 min-h-[148px] rounded-2xl border border-gray-200 dark:border-gray-800/80 cursor-pointer shadow-sm",
+        "transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
+        scheme.card,
+        "bg-white dark:bg-gray-950"
       )}
-    </Card>
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-lg shrink-0", scheme.iconBg)}>
+            {icon}
+          </div>
+          <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">{label}</span>
+        </div>
+        <Badge variant={badgeVariant} className="shrink-0">{badgeText}</Badge>
+      </div>
+
+      <div className="mt-3">
+        <h4 className="text-xl md:text-2xl font-extrabold text-gray-855 dark:text-gray-200 tracking-tight leading-none group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors truncate">
+          {value}
+        </h4>
+        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5 truncate">{sublabel}</p>
+      </div>
+    </div>
+  );
+}
+
+// Circular Capacity Radial Ring Widget
+function FloorCircularGauge({ name, free, rate }: { name: string; free: number; rate: number }) {
+  const radius = 20;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (rate / 100) * circumference;
+  
+  const strokeColor = rate > 80 ? 'stroke-red-500 dark:stroke-red-600' : rate > 60 ? 'stroke-amber-500 dark:stroke-amber-600' : 'stroke-emerald-500 dark:stroke-emerald-600';
+
+  return (
+    <div className="flex items-center gap-3.5 p-3 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800/60 hover:bg-gray-100/50 transition-colors">
+      <div className="relative flex items-center justify-center shrink-0 w-12 h-12">
+        <svg className="w-full h-full transform -rotate-90">
+          <circle
+            cx="24"
+            cy="24"
+            r={radius}
+            className="stroke-gray-200 dark:stroke-gray-800"
+            strokeWidth="3.5"
+            fill="transparent"
+          />
+          <circle
+            cx="24"
+            cy="24"
+            r={radius}
+            className={cn("transition-all duration-700 ease-out", strokeColor)}
+            strokeWidth="3.5"
+            fill="transparent"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+          />
+        </svg>
+        <span className="absolute text-[10px] font-extrabold text-gray-800 dark:text-gray-250">{rate}%</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-xs font-bold text-gray-850 dark:text-gray-200 truncate">{name}</h4>
+        <p className="text-[10px] text-gray-400 mt-0.5">{free} available desks</p>
+      </div>
+    </div>
   );
 }

@@ -1,19 +1,23 @@
 import { useState } from 'react';
-import { format, subDays } from 'date-fns';
-import { TrendingUp, TrendingDown, Users, Calendar, BarChart2, Download } from 'lucide-react';
+import { format } from 'date-fns';
+import { 
+  TrendingUp, TrendingDown, Users, Calendar, 
+  Download, BarChart3, Activity, Clock
+} from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Tabs } from '../../components/ui/Tabs';
 import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
 import { MOCK_DAILY_STATS, MOCK_FLOOR_OCCUPANCY } from '../../data/mockData';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend,
+  ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from 'recharts';
 import { cn } from '../../lib/utils';
 
 export function Analytics() {
-  const { desks, rooms, floors, bookings, users } = useAppStore();
+  const { bookings, users } = useAppStore();
   const [period, setPeriod] = useState<'7d' | '30d' | '90d'>('30d');
   const [tab, setTab] = useState('overview');
 
@@ -36,7 +40,7 @@ export function Analytics() {
     users: d.uniqueUsers,
   }));
 
-  const pieColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+  const pieColors = ['#f04a16', '#3b82f6', '#10b981', '#8b5cf6'];
   const resourceBreakdown = [
     { name: 'Desks', value: stats.reduce((s, d) => s + d.deskBookings, 0) },
     { name: 'Rooms', value: stats.reduce((s, d) => s + d.roomBookings, 0) },
@@ -45,10 +49,10 @@ export function Analytics() {
   ];
 
   const hourlyData = [
-    { hour: '8am', count: 12 }, { hour: '9am', count: 38 }, { hour: '10am', count: 45 },
-    { hour: '11am', count: 40 }, { hour: '12pm', count: 28 }, { hour: '1pm', count: 22 },
-    { hour: '2pm', count: 35 }, { hour: '3pm', count: 38 }, { hour: '4pm', count: 30 },
-    { hour: '5pm', count: 18 }, { hour: '6pm', count: 8 },
+    { hour: '8 AM', count: 12 }, { hour: '9 AM', count: 38 }, { hour: '10 AM', count: 45 },
+    { hour: '11 AM', count: 40 }, { hour: '12 PM', count: 28 }, { hour: '1 PM', count: 22 },
+    { hour: '2 PM', count: 35 }, { hour: '3 PM', count: 38 }, { hour: '4 PM', count: 30 },
+    { hour: '5 PM', count: 18 }, { hour: '6 PM', count: 8 },
   ];
 
   const departmentData = [
@@ -59,132 +63,203 @@ export function Analytics() {
     { dept: 'HR', bookings: 23, occupancyRate: 45 },
   ];
 
+  // Glassmorphic Custom Tooltip for Recharts
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="glass-panel bg-white/95 dark:bg-gray-950/95 border border-gray-200/60 dark:border-gray-800/80 p-3 rounded-xl shadow-lg backdrop-blur-md text-xs space-y-1.5 min-w-[130px]">
+          <p className="font-extrabold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 pb-1 mb-1">{label}</p>
+          {payload.map((entry: any, i: number) => (
+            <div key={i} className="flex items-center justify-between gap-4">
+              <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 font-medium">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: entry.color || entry.fill }} />
+                {entry.name}
+              </span>
+              <span className="font-bold text-gray-900 dark:text-white tabular-nums">{entry.value}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-xl font-bold text-gray-900">Analytics</h1>
-        <div className="flex gap-2">
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+      
+      {/* Header controls */}
+      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-100 dark:border-gray-850/80 pb-4">
+        <div>
+          <h1 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Executive Analytics</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Real-time resource utilization and occupancy insights</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1 bg-gray-150/60 dark:bg-gray-900/60 p-1 rounded-xl border border-gray-200/40 dark:border-gray-800/40 shadow-sm">
             {(['7d', '30d', '90d'] as const).map(p => (
-              <button key={p} onClick={() => setPeriod(p)}
-                className={cn('px-3 py-1 text-xs font-medium rounded-md transition-all', period === p ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700')}
+              <button 
+                key={p} 
+                onClick={() => setPeriod(p)}
+                className={cn(
+                  'px-3.5 py-1 text-xs font-bold rounded-lg transition-all', 
+                  period === p 
+                    ? 'bg-white dark:bg-gray-800 shadow-sm border border-gray-200/10 text-gray-950 dark:text-white' 
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                )}
               >
-                {p}
+                {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : '90 Days'}
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" iconLeft={<Download className="w-4 h-4" />}>Export</Button>
+          <Button variant="outline" size="sm" className="rounded-xl shadow-sm font-bold text-xs" iconLeft={<Download className="w-4 h-4" />}>
+            Export CSV
+          </Button>
         </div>
       </div>
 
-      <Tabs tabs={[
-        { id: 'overview', label: 'Overview' },
-        { id: 'occupancy', label: 'Occupancy' },
-        { id: 'resources', label: 'Resources' },
-        { id: 'departments', label: 'Departments' },
-      ]} activeTab={tab} onChange={setTab} />
+      <Tabs 
+        tabs={[
+          { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-4 h-4" /> },
+          { id: 'occupancy', label: 'Floor Occupancy', icon: <Activity className="w-4 h-4" /> },
+          { id: 'resources', label: 'Resource Splits', icon: <Calendar className="w-4 h-4" /> },
+          { id: 'departments', label: 'Department Trends', icon: <Users className="w-4 h-4" /> },
+        ]} 
+        activeTab={tab} 
+        onChange={setTab} 
+      />
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Bookings', value: totalBookings, sub: `${avgDailyBookings}/day avg`, trend: +8, icon: <Calendar className="w-5 h-5" /> },
-          { label: 'Unique Users', value: [...new Set(bookings.map(b => b.userId))].length, sub: `of ${users.length} total`, trend: +3, icon: <Users className="w-5 h-5" /> },
-          { label: 'Check-in Rate', value: `${Math.round((totalCheckIns / totalBookings) * 100)}%`, sub: `${totalCheckIns} check-ins`, trend: +2, icon: <TrendingUp className="w-5 h-5" /> },
-          { label: 'No-show Rate', value: `${noShowRate}%`, sub: `${totalNoShows} no-shows`, trend: -1, icon: <TrendingDown className="w-5 h-5" />, invertTrend: true },
-        ].map(({ label, value, sub, trend, icon, invertTrend }) => (
-          <Card key={label}>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs text-gray-500">{label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
-              </div>
-              <div className="p-2 bg-gray-50 rounded-xl text-gray-500">{icon}</div>
-            </div>
-            <div className={cn('flex items-center gap-1 text-xs mt-2 font-medium',
-              (invertTrend ? trend < 0 : trend > 0) ? 'text-green-600' : 'text-red-500'
-            )}>
-              {trend > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-              {Math.abs(trend)}% vs last period
-            </div>
-          </Card>
-        ))}
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        <KpiCard
+          label="Total Bookings"
+          value={totalBookings}
+          sub={`${avgDailyBookings}/day average`}
+          trend={+8}
+          icon={<Calendar className="w-4.5 h-4.5" />}
+          color="brand"
+        />
+        <KpiCard
+          label="Active Users"
+          value={[...new Set(bookings.map(b => b.userId))].length}
+          sub={`out of ${users.length} profiles`}
+          trend={+3}
+          icon={<Users className="w-4.5 h-4.5" />}
+          color="blue"
+        />
+        <KpiCard
+          label="Check-In Rate"
+          value={`${Math.round((totalCheckIns / totalBookings) * 100)}%`}
+          sub={`${totalCheckIns} confirmations`}
+          trend={+2}
+          icon={<TrendingUp className="w-4.5 h-4.5" />}
+          color="green"
+        />
+        <KpiCard
+          label="No-Show Rate"
+          value={`${noShowRate}%`}
+          sub={`${totalNoShows} auto-releases`}
+          trend={-1}
+          icon={<TrendingDown className="w-4.5 h-4.5" />}
+          invertTrend
+          color="orange"
+        />
       </div>
 
+      {/* Tab Panels */}
       {tab === 'overview' && (
         <div className="space-y-6">
-          {/* Bookings trend */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Booking Trends</CardTitle>
-                <div className="flex gap-4 text-xs text-gray-500">
-                  <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500" /> Desks</span>
-                  <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500" /> Rooms</span>
-                </div>
+          {/* Main Booking Trend Chart */}
+          <Card className="dark:bg-gray-950 dark:border-gray-800/80">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 mb-4">
+              <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">Daily Booking Volumes</CardTitle>
+              <div className="flex gap-4 text-[10px] uppercase font-bold tracking-wider text-gray-400">
+                <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Desks</span>
+                <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Rooms</span>
               </div>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={chartData}>
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorDesks" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorRooms" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
                       <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} interval={Math.floor(periodDays / 7)} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-                  <Area type="monotone" dataKey="desks" stroke="#3b82f6" fill="url(#colorDesks)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="rooms" stroke="#10b981" fill="url(#colorRooms)" strokeWidth={2} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" className="dark:stroke-gray-900" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} interval={Math.floor(periodDays / 7)} />
+                  <YAxis tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area type="monotone" name="Desks" dataKey="desks" stroke="#3b82f6" fill="url(#colorDesks)" strokeWidth={2.5} />
+                  <Area type="monotone" name="Rooms" dataKey="rooms" stroke="#10b981" fill="url(#colorRooms)" strokeWidth={2.5} />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Peak hours */}
-            <Card>
-              <CardHeader><CardTitle>Peak Booking Hours</CardTitle></CardHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            
+            {/* Peak Hours Bar Chart */}
+            <Card className="lg:col-span-3 dark:bg-gray-950 dark:border-gray-800/80">
+              <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-4">
+                <CardTitle className="text-sm font-bold text-gray-850 dark:text-gray-200">Peak Booking Hours</CardTitle>
+              </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={hourlyData} barSize={24}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="hour" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
-                    <Bar dataKey="count" fill="#f04a16" radius={[4,4,0,0]} />
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={hourlyData} barSize={14} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" className="dark:stroke-gray-900" />
+                    <XAxis dataKey="hour" tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar name="Bookings" dataKey="count" fill="#f04a16" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            {/* Resource breakdown */}
-            <Card>
-              <CardHeader><CardTitle>Resource Breakdown</CardTitle></CardHeader>
+            {/* Resource Breakdown Doughnut */}
+            <Card className="lg:col-span-2 dark:bg-gray-950 dark:border-gray-800/80">
+              <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-4">
+                <CardTitle className="text-sm font-bold text-gray-850 dark:text-gray-200">Asset Usage Split</CardTitle>
+              </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-4">
-                  <ResponsiveContainer width={140} height={140}>
-                    <PieChart>
-                      <Pie data={resourceBreakdown} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" paddingAngle={3}>
-                        {resourceBreakdown.map((_, i) => <Cell key={i} fill={pieColors[i]} />)}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
+                <div className="flex items-center justify-between gap-6">
+                  <div className="relative flex items-center justify-center shrink-0 w-28 h-28">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie 
+                          data={resourceBreakdown} 
+                          cx="50%" 
+                          cy="50%" 
+                          innerRadius={36} 
+                          outerRadius={50} 
+                          dataKey="value" 
+                          paddingAngle={4}
+                        >
+                          {resourceBreakdown.map((_, i) => (
+                            <Cell key={i} fill={pieColors[i]} className="stroke-white dark:stroke-gray-950 stroke-2" />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute text-center">
+                      <p className="text-xs font-extrabold text-gray-850 dark:text-gray-200">{totalBookings}</p>
+                      <p className="text-[8px] uppercase tracking-wider text-gray-400 font-bold">Total</p>
+                    </div>
+                  </div>
+
                   <div className="flex-1 space-y-2">
                     {resourceBreakdown.map((d, i) => (
-                      <div key={d.name} className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-2">
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pieColors[i] }} />
+                      <div key={d.name} className="flex items-center justify-between text-xs p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900/40 transition-colors">
+                        <span className="flex items-center gap-2 font-bold text-gray-650 dark:text-gray-300">
+                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: pieColors[i] }} />
                           {d.name}
                         </span>
-                        <span className="font-semibold text-gray-900">{d.value}</span>
+                        <span className="font-extrabold text-gray-850 dark:text-gray-200 tabular-nums">{d.value}</span>
                       </div>
                     ))}
                   </div>
@@ -197,26 +272,40 @@ export function Analytics() {
 
       {tab === 'occupancy' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
             {MOCK_FLOOR_OCCUPANCY.map(f => (
-              <Card key={f.floorId}>
-                <CardHeader>
+              <Card key={f.floorId} className="dark:bg-gray-950 dark:border-gray-800/80">
+                <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle>{f.floorName}</CardTitle>
-                    <span className={cn('text-sm font-bold', f.occupancyRate > 80 ? 'text-red-600' : f.occupancyRate > 60 ? 'text-yellow-600' : 'text-green-600')}>
-                      {f.occupancyRate}%
-                    </span>
+                    <CardTitle className="text-sm font-bold text-gray-850 dark:text-gray-200">{f.floorName}</CardTitle>
+                    <Badge variant={f.occupancyRate > 80 ? 'error' : f.occupancyRate > 60 ? 'warning' : 'success'}>
+                      {f.occupancyRate}% Occupied
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-2 bg-gray-100 rounded-full mb-3">
-                    <div className={cn('h-full rounded-full', f.occupancyRate > 80 ? 'bg-red-400' : f.occupancyRate > 60 ? 'bg-yellow-400' : 'bg-green-400')}
-                      style={{ width: `${f.occupancyRate}%` }} />
+                  <div className="h-2.5 bg-gray-100 dark:bg-gray-900 rounded-full mb-5 overflow-hidden border border-gray-200/50 dark:border-gray-800/40">
+                    <div 
+                      className={cn(
+                        'h-full rounded-full transition-all duration-500', 
+                        f.occupancyRate > 80 ? 'bg-red-500' : f.occupancyRate > 60 ? 'bg-amber-500' : 'bg-emerald-500'
+                      )}
+                      style={{ width: `${f.occupancyRate}%` }} 
+                    />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 text-center text-sm">
-                    <div><p className="font-bold text-gray-900">{f.deskCount}</p><p className="text-xs text-gray-500">Desks</p></div>
-                    <div><p className="font-bold text-gray-900">{f.roomCount}</p><p className="text-xs text-gray-500">Rooms</p></div>
-                    <div><p className="font-bold text-gray-900">{f.peakTime}</p><p className="text-xs text-gray-500">Peak Hour</p></div>
+                  <div className="grid grid-cols-3 gap-3 text-center border-t border-gray-100 dark:border-gray-850/80 pt-4">
+                    <div>
+                      <p className="text-base font-extrabold text-gray-850 dark:text-gray-200">{f.deskCount}</p>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Desks</p>
+                    </div>
+                    <div>
+                      <p className="text-base font-extrabold text-gray-855 dark:text-gray-200">{f.roomCount}</p>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Rooms</p>
+                    </div>
+                    <div>
+                      <p className="text-base font-extrabold text-gray-850 dark:text-gray-200">{f.peakTime}</p>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Peak Hour</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -227,19 +316,21 @@ export function Analytics() {
 
       {tab === 'resources' && (
         <div className="space-y-4">
-          <Card>
-            <CardHeader><CardTitle>Daily Booking Volume by Resource</CardTitle></CardHeader>
+          <Card className="dark:bg-gray-950 dark:border-gray-800/80">
+            <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-4">
+              <CardTitle className="text-sm font-bold text-gray-850 dark:text-gray-200">Daily Booking Volumes by Resource</CardTitle>
+            </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={chartData.slice(-14)} barSize={12} barGap={2}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
-                  <Legend />
-                  <Bar dataKey="desks" fill="#3b82f6" radius={[2,2,0,0]} />
-                  <Bar dataKey="rooms" fill="#10b981" radius={[2,2,0,0]} />
-                  <Bar dataKey="parking" fill="#f59e0b" radius={[2,2,0,0]} />
+                <BarChart data={chartData.slice(-14)} barSize={12} barGap={3} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" className="dark:stroke-gray-900" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '11px', fontWeight: 'bold' }} />
+                  <Bar name="Desks" dataKey="desks" fill="#f04a16" radius={[2, 2, 0, 0]} />
+                  <Bar name="Rooms" dataKey="rooms" fill="#3b82f6" radius={[2, 2, 0, 0]} />
+                  <Bar name="Parking" dataKey="parking" fill="#10b981" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -249,31 +340,97 @@ export function Analytics() {
 
       {tab === 'departments' && (
         <div className="space-y-4">
-          <Card>
-            <CardHeader><CardTitle>Bookings by Department</CardTitle></CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {departmentData.map(d => (
-                  <div key={d.dept}>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="font-medium text-gray-700">{d.dept}</span>
-                      <div className="flex gap-4 text-xs text-gray-500">
-                        <span>{d.bookings} bookings</span>
-                        <span className={cn('font-medium', d.occupancyRate > 70 ? 'text-red-600' : d.occupancyRate > 55 ? 'text-yellow-600' : 'text-green-600')}>
-                          {d.occupancyRate}% utilization
-                        </span>
-                      </div>
-                    </div>
-                    <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-brand-400 rounded-full" style={{ width: `${d.occupancyRate}%` }} />
+          <Card className="dark:bg-gray-950 dark:border-gray-800/80">
+            <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-4">
+              <CardTitle className="text-sm font-bold text-gray-850 dark:text-gray-200">Utilization Rates by Department</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4.5 pt-2">
+              {departmentData.map(d => (
+                <div key={d.dept} className="p-3.5 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800/60 hover:border-gray-200 transition-colors">
+                  <div className="flex items-center justify-between text-xs font-bold mb-2">
+                    <span className="text-gray-750 dark:text-gray-250">{d.dept}</span>
+                    <div className="flex gap-4 text-gray-400">
+                      <span>{d.bookings} reservations</span>
+                      <span className={cn(
+                        d.occupancyRate > 70 ? 'text-red-500 dark:text-red-400' : d.occupancyRate > 55 ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-500 dark:text-emerald-400'
+                      )}>
+                        {d.occupancyRate}% utilized
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="h-2.5 bg-gray-150 dark:bg-gray-800 rounded-full overflow-hidden border border-gray-200/20 dark:border-gray-800/30">
+                    <div 
+                      className={cn(
+                        "h-full rounded-full transition-all duration-500",
+                        d.occupancyRate > 70 ? 'bg-red-500' : d.occupancyRate > 55 ? 'bg-amber-500' : 'bg-emerald-500'
+                      )}
+                      style={{ width: `${d.occupancyRate}%` }} 
+                    />
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>
       )}
     </div>
+  );
+}
+
+// KPI widget summary with border glow and dynamic indicators
+function KpiCard({ label, value, sub, trend, icon, invertTrend, color }: {
+  label: string; value: string | number; sub: string; trend: number; icon: React.ReactNode; 
+  invertTrend?: boolean; color: 'brand' | 'blue' | 'green' | 'orange';
+}) {
+  const isPositive = trend > 0;
+  const isGood = invertTrend ? !isPositive : isPositive;
+
+  const colorMap = {
+    brand: {
+      border: 'hover:border-orange-200 dark:hover:border-orange-900/40 hover:shadow-orange-500/5',
+      iconBg: 'bg-orange-50 dark:bg-orange-950/40 text-orange-500'
+    },
+    blue: {
+      border: 'hover:border-blue-200 dark:hover:border-blue-900/40 hover:shadow-blue-500/5',
+      iconBg: 'bg-blue-50 dark:bg-blue-950/40 text-blue-500'
+    },
+    green: {
+      border: 'hover:border-emerald-200 dark:hover:border-emerald-900/40 hover:shadow-emerald-500/5',
+      iconBg: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500'
+    },
+    orange: {
+      border: 'hover:border-amber-200 dark:hover:border-amber-900/40 hover:shadow-amber-500/5',
+      iconBg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-500'
+    }
+  };
+
+  return (
+    <Card className={cn(
+      "relative overflow-hidden group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 dark:bg-gray-950 dark:border-gray-800/80",
+      colorMap[color].border
+    )}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1 min-w-0">
+          <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">{label}</p>
+          <p className="text-2xl font-extrabold text-gray-850 dark:text-gray-250 tracking-tight mt-1 truncate">{value}</p>
+          <p className="text-[10px] text-gray-400 mt-0.5 truncate">{sub}</p>
+        </div>
+        <div className={cn("w-9.5 h-9.5 rounded-xl border border-gray-100 dark:border-gray-800/40 flex items-center justify-center shrink-0 shadow-sm", colorMap[color].iconBg)}>
+          {icon}
+        </div>
+      </div>
+      <div className="flex items-center gap-2 mt-4 pt-1.5 border-t border-gray-50 dark:border-gray-900">
+        <span className={cn(
+          'inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full',
+          isGood 
+            ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' 
+            : 'bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400'
+        )}>
+          {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+          <span>{Math.abs(trend)}%</span>
+        </span>
+        <span className="text-[9px] text-gray-400 dark:text-gray-500 font-semibold">vs last week</span>
+      </div>
+    </Card>
   );
 }

@@ -2,15 +2,12 @@ import { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { FloorMap } from '../components/floormap/FloorMap';
 import { BookingWizard } from '../components/booking/BookingWizard';
-import { Select } from '../components/ui/Input';
 import type { Desk, Room } from '../types';
 import { cn } from '../lib/utils';
-import { Modal } from '../components/ui/Modal';
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/ui/Badge';
-import { getDeskTypeLabel, getRoomTypeLabel, getAmenityLabel, formatDate } from '../lib/utils';
-import { Users, Monitor, CheckCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { getDeskTypeLabel, getRoomTypeLabel, getAmenityLabel } from '../lib/utils';
+import { Users, Monitor, CheckCircle, X, Cpu, Landmark } from 'lucide-react';
 
 export function FloorMapPage() {
   const { floors, selectedFloorId, setSelectedFloor, selectedDate, setSelectedDate, bookings, currentUser, desks, rooms } = useAppStore();
@@ -22,10 +19,12 @@ export function FloorMapPage() {
   const selectedFloor = floors.find(f => f.id === selectedFloorId) || floors[0];
 
   const handleDeskClick = (desk: Desk) => {
+    setSelectedRoom(null);
     setSelectedDesk(desk);
   };
 
   const handleRoomClick = (room: Room) => {
+    setSelectedDesk(null);
     setSelectedRoom(room);
   };
 
@@ -45,25 +44,36 @@ export function FloorMapPage() {
   const isDeskAvailable = !deskBooking && selectedDesk?.status !== 'maintenance';
 
   return (
-    <div className="flex flex-col h-full gap-4">
-      {/* Controls */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <h1 className="text-xl font-bold text-gray-900">Floor Map</h1>
-        <div className="flex items-center gap-3 ml-auto flex-wrap">
+    <div className="flex flex-col h-full gap-6 animate-fade-in">
+      
+      {/* 1. Header controls */}
+      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-100 dark:border-gray-850/80 pb-4">
+        <div>
+          <h1 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Interactive Office Map</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Explore seat layouts and booking schedules in real time</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
           <input
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400"
+            className="text-xs font-semibold border border-gray-200 dark:border-gray-805 bg-white dark:bg-gray-900 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 text-gray-900 dark:text-white transition-all shadow-sm"
           />
-          <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+          <div className="flex gap-1 p-1 bg-gray-150/60 dark:bg-gray-900/60 rounded-xl border border-gray-200/40 dark:border-gray-800/40 shadow-sm">
             {floors.filter(f => f.isActive).map(floor => (
               <button
                 key={floor.id}
-                onClick={() => setSelectedFloor(floor.id)}
+                onClick={() => {
+                  setSelectedFloor(floor.id);
+                  setSelectedDesk(null);
+                  setSelectedRoom(null);
+                }}
                 className={cn(
-                  'px-3 py-1.5 text-xs font-medium rounded-lg transition-all',
-                  selectedFloorId === floor.id ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700',
+                  'px-3.5 py-1 text-xs font-bold rounded-lg transition-all',
+                  selectedFloorId === floor.id 
+                    ? 'bg-white dark:bg-gray-800 shadow-sm border border-gray-200/10 text-gray-950 dark:text-white' 
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-250',
                 )}
               >
                 {floor.name}
@@ -73,8 +83,8 @@ export function FloorMapPage() {
         </div>
       </div>
 
-      {/* Floor stats */}
-      <div className="flex gap-3 flex-wrap">
+      {/* 2. Floor metrics / stats cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 shrink-0">
         {(() => {
           const floorDesks = desks.filter(d => d.floorId === selectedFloorId && d.isActive);
           const floorRooms = rooms.filter(r => r.floorId === selectedFloorId && r.isActive);
@@ -85,152 +95,203 @@ export function FloorMapPage() {
           const rate = floorDesks.length > 0 ? Math.round((occupiedDesks / floorDesks.length) * 100) : 0;
           return (
             <>
-              <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2 text-center">
-                <div className="text-lg font-bold text-blue-700">{floorDesks.length}</div>
-                <div className="text-xs text-blue-500">Total Desks</div>
-              </div>
-              <div className="bg-green-50 border border-green-100 rounded-xl px-4 py-2 text-center">
-                <div className="text-lg font-bold text-green-700">{floorDesks.length - occupiedDesks}</div>
-                <div className="text-xs text-green-500">Available</div>
-              </div>
-              <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-2 text-center">
-                <div className="text-lg font-bold text-red-700">{occupiedDesks}</div>
-                <div className="text-xs text-red-500">Occupied</div>
-              </div>
-              <div className="bg-purple-50 border border-purple-100 rounded-xl px-4 py-2 text-center">
-                <div className="text-lg font-bold text-purple-700">{rate}%</div>
-                <div className="text-xs text-purple-500">Utilization</div>
-              </div>
-              <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-center">
-                <div className="text-lg font-bold text-gray-700">{floorRooms.length}</div>
-                <div className="text-xs text-gray-500">Rooms</div>
-              </div>
+              <MiniStatCard label="Total Desks" value={floorDesks.length} color="blue" icon="🪑" />
+              <MiniStatCard label="Available" value={floorDesks.length - occupiedDesks} color="green" icon="🟢" />
+              <MiniStatCard label="Occupied" value={occupiedDesks} color="red" icon="🔴" />
+              <MiniStatCard label="Utilization" value={`${rate}%`} color="purple" icon="📈" />
+              <MiniStatCard label="Meeting Rooms" value={floorRooms.length} color="gray" icon="🚪" />
             </>
           );
         })()}
       </div>
 
-      {/* Map */}
-      <div className="flex-1 min-h-[500px]">
-        {selectedFloor && (
-          <FloorMap
-            floor={selectedFloor}
-            onDeskClick={handleDeskClick}
-            onRoomClick={handleRoomClick}
-            date={selectedDate}
-          />
-        )}
-      </div>
+      {/* 3. Main Split Canvas Layout */}
+      <div className="flex flex-1 gap-6 min-h-[520px] relative overflow-hidden">
+        
+        {/* Left side: Interactive Map visualizer */}
+        <div className="flex-1 bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800/80 overflow-hidden relative shadow-sm">
+          {selectedFloor && (
+            <FloorMap
+              floor={selectedFloor}
+              onDeskClick={handleDeskClick}
+              onRoomClick={handleRoomClick}
+              date={selectedDate}
+              selectedDeskId={selectedDesk?.id}
+            />
+          )}
+        </div>
 
-      {/* Desk detail modal */}
-      <Modal
-        isOpen={!!selectedDesk}
-        onClose={() => setSelectedDesk(null)}
-        title={selectedDesk?.label || 'Desk'}
-        size="sm"
-        footer={
-          isDeskAvailable ? (
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setSelectedDesk(null)}>Close</Button>
-              <Button onClick={handleBookDesk} iconLeft={<CheckCircle className="w-4 h-4" />}>Book This Desk</Button>
+        {/* Right side: Slide-over seating details panel */}
+        <div className={cn(
+          "w-80 md:w-96 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-950 p-5 flex flex-col justify-between shadow-xl shrink-0 transition-all duration-300",
+          "absolute md:relative right-0 top-0 bottom-0 z-20 md:z-auto",
+          (selectedDesk || selectedRoom) ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none hidden"
+        )}>
+          
+          {/* Top Panel Actions & Content Header */}
+          <div className="space-y-5 flex-1 overflow-y-auto pr-1">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-850/80 pb-3">
+              <div className="flex items-center gap-2">
+                {selectedDesk ? <Cpu className="w-5 h-5 text-brand-500" /> : <Landmark className="w-5 h-5 text-brand-500" />}
+                <h3 className="text-base font-extrabold text-gray-900 dark:text-white">
+                  {selectedDesk ? `Desk ${selectedDesk.label}` : selectedRoom?.name}
+                </h3>
+              </div>
+              <button 
+                onClick={() => { setSelectedDesk(null); setSelectedRoom(null); }}
+                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-400 hover:text-gray-650 dark:hover:text-gray-300 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          ) : (
-            <Button variant="outline" className="w-full" onClick={() => setSelectedDesk(null)}>Close</Button>
-          )
-        }
-      >
-        {selectedDesk && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">{getDeskTypeLabel(selectedDesk.type)}</p>
+
+            {/* A. Selected Desk Specific Content */}
+            {selectedDesk && (
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Resource Type</p>
+                    <p className="text-sm font-semibold text-gray-750 dark:text-gray-205 mt-0.5">{getDeskTypeLabel(selectedDesk.type)}</p>
+                  </div>
+                  <StatusBadge status={isDeskAvailable ? 'available' : deskBooking ? 'occupied' : selectedDesk.status} />
+                </div>
+
                 {selectedDesk.zoneId && (
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Zone: {selectedFloor?.zones.find(z => z.id === selectedDesk.zoneId)?.name}
-                  </p>
+                  <div>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Location Zone</p>
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-1">
+                      {selectedFloor?.zones.find(z => z.id === selectedDesk.zoneId)?.name || 'General Zone'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Booking status block */}
+                {deskBooking ? (
+                  <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl p-3">
+                    <p className="text-xs font-bold text-red-800 dark:text-red-400 uppercase tracking-wider">Reserved Seat</p>
+                    <p className="text-xs font-semibold text-red-600 dark:text-red-300 mt-1">{deskBooking.startTime} – {deskBooking.endTime}</p>
+                    {isDeskMine && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-wider">This is your booking</p>}
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl p-3">
+                    <p className="text-xs font-bold text-emerald-800 dark:text-emerald-450 uppercase tracking-wider">Available Spot</p>
+                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Free to reserve for {selectedDate}</p>
+                  </div>
+                )}
+
+                {/* Desk Amenity Pills */}
+                {selectedDesk.amenities.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Amenities Included</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedDesk.amenities.map(a => (
+                        <span key={a} className="text-[10px] font-bold bg-gray-50 dark:bg-gray-900/60 border border-gray-150/40 dark:border-gray-800/60 text-gray-650 dark:text-gray-350 rounded-lg px-2.5 py-1">
+                          {getAmenityLabel(a)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
-              <StatusBadge status={isDeskAvailable ? 'available' : deskBooking ? 'occupied' : selectedDesk.status} />
-            </div>
-
-            {deskBooking && (
-              <div className="bg-red-50 border border-red-100 rounded-xl p-3">
-                <p className="text-sm font-medium text-red-800">Currently Booked</p>
-                <p className="text-xs text-red-600 mt-1">{deskBooking.startTime} – {deskBooking.endTime}</p>
-                {isDeskMine && <p className="text-xs text-red-700 font-medium mt-1">This is your booking</p>}
-              </div>
             )}
 
-            {selectedDesk.amenities.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-gray-600 mb-2">Amenities</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedDesk.amenities.map(a => (
-                    <span key={a} className="text-xs bg-gray-100 text-gray-700 rounded-lg px-2.5 py-1">
-                      {getAmenityLabel(a)}
-                    </span>
-                  ))}
+            {/* B. Selected Room Specific Content */}
+            {selectedRoom && (
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Room Category</p>
+                    <p className="text-sm font-semibold text-gray-750 dark:text-gray-205 mt-0.5">{getRoomTypeLabel(selectedRoom.type)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1 font-semibold"><Users className="w-3.5 h-3.5" /> Up to {selectedRoom.capacity} people</p>
+                  </div>
+                  <StatusBadge status={selectedRoom.status} />
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
 
-      {/* Room detail modal */}
-      <Modal
-        isOpen={!!selectedRoom}
-        onClose={() => setSelectedRoom(null)}
-        title={selectedRoom?.name || 'Room'}
-        size="sm"
-        footer={
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setSelectedRoom(null)}>Close</Button>
-            <Button onClick={() => {
-              setSelectedRoom(null);
-              setShowBooking(true);
-            }}>Book This Room</Button>
-          </div>
-        }
-      >
-        {selectedRoom && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">{getRoomTypeLabel(selectedRoom.type)}</p>
-                <p className="text-sm text-gray-700 flex items-center gap-1 mt-1"><Users className="w-4 h-4" /> Capacity: {selectedRoom.capacity}</p>
-              </div>
-              <StatusBadge status={selectedRoom.status} />
-            </div>
-            {selectedRoom.amenities.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-gray-600 mb-2">Amenities</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedRoom.amenities.map(a => (
-                    <span key={a} className="text-xs bg-gray-100 text-gray-700 rounded-lg px-2.5 py-1">{getAmenityLabel(a)}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {/* Today's schedule */}
-            <div>
-              <p className="text-xs font-medium text-gray-600 mb-2">Today's Schedule</p>
-              {bookings.filter(b => b.resourceId === selectedRoom.id && b.date === selectedDate && b.resourceType === 'room' && !['cancelled'].includes(b.status)).length === 0 ? (
-                <p className="text-sm text-green-600">Available all day</p>
-              ) : (
-                <div className="space-y-1">
-                  {bookings.filter(b => b.resourceId === selectedRoom.id && b.date === selectedDate && b.resourceType === 'room' && !['cancelled'].includes(b.status)).map(b => (
-                    <div key={b.id} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
-                      <span className="text-gray-700">{b.title || 'Booking'}</span>
-                      <span className="text-gray-500 text-xs">{b.startTime}–{b.endTime}</span>
+                {/* Room Amenity Pills */}
+                {selectedRoom.amenities.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Room Amenities</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedRoom.amenities.map(a => (
+                        <span key={a} className="text-[10px] font-bold bg-gray-50 dark:bg-gray-900/60 border border-gray-150/40 dark:border-gray-800/60 text-gray-655 dark:text-gray-350 rounded-lg px-2.5 py-1">
+                          {getAmenityLabel(a)}
+                        </span>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* Today's hourly schedule timeline */}
+                <div>
+                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2.5">Schedule Timeline</p>
+                  <div className="border border-gray-150 dark:border-gray-800/80 rounded-xl overflow-hidden divide-y divide-gray-150 dark:divide-gray-850 max-h-64 overflow-y-auto">
+                    {(() => {
+                      const hours = Array.from({ length: 11 }, (_, i) => {
+                        const h = 8 + i;
+                        return `${String(h).padStart(2, '0')}:00`;
+                      });
+                      const roomBookings = bookings.filter(b => 
+                        b.resourceId === selectedRoom.id && 
+                        b.date === selectedDate && 
+                        b.resourceType === 'room' && 
+                        !['cancelled'].includes(b.status)
+                      );
+
+                      return hours.map(hour => {
+                        const nextHour = `${String(parseInt(hour.split(':')[0]) + 1).padStart(2, '0')}:00`;
+                        const activeBooking = roomBookings.find(b => 
+                          b.startTime < nextHour && b.endTime > hour
+                        );
+
+                        return (
+                          <div key={hour} className="flex items-center gap-3 px-3 py-2 text-[10px]">
+                            <span className="font-bold text-gray-400 dark:text-gray-550 w-10 shrink-0">{hour}</span>
+                            {activeBooking ? (
+                              <div className="flex-1 bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-lg px-2 py-1 flex items-center justify-between text-red-750 dark:text-red-400 font-bold">
+                                <span className="truncate max-w-[80px]">{activeBooking.title || 'Reserved'}</span>
+                                <span className="text-[9px] opacity-75 shrink-0 tabular-nums">{activeBooking.startTime}–{activeBooking.endTime}</span>
+                              </div>
+                            ) : (
+                              <div className="flex-1 bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/30 rounded-lg px-2 py-1 flex items-center justify-between text-green-700 dark:text-green-450 font-bold">
+                                <span>Available</span>
+                                <span className="text-[9px] opacity-75 shrink-0">Free</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-        )}
-      </Modal>
+
+          {/* Footer Action Buttons */}
+          <div className="pt-4 border-t border-gray-100 dark:border-gray-850/80 shrink-0">
+            {selectedDesk && (
+              isDeskAvailable ? (
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1 rounded-xl font-bold" onClick={() => setSelectedDesk(null)}>Cancel</Button>
+                  <Button className="flex-1 rounded-xl font-bold" onClick={handleBookDesk} iconLeft={<CheckCircle className="w-4 h-4" />}>Book Seat</Button>
+                </div>
+              ) : (
+                <Button variant="outline" className="w-full rounded-xl font-bold" onClick={() => setSelectedDesk(null)}>Close</Button>
+              )
+            )}
+            {selectedRoom && (
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1 rounded-xl font-bold" onClick={() => setSelectedRoom(null)}>Cancel</Button>
+                <Button className="flex-1 rounded-xl font-bold" onClick={() => {
+                  setPrefillDeskId(''); // Prefill room booking workflow correctly
+                  setSelectedRoom(null);
+                  setShowBooking(true);
+                }}>Book Room</Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       <BookingWizard
         isOpen={showBooking}
@@ -239,6 +300,26 @@ export function FloorMapPage() {
         prefillFloorId={selectedFloorId}
         prefillDate={selectedDate}
       />
+    </div>
+  );
+}
+
+// Mini visual indicator stat card
+function MiniStatCard({ label, value, color, icon }: { label: string; value: string | number; color: 'blue' | 'green' | 'red' | 'purple' | 'gray'; icon: string }) {
+  const colorMap = {
+    blue: 'bg-white hover:border-blue-200 dark:hover:border-blue-900/40 text-blue-700 dark:text-blue-400 border-gray-200 dark:border-gray-800/80',
+    green: 'bg-white hover:border-emerald-200 dark:hover:border-emerald-900/40 text-green-700 dark:text-green-400 border-gray-200 dark:border-gray-800/80',
+    red: 'bg-white hover:border-red-200 dark:hover:border-red-900/40 text-red-700 dark:text-red-400 border-gray-200 dark:border-gray-800/80',
+    purple: 'bg-white hover:border-purple-200 dark:hover:border-purple-900/40 text-purple-700 dark:text-purple-400 border-gray-200 dark:border-gray-800/80',
+    gray: 'bg-white hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800/80',
+  };
+  return (
+    <div className={cn("border rounded-xl px-4 py-2.5 flex items-center justify-between shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 dark:bg-gray-950", colorMap[color])}>
+      <div className="space-y-0.5 min-w-0">
+        <div className="text-[9px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 truncate">{label}</div>
+        <div className="text-base font-extrabold tracking-tight text-gray-950 dark:text-white truncate">{value}</div>
+      </div>
+      <span className="text-lg filter drop-shadow-sm select-none opacity-90 shrink-0 ml-1">{icon}</span>
     </div>
   );
 }

@@ -129,6 +129,7 @@ export interface Building {
 
 export type BookingStatus = 'confirmed' | 'pending' | 'cancelled' | 'checked_in' | 'no_show' | 'completed';
 export type BookingResourceType = 'desk' | 'room' | 'parking' | 'locker';
+export type BookingDurationType = 'full_day' | 'half_day_am' | 'half_day_pm' | 'custom';
 
 export interface Booking {
   id: string;
@@ -141,6 +142,7 @@ export interface Booking {
   startTime: string;
   endTime: string;
   status: BookingStatus;
+  durationType?: BookingDurationType;
   title?: string;
   notes?: string;
   attendees?: string[];
@@ -151,6 +153,17 @@ export interface Booking {
   createdAt: string;
   updatedAt: string;
   cancelReason?: string;
+}
+
+export type AttendanceStatus = 'office' | 'remote' | 'off';
+
+export interface AttendancePlan {
+  id: string;
+  userId: string;
+  date: string;
+  status: AttendanceStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RecurringBooking {

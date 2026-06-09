@@ -1,16 +1,16 @@
-import { format, subDays } from 'date-fns';
-import { Users, Calendar, TrendingUp, AlertTriangle, CheckCircle, XCircle, BarChart2 } from 'lucide-react';
+import { format } from 'date-fns';
+import { Users, Calendar, TrendingUp, CheckCircle, Clock, MapPin, BarChart3, ShieldAlert } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { StatusBadge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
-import { formatDate, formatTimeAgo } from '../../lib/utils';
+import { formatDate } from '../../lib/utils';
 import { MOCK_DAILY_STATS, MOCK_FLOOR_OCCUPANCY } from '../../data/mockData';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { cn } from '../../lib/utils';
 
 export function AdminDashboard() {
-  const { bookings, users, desks, rooms, floors } = useAppStore();
+  const { bookings, users, desks, waitlist, floors, theme } = useAppStore();
   const today = format(new Date(), 'yyyy-MM-dd');
 
   const todayBookings = bookings.filter(b => b.date === today && b.status !== 'cancelled');
@@ -22,7 +22,9 @@ export function AdminDashboard() {
   const occupiedDesks = todayBookings.filter(b => b.resourceType === 'desk').length;
   const occupancyRate = totalDesks > 0 ? Math.round((occupiedDesks / totalDesks) * 100) : 0;
 
-  const recentBookings = [...bookings].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 8);
+  const recentBookings = [...bookings]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 6);
 
   const last7Days = MOCK_DAILY_STATS.slice(-7);
   const weeklyData = last7Days.map(d => ({
@@ -33,139 +35,312 @@ export function AdminDashboard() {
   }));
 
   const pieData = [
-    { name: 'Desks', value: todayBookings.filter(b => b.resourceType === 'desk').length, color: '#3b82f6' },
-    { name: 'Rooms', value: todayBookings.filter(b => b.resourceType === 'room').length, color: '#10b981' },
-    { name: 'Parking', value: todayBookings.filter(b => b.resourceType === 'parking').length, color: '#f59e0b' },
-    { name: 'Lockers', value: todayBookings.filter(b => b.resourceType === 'locker').length, color: '#8b5cf6' },
+    { name: 'Desks', value: todayBookings.filter(b => b.resourceType === 'desk').length, color: '#f04a16' }, // Brand Orange
+    { name: 'Rooms', value: todayBookings.filter(b => b.resourceType === 'room').length, color: '#8b5cf6' }, // Purple
+    { name: 'Parking', value: todayBookings.filter(b => b.resourceType === 'parking').length, color: '#3b82f6' }, // Blue
+    { name: 'Lockers', value: todayBookings.filter(b => b.resourceType === 'locker').length, color: '#10b981' }, // Emerald
   ].filter(d => d.value > 0);
 
+  // Dynamic colors depending on the active theme
+  const isDark = theme === 'dark';
+  const gridColor = isDark ? 'rgba(55, 65, 81, 0.4)' : '#f3f4f6';
+  const labelColor = isDark ? '#9ca3af' : '#6b7280';
+  const tooltipBg = isDark ? '#111827' : '#ffffff';
+  const tooltipBorder = isDark ? '#374151' : '#e5e7eb';
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-0.5">{formatDate(today)} overview</p>
+    <div className="space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
+      {/* Page Title Header */}
+      <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-800/80 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md p-6 shadow-sm">
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-amber-500/5 dark:from-brand-500/10 dark:to-amber-500/10" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 text-brand-500" />
+              Admin Portal
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Manage workplace occupancy limits, monitor resource consumption, and process queue check-ins.
+            </p>
+          </div>
+          <div className="text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-150/50 dark:bg-gray-900/60 px-3 py-1.5 rounded-xl border border-gray-200/20 dark:border-gray-800/30">
+            SYSTEM STATUS: <span className="text-emerald-500 font-extrabold animate-pulse">● ACTIVE</span> | {formatDate(today)}
+          </div>
+        </div>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Today\'s Bookings', value: todayBookings.length, sub: `of ${totalDesks} capacity`, icon: <Calendar className="w-5 h-5" />, color: 'text-blue-600 bg-blue-50' },
-          { label: 'Active Users', value: activeUsers, sub: `${users.length} total users`, icon: <Users className="w-5 h-5" />, color: 'text-green-600 bg-green-50' },
-          { label: 'Occupancy Rate', value: `${occupancyRate}%`, sub: `${occupiedDesks} of ${totalDesks} desks`, icon: <TrendingUp className="w-5 h-5" />, color: 'text-brand-600 bg-brand-50' },
-          { label: 'Check-ins Today', value: checkedIn, sub: `${noShows} no-shows`, icon: <CheckCircle className="w-5 h-5" />, color: 'text-purple-600 bg-purple-50' },
+          { 
+            label: 'Today\'s Bookings', 
+            value: todayBookings.length, 
+            sub: `of ${totalDesks} seat capacity`, 
+            icon: <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />, 
+            color: 'bg-blue-50 dark:bg-blue-950/30 border-blue-100/50 dark:border-blue-900/30' 
+          },
+          { 
+            label: 'Active Users', 
+            value: activeUsers, 
+            sub: `${users.length} registered members`, 
+            icon: <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />, 
+            color: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100/50 dark:border-emerald-900/30' 
+          },
+          { 
+            label: 'Occupancy Rate', 
+            value: `${occupancyRate}%`, 
+            sub: `${occupiedDesks} of ${totalDesks} desks occupied`, 
+            icon: <TrendingUp className="w-5 h-5 text-brand-500 dark:text-brand-400" />, 
+            color: 'bg-brand-50 dark:bg-brand-950/30 border-brand-100/50 dark:border-brand-900/30 shadow-[0_0_15px_rgba(240,74,22,0.02)]' 
+          },
+          { 
+            label: 'Check-ins Today', 
+            value: checkedIn, 
+            sub: `${noShows} marked no-shows`, 
+            icon: <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />, 
+            color: 'bg-purple-50 dark:bg-purple-950/30 border-purple-100/50 dark:border-purple-900/30' 
+          },
         ].map(({ label, value, sub, icon, color }) => (
-          <Card key={label}>
-            <div className="flex items-start justify-between">
+          <Card key={label} className={cn('bg-white dark:bg-gray-950 border-gray-200/60 dark:border-gray-800/80 shadow-sm hover:shadow-md transition-all hover:scale-[1.01] duration-300', color)}>
+            <div className="flex items-start justify-between p-1">
               <div>
-                <p className="text-xs text-gray-500 mb-1">{label}</p>
-                <p className="text-2xl font-bold text-gray-900">{value}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+                <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">{label}</p>
+                <p className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{value}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 font-medium">{sub}</p>
               </div>
-              <div className={cn('p-2.5 rounded-xl', color)}>{icon}</div>
+              <div className="p-2.5 rounded-xl bg-white dark:bg-gray-900 shadow-sm border border-gray-150/40 dark:border-gray-800/40">{icon}</div>
             </div>
           </Card>
         ))}
       </div>
 
+      {/* Analytics Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Weekly booking chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Bookings This Week</CardTitle>
-              <div className="flex gap-3 text-xs text-gray-500">
-                <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500" /> Desks</span>
-                <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500" /> Rooms</span>
-              </div>
+        <Card className="lg:col-span-2 bg-white dark:bg-gray-950 border-gray-200/60 dark:border-gray-800/80 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 dark:border-gray-900 pb-4">
+            <div>
+              <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">Bookings This Week</CardTitle>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Distribution of spaces booked over the last 7 days</p>
+            </div>
+            <div className="flex gap-3 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/40 p-1.5 rounded-lg border border-gray-200/10 dark:border-gray-700/10">
+              <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-brand-500" /> Desks</span>
+              <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-purple-500" /> Rooms</span>
             </div>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={weeklyData} barSize={16} barGap={4}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-                <Bar dataKey="desks" fill="#3b82f6" radius={[4,4,0,0]} />
-                <Bar dataKey="rooms" fill="#10b981" radius={[4,4,0,0]} />
+          <CardContent className="pt-6">
+            <ResponsiveContainer width="100%" height={230}>
+              <BarChart data={weeklyData} barSize={14} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                <XAxis dataKey="day" stroke={labelColor} tick={{ fontSize: 11, fontWeight: 500 }} />
+                <YAxis stroke={labelColor} tick={{ fontSize: 11, fontWeight: 500 }} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: tooltipBg,
+                    border: `1px solid ${tooltipBorder}`,
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
+                  }} 
+                />
+                <Bar dataKey="desks" fill="#f04a16" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="rooms" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
         {/* Breakdown pie */}
-        <Card>
-          <CardHeader><CardTitle>Today's Breakdown</CardTitle></CardHeader>
-          <CardContent>
+        <Card className="bg-white dark:bg-gray-950 border-gray-200/60 dark:border-gray-800/80 shadow-sm">
+          <CardHeader className="border-b border-gray-100 dark:border-gray-900 pb-4">
+            <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">Today's Space Distribution</CardTitle>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Ratio of workplace asset types booked</p>
+          </CardHeader>
+          <CardContent className="pt-6">
             {pieData.length > 0 ? (
-              <>
-                <ResponsiveContainer width="100%" height={150}>
-                  <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={60} dataKey="value">
-                      {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                    </Pie>
-                    <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="space-y-2 mt-2">
+              <div className="flex flex-col items-center justify-center">
+                <div className="relative w-full h-[140px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie 
+                        data={pieData} 
+                        cx="50%" 
+                        cy="50%" 
+                        innerRadius={45} 
+                        outerRadius={60} 
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, i) => (
+                          <Cell key={i} fill={entry.color} className="stroke-white dark:stroke-gray-950 stroke-2" />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: tooltipBg,
+                          border: `1px solid ${tooltipBorder}`,
+                          borderRadius: '8px',
+                          fontSize: '11px'
+                        }} 
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-2xl font-black text-gray-850 dark:text-white leading-none">
+                      {todayBookings.length}
+                    </span>
+                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                      Total
+                    </span>
+                  </div>
+                </div>
+                <div className="w-full grid grid-cols-2 gap-2 mt-4">
                   {pieData.map(d => (
-                    <div key={d.name} className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} /> {d.name}</span>
-                      <span className="font-semibold">{d.value}</span>
+                    <div key={d.name} className="flex items-center justify-between text-xs bg-gray-50 dark:bg-gray-900/30 p-1.5 rounded-lg border border-gray-150/10">
+                      <span className="flex items-center gap-1.5 min-w-0 text-gray-500 dark:text-gray-400">
+                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                        <span className="truncate">{d.name}</span>
+                      </span>
+                      <span className="font-extrabold text-gray-800 dark:text-gray-250 shrink-0">{d.value}</span>
                     </div>
                   ))}
                 </div>
-              </>
+              </div>
             ) : (
-              <p className="text-center text-gray-400 text-sm py-8">No bookings today</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <ShieldAlert className="w-8 h-8 text-gray-300 dark:text-gray-700 mb-2" />
+                <p className="text-gray-400 text-xs font-semibold">No bookings recorded for today</p>
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Management Row (Floor Occupancy, Recent Bookings, Waitlist Log) */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Floor occupancy */}
-        <Card>
-          <CardHeader><CardTitle>Floor Occupancy</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            {MOCK_FLOOR_OCCUPANCY.map(f => (
-              <div key={f.floorId}>
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span className="font-medium text-gray-700">{f.floorName}</span>
-                  <span className="text-xs text-gray-500">{f.occupancyRate}% · Peak {f.peakTime}</span>
-                </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={cn('h-full rounded-full', f.occupancyRate > 80 ? 'bg-red-400' : f.occupancyRate > 60 ? 'bg-yellow-400' : 'bg-green-400')}
-                    style={{ width: `${f.occupancyRate}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-gray-400 mt-0.5">
-                  <span>{f.deskCount} desks</span>
-                  <span>{Math.round(f.deskCount * f.occupancyRate / 100)} occupied</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Recent bookings */}
-        <Card>
-          <CardHeader><CardTitle>Recent Bookings</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {recentBookings.map(b => {
-              const user = users.find(u => u.id === b.userId);
+        <Card className="bg-white dark:bg-gray-950 border-gray-200/60 dark:border-gray-800/80 shadow-sm">
+          <CardHeader className="border-b border-gray-100 dark:border-gray-900 pb-3">
+            <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+              <MapPin className="w-4.5 h-4.5 text-brand-500" />
+              Floor Occupancy
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-gray-100 dark:divide-gray-900/40">
+            {MOCK_FLOOR_OCCUPANCY.map(f => {
+              const activeFloor = floors.find(fl => fl.id === f.floorId);
               return (
-                <div key={b.id} className="flex items-center gap-2 py-1.5">
-                  {user && <Avatar name={user.name} size="xs" />}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{user?.name || 'Unknown'}</p>
-                    <p className="text-xs text-gray-400">{b.resourceType} · {formatDate(b.date)}</p>
+                <div key={f.floorId} className="py-3 first:pt-1.5 last:pb-1.5">
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="font-semibold text-gray-800 dark:text-gray-200">{activeFloor?.name || f.floorName}</span>
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-900 px-1.5 py-0.5 rounded">
+                      Peak: {f.peakTime}
+                    </span>
                   </div>
-                  <StatusBadge status={b.status} />
+                  <div className="relative h-2 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-all duration-500', 
+                        f.occupancyRate > 80 
+                          ? 'bg-gradient-to-r from-red-500 to-rose-600' 
+                          : f.occupancyRate > 60 
+                            ? 'bg-gradient-to-r from-amber-400 to-amber-500' 
+                            : 'bg-gradient-to-r from-emerald-400 to-emerald-500'
+                      )}
+                      style={{ width: `${f.occupancyRate}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] font-semibold text-gray-400 dark:text-gray-500 mt-1.5">
+                    <span>{f.deskCount} desks configured</span>
+                    <span>{f.occupancyRate}% utilization</span>
+                  </div>
                 </div>
               );
             })}
+          </CardContent>
+        </Card>
+
+        {/* Recent Bookings Activity */}
+        <Card className="bg-white dark:bg-gray-950 border-gray-200/60 dark:border-gray-800/80 shadow-sm">
+          <CardHeader className="border-b border-gray-100 dark:border-gray-900 pb-3">
+            <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+              <Calendar className="w-4.5 h-4.5 text-blue-500" />
+              Recent Booking Activities
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-gray-100 dark:divide-gray-900/40">
+            {recentBookings.map(b => {
+              const user = users.find(u => u.id === b.userId);
+              return (
+                <div key={b.id} className="flex items-center justify-between py-3.5 first:pt-1.5 last:pb-1.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {user && <Avatar name={user.name} size="xs" />}
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-gray-950 dark:text-gray-250 truncate">{user?.name || 'Unknown User'}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate mt-0.5">
+                        {b.resourceType.toUpperCase()} • {b.resourceId.split('-').pop()} • {format(new Date(b.date), 'MMM d')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <StatusBadge status={b.status} />
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        {/* Waitlist Queue Logs */}
+        <Card className="bg-white dark:bg-gray-950 border-gray-200/60 dark:border-gray-800/80 shadow-sm">
+          <CardHeader className="border-b border-gray-100 dark:border-gray-900 pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+              <Clock className="w-4.5 h-4.5 text-amber-500" />
+              Waitlist Queue
+            </CardTitle>
+            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40">
+              {waitlist.length} WAITING
+            </span>
+          </CardHeader>
+          <CardContent className="divide-y divide-gray-100 dark:divide-gray-900/40">
+            {waitlist.length > 0 ? (
+              waitlist.map((entry) => {
+                const user = users.find(u => u.id === entry.userId);
+                const floor = floors.find(f => f.id === entry.floorId);
+                return (
+                  <div key={entry.id} className="flex items-center justify-between py-3.5 first:pt-1.5 last:pb-1.5">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {user && <Avatar name={user.name} size="xs" />}
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-gray-950 dark:text-gray-250 truncate">{user?.name || 'Unknown User'}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate mt-0.5">
+                          {entry.resourceType.toUpperCase()} • {floor?.name || entry.floorId} • {format(new Date(entry.date), 'MMM d')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-900 px-1 py-0.5 rounded">
+                        #{entry.position}
+                      </span>
+                      {entry.notified ? (
+                        <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-100 dark:border-emerald-900/30">
+                          Notified
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-100 dark:border-amber-900/30">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Clock className="w-8 h-8 text-gray-300 dark:text-gray-700 mb-2" />
+                <p className="text-gray-400 text-xs font-semibold">Queue is currently empty</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
