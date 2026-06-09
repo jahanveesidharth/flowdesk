@@ -8,9 +8,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    // When Supabase isn't configured, always allow (demo mode)
+    // When Supabase isn't configured, check local demo session
     if (!isSupabaseConfigured()) {
-      setAuthed(true);
+      const isDemoLoggedIn = localStorage.getItem('flowdesk_demo_logged_in') === 'true';
+      setAuthed(isDemoLoggedIn);
       setChecking(false);
       return;
     }

@@ -170,7 +170,9 @@ export function Sidebar() {
                   toast.success('Logged out successfully');
                 }
               } else {
+                localStorage.removeItem('flowdesk_demo_logged_in');
                 toast.success('Logged out (Demo Mode)');
+                window.location.href = '/login';
               }
             }}
             className={cn(

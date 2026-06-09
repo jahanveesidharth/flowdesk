@@ -21,6 +21,7 @@ export function AuthPage() {
   const notConfigured = !isSupabaseConfigured();
 
   const handleDemoLogin = () => {
+    localStorage.setItem('flowdesk_demo_logged_in', 'true');
     toast.success('Demo mode — using mock data');
     navigate('/dashboard');
   };
