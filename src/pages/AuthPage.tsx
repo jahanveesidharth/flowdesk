@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
+import { Building2, Mail, Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -20,15 +20,60 @@ export function AuthPage() {
 
   const notConfigured = !isSupabaseConfigured();
 
-  const handleDemoLogin = () => {
+  const handleDemoLogin = async () => {
+    if (!notConfigured) {
+      setLoading(true);
+      try {
+        const response = await fetch('/api/demo-login', { method: 'POST' });
+        const responseText = await response.text();
+        const data = responseText ? safeParseDemoLoginResponse(responseText) : {};
+
+        if (!response.ok) throw new Error(data.error || 'Demo login endpoint is not available');
+        if (!data?.access_token || !data?.refresh_token) {
+          throw new Error(data.error || 'Demo login did not return a valid session');
+        }
+
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+        });
+        if (sessionError) throw sessionError;
+
+        toast.success('Signed in with demo account');
+        navigate('/dashboard');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Demo login failed';
+        toast.error(message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     localStorage.setItem('flowdesk_demo_logged_in', 'true');
     toast.success('Demo mode — using mock data');
     navigate('/dashboard');
   };
 
+  const safeParseDemoLoginResponse = (text: string): {
+    access_token?: string;
+    refresh_token?: string;
+    error?: string;
+  } => {
+    try {
+      return JSON.parse(text) as {
+          access_token?: string;
+          refresh_token?: string;
+          error?: string;
+      };
+    } catch {
+      return { error: 'Demo login endpoint did not return JSON. Redeploy the latest Vercel code.' };
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (notConfigured) { handleDemoLogin(); return; }
+    if (notConfigured) { await handleDemoLogin(); return; }
     setLoading(true);
 
     try {
@@ -219,7 +264,18 @@ export function AuthPage() {
                 <Button
                   variant="outline"
                   className="w-full"
+                  loading={loading}
+                  iconLeft={<User className="w-4 h-4" />}
+                  type="button"
+                  onClick={handleDemoLogin}
+                >
+                  Try demo
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full mt-3"
                   iconLeft={<Mail className="w-4 h-4" />}
+                  type="button"
                   onClick={() => setMode('magic_link')}
                 >
                   Continue with magic link
