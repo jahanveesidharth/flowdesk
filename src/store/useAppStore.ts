@@ -178,6 +178,7 @@ interface AppState {
   currentUser: User;
   isAdminMode: boolean;
   switchRole: () => void;
+  updateProfile: (updates: Partial<User>) => Promise<void>;
   users: User[];
 
   // Resources
@@ -286,6 +287,40 @@ export const useAppStore = create<AppState>()(
           currentUser: nextAdminMode ? ADMIN_USER : CURRENT_USER,
         };
       }),
+
+      updateProfile: async (updates) => {
+        const { currentUser } = get();
+        if (isSupabaseConfigured() && isValidUuid(currentUser.id)) {
+          try {
+            const payload: Record<string, any> = {};
+            if (updates.name !== undefined) payload.name = updates.name;
+            if (updates.email !== undefined) payload.email = updates.email;
+            if (updates.department !== undefined) payload.department = updates.department;
+            if (updates.preferences !== undefined) {
+              payload.preferences = { ...currentUser.preferences, ...updates.preferences };
+            }
+
+            const { error } = await db.from('profiles')
+              .update(payload)
+              .eq('id', currentUser.id);
+            if (error) throw error;
+          } catch (err: any) {
+            console.error('Update profile in Supabase failed:', err);
+            toast.error(`Error saving profile: ${err.message || err}`);
+          }
+        }
+        set(s => {
+          const nextUser = {
+            ...s.currentUser,
+            ...updates,
+            preferences: updates.preferences 
+              ? { ...s.currentUser.preferences, ...updates.preferences }
+              : s.currentUser.preferences
+          };
+          const nextUsers = s.users.map(u => u.id === currentUser.id ? nextUser : u);
+          return { currentUser: nextUser, users: nextUsers };
+        });
+      },
 
       setSelectedFloor: (floorId) => set({ selectedFloorId: floorId }),
       setSelectedDate: (date) => set({ selectedDate: date }),

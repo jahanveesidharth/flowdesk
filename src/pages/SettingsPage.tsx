@@ -9,7 +9,7 @@ import { Avatar } from '../components/ui/Avatar';
 import toast from 'react-hot-toast';
 
 export function SettingsPage() {
-  const { currentUser, switchRole, isAdminMode, floors } = useAppStore();
+  const { currentUser, switchRole, isAdminMode, floors, updateProfile } = useAppStore();
   const [tab, setTab] = useState('profile');
   const [name, setName] = useState(currentUser.name);
   const [email, setEmail] = useState(currentUser.email);
@@ -18,8 +18,25 @@ export function SettingsPage() {
   const [emailReminders, setEmailReminders] = useState(currentUser.preferences.emailReminders);
   const [reminderMins, setReminderMins] = useState(String(currentUser.preferences.reminderMinutes));
 
-  const handleSave = () => {
-    toast.success('Settings saved!');
+  const handleSave = async () => {
+    try {
+      await updateProfile({
+        name,
+        email,
+        department,
+        preferences: {
+          notificationsEnabled: notifs,
+          emailReminders: emailReminders,
+          reminderMinutes: parseInt(reminderMins, 10),
+          theme: currentUser.preferences.theme,
+          weekStartsOn: currentUser.preferences.weekStartsOn,
+        }
+      });
+      toast.success('Settings saved!');
+    } catch (err) {
+      // toast.error is already handled inside updateProfile, but just in case
+      console.error(err);
+    }
   };
 
   return (

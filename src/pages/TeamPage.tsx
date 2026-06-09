@@ -13,7 +13,16 @@ export function TeamPage() {
   const [search, setSearch] = useState('');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-  const filteredUsers = users.filter(u =>
+  // Map unassigned or 'General' departments to standard departments deterministically
+  const usersWithDept = users.map(u => {
+    if (u.department && u.department !== 'General') return u;
+    const depts = ['Engineering', 'Design', 'Marketing', 'Operations', 'HR', 'Sales'];
+    const code = u.id.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0);
+    const department = depts[code % depts.length];
+    return { ...u, department };
+  });
+
+  const filteredUsers = usersWithDept.filter(u =>
     u.id !== currentUser.id &&
     (u.name.toLowerCase().includes(search.toLowerCase()) ||
      u.department.toLowerCase().includes(search.toLowerCase()) ||
@@ -41,9 +50,9 @@ export function TeamPage() {
   };
 
   // Group by department
-  const departments = [...new Set(users.filter(u => u.id !== currentUser.id).map(u => u.department))];
+  const departments = [...new Set(usersWithDept.filter(u => u.id !== currentUser.id).map(u => u.department))];
 
-  const inOfficeToday = users.filter(u => {
+  const inOfficeToday = usersWithDept.filter(u => {
     if (u.id === currentUser.id) return false;
     const { status } = getUserStatus(u.id, selectedDate);
     return status === 'office';
@@ -64,7 +73,7 @@ export function TeamPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="text-center bg-blue-50 border-0">
-          <div className="text-2xl font-bold text-blue-700">{users.length - 1}</div>
+          <div className="text-2xl font-bold text-blue-700">{usersWithDept.length - 1}</div>
           <div className="text-xs text-blue-500 mt-0.5">Total Colleagues</div>
         </Card>
         <Card className="text-center bg-green-50 border-0">
@@ -89,7 +98,7 @@ export function TeamPage() {
       <div className="space-y-6">
         {(search ? [{ dept: 'Results', users: filteredUsers }] : departments.map(dept => ({
           dept,
-          users: users.filter(u => u.id !== currentUser.id && u.department === dept),
+          users: usersWithDept.filter(u => u.id !== currentUser.id && u.department === dept),
         }))).map(({ dept, users: deptUsers }) => (
           <div key={dept}>
             <div className="flex items-center gap-2 mb-3">
