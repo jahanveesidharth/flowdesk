@@ -16,6 +16,14 @@ body {
   color: #111827;
 }
 
+input[type="date"] {
+  color-scheme: light;
+}
+
+.dark input[type="date"] {
+  color-scheme: dark;
+}
+
 #root {
   min-height: 100vh;
 }

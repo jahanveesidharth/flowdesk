@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Select, Input, Textarea } from '../ui/Input';
@@ -42,6 +42,16 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
   const [recurringPattern, setRecurringPattern] = useState('weekly');
   const [loading, setLoading] = useState(false);
   const [complete, setComplete] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setDate(prefillDate || selectedDate);
+    setSelectedFloorId(prefillFloorId || storeFloorId || (floors[0]?.id) || 'f1');
+    setSelectedResourceId(prefillDeskId || '');
+    setStep('type');
+    setComplete(false);
+  }, [isOpen, prefillDate, prefillDeskId, prefillFloorId, selectedDate, storeFloorId, floors]);
 
   const selectedFloor = floors.find(f => f.id === selectedFloorId) || floors[0];
 
@@ -123,7 +133,7 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
           </div>
           <div>
             <h3 className="text-lg font-extrabold text-gray-900 dark:text-white mb-1">Booking Confirmed!</h3>
-            <p className="text-xs text-gray-400 max-w-[240px] mx-auto leading-relaxed">
+            <p className="text-xs text-gray-400 dark:text-gray-500 max-w-[240px] mx-auto leading-relaxed">
               Your {resourceType} reservation has been successfully registered.
             </p>
           </div>
@@ -247,8 +257,8 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
         {step === 'type' && (
           <div className="space-y-5">
             <div>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Choose Category</p>
-              <p className="text-xs text-gray-500 mt-1">Select the type of workspace resource you need for the day.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Choose Category</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Select the type of workspace resource you need for the day.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3.5">
@@ -266,19 +276,19 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                     'flex flex-col items-start gap-3 p-4 rounded-2xl border transition-all text-left group',
                     resourceType === type 
                       ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-750 dark:text-brand-400' 
-                      : 'border-gray-200 dark:border-gray-800/80 hover:border-gray-300 dark:hover:border-gray-700 text-gray-650 hover:bg-gray-50/20 dark:hover:bg-gray-900/20',
+                      : 'border-gray-200 dark:border-gray-800/80 hover:border-gray-300 dark:hover:border-gray-700 text-gray-650 dark:text-gray-200 hover:bg-gray-50/20 dark:hover:bg-gray-900/60',
                   )}
                 >
                   <div className={cn('p-2.5 rounded-xl border transition-colors shrink-0', 
                     resourceType === type 
-                      ? 'bg-white dark:bg-gray-900 border-brand-200 dark:border-brand-900/40 text-brand-500' 
-                      : 'bg-gray-50 dark:bg-gray-900/50 border-gray-150/40 dark:border-gray-800/60 text-gray-450 dark:text-gray-550 group-hover:text-gray-600'
+                      ? 'bg-white dark:bg-gray-900 border-brand-200 dark:border-brand-900/40 text-brand-500 dark:text-brand-400' 
+                      : 'bg-gray-50 dark:bg-gray-900/70 border-gray-150/40 dark:border-gray-700/70 text-gray-450 dark:text-gray-300 group-hover:text-gray-600 dark:group-hover:text-gray-100'
                   )}>
                     {icon}
                   </div>
                   <div>
                     <div className="font-bold text-xs">{label}</div>
-                    <div className="text-[10px] text-gray-400 dark:text-gray-550 mt-1">{desc}</div>
+                    <div className="text-[10px] text-gray-400 dark:text-gray-400 mt-1">{desc}</div>
                   </div>
                 </button>
               ))}
@@ -312,7 +322,7 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
               <>
                 <div className="flex items-center gap-1">
                   <Zap className="w-3.5 h-3.5 text-brand-500 animate-pulse" />
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Click on a desk on the grid map</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Click on a desk on the grid map</p>
                 </div>
                 <div className="h-[420px] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden relative">
                   <FloorMap
@@ -329,7 +339,7 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
             {/* B. List view selectors for Rooms */}
             {resourceType === 'room' && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Select Available Room</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Select Available Room</p>
                 <div className="grid grid-cols-1 gap-3 max-h-[360px] overflow-y-auto pr-1">
                   {rooms.filter(r => r.floorId === selectedFloorId && r.isActive).map(room => (
                     <button
@@ -345,7 +355,7 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                     >
                       <div className="min-w-0">
                         <div className="font-bold text-xs text-gray-950 dark:text-white truncate">{room.name}</div>
-                        <div className="text-[10px] text-gray-400 mt-1 font-semibold">{getRoomTypeLabel(room.type)} · Up to {room.capacity} people</div>
+                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 font-semibold">{getRoomTypeLabel(room.type)} · Up to {room.capacity} people</div>
                         <div className="flex gap-1 mt-1.5 flex-wrap">
                           {room.amenities.map(a => (
                             <span key={a} className="text-[9px] font-bold bg-gray-50 dark:bg-gray-900 border border-gray-200/50 dark:border-gray-800/60 rounded px-1.5 py-0.5 text-gray-500 dark:text-gray-400">{a.replace('_', ' ')}</span>
@@ -364,7 +374,7 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
             {/* C. Grid cells for Parking Spaces */}
             {resourceType === 'parking' && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Select Parking Slot</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Select Parking Slot</p>
                 <div className="grid grid-cols-3 gap-2.5 max-h-[360px] overflow-y-auto pr-1">
                   {parkingSpaces.filter(p => p.floorId === selectedFloorId && p.isActive).map(p => (
                     <button
@@ -378,11 +388,11 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                           ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-400 shadow-sm' 
                           : '',
                         p.status === 'available' 
-                          ? 'border-gray-200 dark:border-gray-800 hover:border-brand-400 cursor-pointer hover:bg-gray-50/30' 
+                          ? 'border-gray-200 dark:border-gray-800 hover:border-brand-400 cursor-pointer hover:bg-gray-50/30 dark:hover:bg-gray-900/60' 
                           : 'border-gray-100 dark:border-gray-900 opacity-40 cursor-not-allowed',
                       )}
                     >
-                      <Car className="w-5 h-5 mx-auto mb-1 text-gray-500" />
+                      <Car className="w-5 h-5 mx-auto mb-1 text-gray-500 dark:text-gray-400" />
                       <div className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">{p.label}</div>
                       <div className="text-[9px] text-gray-450 dark:text-gray-500 capitalize truncate mt-0.5">{p.type.replace('_', ' ')}</div>
                     </button>
@@ -394,7 +404,7 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
             {/* D. Grid cells for Storage Lockers */}
             {resourceType === 'locker' && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Select Storage Locker</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Select Storage Locker</p>
                 <div className="grid grid-cols-4 gap-2.5 max-h-[360px] overflow-y-auto pr-1">
                   {lockers.filter(l => l.floorId === selectedFloorId && l.isActive).map(l => (
                     <button
@@ -408,11 +418,11 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                           ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-400 shadow-sm' 
                           : '',
                         l.status === 'available' 
-                          ? 'border-gray-200 dark:border-gray-800 hover:border-brand-400 cursor-pointer hover:bg-gray-50/30' 
+                          ? 'border-gray-200 dark:border-gray-800 hover:border-brand-400 cursor-pointer hover:bg-gray-50/30 dark:hover:bg-gray-900/60' 
                           : 'border-gray-100 dark:border-gray-900 opacity-40 cursor-not-allowed',
                       )}
                     >
-                      <Lock className="w-5 h-5 mx-auto mb-1 text-gray-500" />
+                      <Lock className="w-5 h-5 mx-auto mb-1 text-gray-500 dark:text-gray-400" />
                       <div className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">{l.label}</div>
                       <div className="text-[9px] text-gray-450 dark:text-gray-500 capitalize truncate mt-0.5">{l.size} Size</div>
                     </button>
@@ -427,8 +437,8 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
         {step === 'time' && (
           <div className="space-y-5">
             <div>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Configure Schedule</p>
-              <p className="text-xs text-gray-500 mt-1">Set the booking timeframe parameters and recurrence schedule.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Configure Schedule</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Set the booking timeframe parameters and recurrence schedule.</p>
             </div>
             
             <div className="space-y-2.5">
@@ -514,8 +524,8 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
         {step === 'confirm' && resource && (
           <div className="space-y-5">
             <div>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Review Booking Details</p>
-              <p className="text-xs text-gray-500 mt-1">Please confirm that your reservation schedule and seat selection are correct.</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Review Booking Details</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Please confirm that your reservation schedule and seat selection are correct.</p>
             </div>
 
             <div className="bg-gray-50 dark:bg-gray-900 border border-gray-150/40 dark:border-gray-800/60 rounded-2xl p-4.5 space-y-4 shadow-sm">

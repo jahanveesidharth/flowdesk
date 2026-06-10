@@ -10,6 +10,9 @@ import toast from 'react-hot-toast';
 
 type AuthMode = 'login' | 'signup' | 'magic_link' | 'forgot';
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PASSWORD_PATTERN = /^(?=.*\d).{8,}$/;
+
 export function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>('login');
@@ -32,13 +35,25 @@ export function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedEmail = email.trim();
+
+    if (!EMAIL_PATTERN.test(trimmedEmail)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+
+    if (mode === 'signup' && !PASSWORD_PATTERN.test(password)) {
+      toast.error('Password must be at least 8 characters and include a number.');
+      return;
+    }
+
     if (notConfigured) { handleDemoLogin(); return; }
     setLoading(true);
 
     try {
       if (mode === 'magic_link') {
         const { error } = await supabase.auth.signInWithOtp({
-          email,
+          email: trimmedEmail,
           options: { emailRedirectTo: `${window.location.origin}/dashboard` },
         });
         if (error) throw error;
@@ -46,17 +61,17 @@ export function AuthPage() {
         toast.success('Magic link sent! Check your inbox.');
       } else if (mode === 'signup') {
         const { error } = await supabase.auth.signUp({
-          email, password,
+          email: trimmedEmail, password,
           options: { data: { name } },
         });
         if (error) throw error;
         toast.success('Account created! Check your email to confirm.');
       } else if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password });
         if (error) throw error;
         navigate('/dashboard');
       } else if (mode === 'forgot') {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
@@ -194,7 +209,9 @@ export function AuthPage() {
                     </button>
                   }
                   required
-                  minLength={6}
+                  minLength={mode === 'signup' ? 8 : 6}
+                  pattern={mode === 'signup' ? PASSWORD_PATTERN.source : undefined}
+                  title={mode === 'signup' ? 'Password must be at least 8 characters and include a number.' : undefined}
                 />
               )}
 

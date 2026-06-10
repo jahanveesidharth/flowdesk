@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Building2, Map, Calendar, Users, BarChart3, CheckCircle, ArrowRight, Star, Zap } from 'lucide-react';
+import { Building2, Map, Calendar, Users, BarChart3, CheckCircle, ArrowRight, Zap } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 const FEATURES = [
@@ -35,6 +35,12 @@ const FAQS = [
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const previewDate = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date());
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -87,7 +93,7 @@ export function LandingPage() {
             </div>
             <div className="col-span-3 p-6">
               <h2 className="text-lg font-bold text-gray-900">Good morning, Lisa</h2>
-              <p className="text-xs text-gray-400 mb-4">Tuesday, April 14, 2026</p>
+              <p className="text-xs text-gray-400 mb-4">{previewDate}</p>
               <div className="flex gap-4 mb-4 text-xs text-gray-500">
                 <span>🪑 24 desks</span>
                 <span>🚗 8 parking</span>
@@ -98,7 +104,7 @@ export function LandingPage() {
                   <p className="text-xs font-medium text-gray-500">Today's booking</p>
                   <p className="text-base font-bold text-gray-900 mt-1">D-01</p>
                   <p className="text-xs text-gray-400">Ground floor · 09:00–17:00</p>
-                  <button className="mt-2 bg-brand-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium">Check In</button>
+                  <span className="inline-block mt-2 bg-brand-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium">Check In</span>
                 </div>
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-gray-700">Quick actions</p>

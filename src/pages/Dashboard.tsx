@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 import { 
-  Calendar, Clock, MapPin, Users, ArrowRight, Plus, 
-  Bell, Sun, CloudSun, Compass, ShieldAlert, Sparkles,
+  Calendar, ArrowRight, Plus, 
+  Bell, CloudSun, Compass, Sparkles,
   ChevronRight, Laptop, UserCheck, AlertCircle
 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge, StatusBadge } from '../components/ui/Badge';
+import { Badge } from '../components/ui/Badge';
 import { Avatar } from '../components/ui/Avatar';
 import { BookingCard } from '../components/booking/BookingCard';
 import { BookingWizard } from '../components/booking/BookingWizard';
@@ -17,17 +17,76 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { DEMO_CREDENTIALS, isDemoMode } from '../lib/demoMode';
 
+type WeatherStatus = {
+  label: string;
+  tempC?: number;
+  loading: boolean;
+};
+
 export function Dashboard() {
   const { currentUser, bookings, notifications, users, floors, desks } = useAppStore();
   const navigate = useNavigate();
   const [showBooking, setShowBooking] = useState(false);
   const [time, setTime] = useState(new Date());
+  const [weather, setWeather] = useState<WeatherStatus>(() => (
+    typeof navigator !== 'undefined' && 'geolocation' in navigator
+      ? { label: 'Detecting location', loading: true }
+      : { label: 'Weather unavailable', loading: false }
+  ));
   const demoMode = isDemoMode();
 
   // Real-time Clock
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!('geolocation' in navigator)) {
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    const watchId = navigator.geolocation.watchPosition(
+      async position => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const params = new URLSearchParams({
+            latitude: latitude.toFixed(4),
+            longitude: longitude.toFixed(4),
+            current: 'temperature_2m',
+            timezone: 'auto',
+          });
+          const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, {
+            signal: controller.signal,
+          });
+          if (!response.ok) throw new Error('Weather request failed');
+
+          const data = await response.json() as { current?: { temperature_2m?: number } };
+          const temp = data.current?.temperature_2m;
+
+          if (!cancelled && typeof temp === 'number') {
+            setWeather({ label: 'Current location', tempC: Math.round(temp), loading: false });
+          } else if (!cancelled) {
+            setWeather({ label: 'Weather unavailable', loading: false });
+          }
+        } catch {
+          if (!cancelled) setWeather({ label: 'Weather unavailable', loading: false });
+        }
+      },
+      () => {
+        if (!cancelled) setWeather({ label: 'Location not shared', loading: false });
+      },
+      { enableHighAccuracy: false, maximumAge: 10 * 60 * 1000, timeout: 8000 },
+    );
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+      navigator.geolocation.clearWatch(watchId);
+    };
   }, []);
 
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -105,7 +164,13 @@ export function Dashboard() {
             <span className="text-2xl md:text-3xl font-extrabold tracking-tight tabular-nums mt-0.5">{format(time, 'hh:mm:ss')} <span className="text-sm font-normal uppercase">{format(time, 'a')}</span></span>
             <div className="flex items-center gap-1.5 mt-2 text-xs text-white/90">
               <CloudSun className="w-4 h-4 text-amber-300" />
-              <span>Bangalore Office · 24°C</span>
+              <span>
+                {weather.loading
+                  ? 'Detecting weather...'
+                  : weather.tempC !== undefined
+                    ? `${weather.label} · ${weather.tempC}°C`
+                    : weather.label}
+              </span>
             </div>
           </div>
         </div>

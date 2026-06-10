@@ -61,28 +61,28 @@ export function TeamPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-xl font-bold text-gray-900">Team</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Team</h1>
         <input
           type="date"
           value={selectedDate}
           onChange={e => setSelectedDate(e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400"
+          className="text-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400"
         />
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="text-center bg-blue-50 border-0">
-          <div className="text-2xl font-bold text-blue-700">{usersWithDept.length - 1}</div>
-          <div className="text-xs text-blue-500 mt-0.5">Total Colleagues</div>
+        <Card className="text-center bg-blue-50 border-0 dark:bg-blue-950/40">
+          <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{usersWithDept.length - 1}</div>
+          <div className="text-xs text-blue-500 dark:text-blue-300 mt-0.5">Total Colleagues</div>
         </Card>
-        <Card className="text-center bg-green-50 border-0">
-          <div className="text-2xl font-bold text-green-700">{inOfficeToday.length}</div>
-          <div className="text-xs text-green-500 mt-0.5">In Office {formatDate(selectedDate)}</div>
+        <Card className="text-center bg-green-50 border-0 dark:bg-green-950/40">
+          <div className="text-2xl font-bold text-green-700 dark:text-green-300">{inOfficeToday.length}</div>
+          <div className="text-xs text-green-500 dark:text-green-300 mt-0.5">In Office {formatDate(selectedDate)}</div>
         </Card>
-        <Card className="text-center bg-gray-50 border-0">
-          <div className="text-2xl font-bold text-gray-700">{departments.length}</div>
-          <div className="text-xs text-gray-500 mt-0.5">Departments</div>
+        <Card className="text-center bg-gray-50 border-0 dark:bg-gray-900">
+          <div className="text-2xl font-bold text-gray-700 dark:text-gray-100">{departments.length}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Departments</div>
         </Card>
       </div>
 
@@ -102,8 +102,8 @@ export function TeamPage() {
         }))).map(({ dept, users: deptUsers }) => (
           <div key={dept}>
             <div className="flex items-center gap-2 mb-3">
-              <h2 className="text-sm font-semibold text-gray-700">{dept}</h2>
-              <span className="text-xs bg-gray-100 text-gray-500 rounded-full px-2 py-0.5">{deptUsers.length}</span>
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{dept}</h2>
+              <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-300 rounded-full px-2 py-0.5">{deptUsers.length}</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {deptUsers.map(user => {

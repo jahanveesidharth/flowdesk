@@ -72,6 +72,26 @@ In Supabase Dashboard → **Authentication** → **Settings**:
 4. **SMTP Settings** (optional): Supabase provides a free shared SMTP for Auth emails.
    - For custom domain emails, add your own SMTP (Gmail SMTP is free).
 
+### Step 4.1 — Customize Magic Link Email (Optional, 3 min)
+
+In Supabase Dashboard:
+
+1. Go to **Authentication** → **Emails** → **Templates**.
+2. Open the **Magic Link** template.
+3. Set the subject to:
+   ```
+   Sign in to DeskFlow
+   ```
+4. Paste the HTML from `supabase/templates/magic-link.html`.
+5. Save the template.
+
+The button in that template uses Supabase's `{{ .ConfirmationURL }}` variable, so the **Sign in to DeskFlow** button is the clickable magic link.
+
+To change who the email appears to come from:
+
+- On Supabase's shared email sender, it may still show a Supabase-managed address such as `noreply@mail.app.supabase.io`.
+- For a branded sender like `DeskFlow <hello@yourcompany.com>`, configure **Authentication** → **Emails** → **SMTP settings** with your own SMTP provider or company email domain.
+
 ### Step 5 — Create Your First Admin User (2 min)
 
 Option A — Via the app:

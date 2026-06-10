@@ -45,21 +45,21 @@ export function Modal({ isOpen, onClose, title, children, size = 'md', footer, c
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in" />
       <div className={cn(
-        'relative bg-white rounded-2xl shadow-2xl w-full animate-slide-up flex flex-col max-h-[90vh]',
+        'relative bg-white dark:bg-gray-950 rounded-2xl shadow-2xl w-full animate-slide-up flex flex-col max-h-[90vh] border border-transparent dark:border-gray-800/80',
         sizeClasses[size],
         className,
       )}>
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-850 shrink-0">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
               <X className="w-5 h-5" />
             </button>
           </div>
         )}
         <div className="flex-1 overflow-y-auto px-6 py-4">{children}</div>
         {footer && (
-          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl shrink-0">{footer}</div>
+          <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-850 bg-gray-50 dark:bg-gray-900/60 rounded-b-2xl shrink-0">{footer}</div>
         )}
       </div>
     </div>
@@ -89,7 +89,7 @@ export function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confi
         </div>
       }
     >
-      <p className="text-gray-600">{message}</p>
+      <p className="text-gray-600 dark:text-gray-300">{message}</p>
     </Modal>
   );
 }
