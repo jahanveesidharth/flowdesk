@@ -15,12 +15,14 @@ import { BookingWizard } from '../components/booking/BookingWizard';
 import { formatTimeRange, formatTimeAgo } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { DEMO_CREDENTIALS, isDemoMode } from '../lib/demoMode';
 
 export function Dashboard() {
   const { currentUser, bookings, notifications, users, floors, desks } = useAppStore();
   const navigate = useNavigate();
   const [showBooking, setShowBooking] = useState(false);
   const [time, setTime] = useState(new Date());
+  const demoMode = isDemoMode();
 
   // Real-time Clock
   useEffect(() => {
@@ -108,6 +110,23 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+
+      {demoMode && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-bold">Demo mode is active</p>
+              <p className="text-xs text-amber-800 dark:text-amber-300">
+                Explore bookings, maps, team presence, parking, lockers, and admin views with sample data only.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs font-semibold">
+              <span className="rounded-md bg-white/70 px-2 py-1 dark:bg-gray-950/60">Email: {DEMO_CREDENTIALS.email}</span>
+              <span className="rounded-md bg-white/70 px-2 py-1 dark:bg-gray-950/60">Password: {DEMO_CREDENTIALS.password}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2. Stat Widgets Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">

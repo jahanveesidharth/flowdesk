@@ -1,14 +1,14 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Map, Calendar, Car, Archive, Users, BarChart3,
+  LayoutDashboard, Map, Calendar, Car, Users, BarChart3,
   Settings, ChevronLeft, ChevronRight, Building2, ShieldCheck, Bell, LogOut,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAppStore } from '../../store/useAppStore';
 import { Avatar } from '../ui/Avatar';
-import { Badge } from '../ui/Badge';
 import { Tooltip } from '../ui/Tooltip';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { exitDemoMode, isDemoMode } from '../../lib/demoMode';
 import toast from 'react-hot-toast';
 
 const EMPLOYEE_NAV = [
@@ -37,7 +37,7 @@ export function Sidebar() {
 
   return (
     <aside className={cn(
-      'fixed top-0 left-0 h-screen bg-white/85 dark:bg-gray-950/85 border-r border-gray-200/60 dark:border-gray-850/80 flex flex-col transition-all duration-300 z-40 backdrop-blur-md',
+      'fixed top-0 left-0 h-screen bg-white/95 dark:bg-gray-950/95 border-r border-gray-200/70 dark:border-gray-850/90 flex flex-col transition-all duration-300 z-40 backdrop-blur-md shadow-sm',
       sidebarOpen ? 'w-56' : 'w-16',
     )}>
       {/* Logo */}
@@ -62,7 +62,7 @@ export function Sidebar() {
                 : 'bg-gradient-to-r from-gray-50 to-white dark:from-gray-900/60 dark:to-gray-950/60 text-gray-650 dark:text-gray-300 border-gray-200/40 dark:border-gray-800/60',
             )}
           >
-            <span className="truncate">{isAdminMode ? '🛡 Admin Panel' : '👤 Workspace'}</span>
+            <span className="truncate">{isAdminMode ? 'Admin Panel' : 'Workspace'}</span>
             <span className={cn(
               "px-1.5 py-0.5 rounded-md text-[9px] uppercase tracking-wider shrink-0 font-bold ml-2",
               isAdminMode ? "bg-orange-200/60 dark:bg-orange-900/50 text-orange-850 dark:text-orange-300" : "bg-gray-200/60 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
@@ -91,8 +91,8 @@ export function Sidebar() {
               className={({ isActive }) => cn(
                 'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group duration-200',
                 isActive
-                  ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50/60 dark:hover:bg-gray-900/40 hover:text-gray-950 dark:hover:text-white',
+                  ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300 font-semibold shadow-sm ring-1 ring-brand-100 dark:ring-brand-900/30'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/70 hover:text-gray-950 dark:hover:text-white',
                 !sidebarOpen && 'justify-center px-2',
               )}
             >
@@ -162,7 +162,11 @@ export function Sidebar() {
         <Tooltip content={sidebarOpen ? null : 'Log Out'} side="right">
           <button
             onClick={async () => {
-              if (isSupabaseConfigured()) {
+              if (isDemoMode()) {
+                exitDemoMode();
+                toast.success('Exited demo mode');
+                window.location.href = '/login';
+              } else if (isSupabaseConfigured()) {
                 const { error } = await supabase.auth.signOut();
                 if (error) {
                   toast.error(`Logout error: ${error.message}`);
@@ -170,9 +174,7 @@ export function Sidebar() {
                   toast.success('Logged out successfully');
                 }
               } else {
-                localStorage.removeItem('flowdesk_demo_logged_in');
                 toast.success('Logged out (Demo Mode)');
-                window.location.href = '/login';
               }
             }}
             className={cn(
@@ -188,7 +190,7 @@ export function Sidebar() {
       </div>
 
       {/* User profile */}
-      <div className={cn('border-t border-gray-100 dark:border-gray-855/80 p-3.5 flex items-center', sidebarOpen ? 'gap-3' : 'justify-center')}>
+      <div className={cn('border-t border-gray-100 bg-gray-50/60 dark:border-gray-855/80 dark:bg-gray-900/30 p-3.5 flex items-center', sidebarOpen ? 'gap-3' : 'justify-center')}>
         <Avatar name={currentUser.name} size="sm" className="ring-2 ring-brand-500/10 shrink-0" />
         {sidebarOpen && (
           <div className="flex-1 min-w-0">

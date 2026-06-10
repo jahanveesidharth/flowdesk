@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { exitDemoMode, isDemoMode } from '../../lib/demoMode';
 import { Loader2 } from 'lucide-react';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -8,10 +9,19 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    // When Supabase isn't configured, check local demo session
+    if (isDemoMode()) {
+      setAuthed(true);
+      setChecking(false);
+      return;
+    }
+
+    if (isSupabaseConfigured()) {
+      exitDemoMode();
+    }
+
+    // When Supabase isn't configured, always allow (demo mode)
     if (!isSupabaseConfigured()) {
-      const isDemoLoggedIn = localStorage.getItem('flowdesk_demo_logged_in') === 'true';
-      setAuthed(isDemoLoggedIn);
+      setAuthed(true);
       setChecking(false);
       return;
     }

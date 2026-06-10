@@ -1,12 +1,10 @@
-import { Bell, Search, Plus, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Bell, Plus, ChevronDown, Sun, Moon, CalendarDays } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
 import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
-import { formatDate } from '../../lib/utils';
 import { BookingWizard } from '../booking/BookingWizard';
-import { format } from 'date-fns';
 
 export function Header({ title }: { title?: string }) {
   const { currentUser, notifications, selectedDate, setSelectedDate, theme, setTheme } = useAppStore();
@@ -16,24 +14,29 @@ export function Header({ title }: { title?: string }) {
 
   return (
     <>
-      <header className="h-16 bg-white/80 dark:bg-gray-950/80 border-b border-gray-200/60 dark:border-gray-850/80 flex items-center px-6 gap-4 shrink-0 backdrop-blur-md sticky top-0 z-30">
-        {title && <h1 className="text-base font-extrabold text-gray-950 dark:text-white mr-auto tracking-tight">{title}</h1>}
-        {!title && <div className="flex-1" />}
+      <header className="h-16 bg-white/92 dark:bg-gray-950/92 border-b border-gray-200/70 dark:border-gray-850/90 flex items-center px-4 md:px-6 gap-3 shrink-0 backdrop-blur-md sticky top-0 z-30">
+        <div className="min-w-0 mr-auto">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Workspace</p>
+          <h1 className="truncate text-base font-extrabold tracking-tight text-gray-950 dark:text-white">
+            {title || 'DeskFlow'}
+          </h1>
+        </div>
 
         {/* Date picker */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+        <div className="hidden items-center gap-2 rounded-xl border border-gray-200 bg-white px-2.5 py-1.5 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:flex">
+          <CalendarDays className="w-4 h-4 text-gray-400" />
           <input
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            className="text-xs font-semibold border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 text-gray-900 dark:text-white transition-all shadow-sm"
+            className="w-[132px] bg-transparent text-xs font-bold text-gray-800 outline-none dark:text-white"
           />
         </div>
 
         {/* Quick book */}
         <Button
           size="sm"
-          className="rounded-xl font-bold shadow-sm"
+          className="rounded-xl font-bold shadow-sm shadow-brand-500/15"
           iconLeft={<Plus className="w-4 h-4" />}
           onClick={() => setShowBooking(true)}
         >

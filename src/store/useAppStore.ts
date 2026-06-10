@@ -11,6 +11,7 @@ import {
 } from '../data/mockData';
 import { format } from 'date-fns';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { isDemoMode } from '../lib/demoMode';
 import toast from 'react-hot-toast';
 
 // Untyped client helper for database mutations to prevent strict TS generic payload complaints
@@ -236,6 +237,7 @@ interface AppState {
 
   // Synchronization
   initSupabaseSync: () => () => void;
+  resetToDemoData: () => void;
 
   // Computed helpers
   getBookingsForDate: (date: string, userId?: string) => Booking[];
@@ -245,6 +247,7 @@ interface AppState {
 }
 
 const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+const canUseSupabase = () => isSupabaseConfigured() && !isDemoMode();
 
 let bookingCounter = 100;
 let notifCounter = 100;
@@ -290,7 +293,7 @@ export const useAppStore = create<AppState>()(
 
       updateProfile: async (updates) => {
         const { currentUser } = get();
-        if (isSupabaseConfigured() && isValidUuid(currentUser.id)) {
+        if (canUseSupabase() && isValidUuid(currentUser.id)) {
           try {
             const payload: Record<string, any> = {};
             if (updates.name !== undefined) payload.name = updates.name;
@@ -327,6 +330,23 @@ export const useAppStore = create<AppState>()(
       setBookingFilters: (filters) => set(s => ({ bookingFilters: { ...s.bookingFilters, ...filters } })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       setTheme: (theme) => set({ theme }),
+      resetToDemoData: () => set({
+        currentUser: CURRENT_USER,
+        isAdminMode: false,
+        users: MOCK_USERS,
+        floors: MOCK_FLOORS,
+        desks: MOCK_DESKS,
+        rooms: MOCK_ROOMS,
+        parkingSpaces: MOCK_PARKING,
+        lockers: MOCK_LOCKERS,
+        bookings: MOCK_BOOKINGS,
+        notifications: MOCK_NOTIFICATIONS,
+        waitlist: MOCK_WAITLIST,
+        attendancePlans: [],
+        selectedFloorId: 'f1',
+        selectedDate: format(new Date(), 'yyyy-MM-dd'),
+        bookingFilters: {},
+      }),
 
       // ─── Actions with Supabase Integrations ─────────────────────────────────
 
@@ -341,7 +361,7 @@ export const useAppStore = create<AppState>()(
 
         let resultBooking = newBooking;
 
-        if (isSupabaseConfigured() && isValidUuid(booking.userId)) {
+        if (canUseSupabase() && isValidUuid(booking.userId)) {
           try {
             const { data, error } = await db.from('bookings').insert({
               user_id: booking.userId,
@@ -391,7 +411,7 @@ export const useAppStore = create<AppState>()(
       },
 
       cancelBooking: async (bookingId, reason) => {
-        if (isSupabaseConfigured() && isValidUuid(bookingId)) {
+        if (canUseSupabase() && isValidUuid(bookingId)) {
           try {
             const { error } = await db.from('bookings')
               .update({ status: 'cancelled', cancel_reason: reason })
@@ -414,7 +434,7 @@ export const useAppStore = create<AppState>()(
 
       checkIn: async (bookingId) => {
         const timeStr = format(new Date(), 'HH:mm');
-        if (isSupabaseConfigured() && isValidUuid(bookingId)) {
+        if (canUseSupabase() && isValidUuid(bookingId)) {
           try {
             const { error } = await db.from('bookings')
               .update({ status: 'checked_in', check_in_time: timeStr })
@@ -437,7 +457,7 @@ export const useAppStore = create<AppState>()(
 
       checkOut: async (bookingId) => {
         const timeStr = format(new Date(), 'HH:mm');
-        if (isSupabaseConfigured() && isValidUuid(bookingId)) {
+        if (canUseSupabase() && isValidUuid(bookingId)) {
           try {
             const { error } = await db.from('bookings')
               .update({ status: 'completed', check_out_time: timeStr })
@@ -459,7 +479,7 @@ export const useAppStore = create<AppState>()(
       },
 
       updateBooking: async (bookingId, updates) => {
-        if (isSupabaseConfigured() && isValidUuid(bookingId)) {
+        if (canUseSupabase() && isValidUuid(bookingId)) {
           try {
             const payload: Record<string, any> = {};
             if (updates.status) payload.status = updates.status;
@@ -487,7 +507,7 @@ export const useAppStore = create<AppState>()(
       },
 
       setAttendancePlan: async (userId, date, status) => {
-        if (isSupabaseConfigured() && isValidUuid(userId)) {
+        if (canUseSupabase() && isValidUuid(userId)) {
           try {
             const { error } = await db.from('attendance_plans').upsert({
               user_id: userId,
@@ -525,7 +545,7 @@ export const useAppStore = create<AppState>()(
       },
 
       markNotificationRead: async (notifId) => {
-        if (isSupabaseConfigured() && isValidUuid(notifId)) {
+        if (canUseSupabase() && isValidUuid(notifId)) {
           try {
             await db.from('notifications').update({ read: true }).eq('id', notifId);
           } catch (err) {
@@ -539,7 +559,7 @@ export const useAppStore = create<AppState>()(
 
       markAllNotificationsRead: async () => {
         const { currentUser } = get();
-        if (isSupabaseConfigured() && isValidUuid(currentUser.id)) {
+        if (canUseSupabase() && isValidUuid(currentUser.id)) {
           try {
             await db.from('notifications').update({ read: true }).eq('user_id', currentUser.id);
           } catch (err) {
@@ -559,7 +579,7 @@ export const useAppStore = create<AppState>()(
           createdAt: new Date().toISOString(),
         };
 
-        if (isSupabaseConfigured() && isValidUuid(notif.userId)) {
+        if (canUseSupabase() && isValidUuid(notif.userId)) {
           try {
             await db.from('notifications').insert({
               user_id: notif.userId,
@@ -578,7 +598,7 @@ export const useAppStore = create<AppState>()(
       },
 
       updateDesk: async (deskId, updates) => {
-        if (isSupabaseConfigured() && isValidUuid(deskId)) {
+        if (canUseSupabase() && isValidUuid(deskId)) {
           try {
             const payload: Record<string, any> = {};
             if (updates.status) payload.status = updates.status;
@@ -599,7 +619,7 @@ export const useAppStore = create<AppState>()(
       },
 
       updateRoom: async (roomId, updates) => {
-        if (isSupabaseConfigured() && isValidUuid(roomId)) {
+        if (canUseSupabase() && isValidUuid(roomId)) {
           try {
             const payload: Record<string, any> = {};
             if (updates.status) payload.status = updates.status;
@@ -618,7 +638,7 @@ export const useAppStore = create<AppState>()(
 
       addDesk: async (desk) => {
         const localId = `desk-${Date.now()}`;
-        if (isSupabaseConfigured() && isValidUuid(desk.floorId)) {
+        if (canUseSupabase() && isValidUuid(desk.floorId)) {
           try {
             const { data } = await db.from('desks').insert({
               label: desk.label,
@@ -646,7 +666,7 @@ export const useAppStore = create<AppState>()(
       },
 
       removeDesk: async (deskId) => {
-        if (isSupabaseConfigured() && isValidUuid(deskId)) {
+        if (canUseSupabase() && isValidUuid(deskId)) {
           try {
             await db.from('desks').update({ is_active: false }).eq('id', deskId);
           } catch (err) {
@@ -657,7 +677,7 @@ export const useAppStore = create<AppState>()(
       },
 
       updateFloor: async (floorId, updates) => {
-        if (isSupabaseConfigured() && isValidUuid(floorId)) {
+        if (canUseSupabase() && isValidUuid(floorId)) {
           try {
             const payload: Record<string, any> = {};
             if (updates.name) payload.name = updates.name;
@@ -675,7 +695,7 @@ export const useAppStore = create<AppState>()(
 
       addToWaitlist: async (entry) => {
         const localId = `wl${++waitlistCounter}`;
-        if (isSupabaseConfigured() && isValidUuid(entry.userId)) {
+        if (canUseSupabase() && isValidUuid(entry.userId)) {
           try {
             const { data: entries } = await db.from('waitlist')
               .select('id')
@@ -717,7 +737,7 @@ export const useAppStore = create<AppState>()(
       },
 
       removeFromWaitlist: async (entryId) => {
-        if (isSupabaseConfigured() && isValidUuid(entryId)) {
+        if (canUseSupabase() && isValidUuid(entryId)) {
           try {
             await db.from('waitlist').delete().eq('id', entryId);
           } catch (err) {
@@ -730,7 +750,7 @@ export const useAppStore = create<AppState>()(
       // ─── Realtime Hydration Synchronizer ────────────────────────────────────
 
       initSupabaseSync: () => {
-        if (!isSupabaseConfigured()) return () => {};
+        if (!canUseSupabase()) return () => {};
 
         const fetchAll = async () => {
           try {
