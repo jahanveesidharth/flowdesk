@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, UserPlus, Edit3, MoreVertical } from 'lucide-react';
+import { Search, UserPlus, Edit3 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -17,6 +17,10 @@ export function AdminUsers() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('employee');
   const today = format(new Date(), 'yyyy-MM-dd');
 
   const filtered = users.filter(u => {
@@ -41,12 +45,23 @@ export function AdminUsers() {
   };
 
   const roleColors: Record<string, string> = { admin: 'warning', manager: 'info', employee: 'default' };
+  const handleInvite = () => {
+    if (!inviteName.trim() || !inviteEmail.trim()) {
+      toast.error('Enter a name and email to send an invite.');
+      return;
+    }
+    toast.success(`Invite sent to ${inviteEmail.trim()}.`);
+    setInviteName('');
+    setInviteEmail('');
+    setInviteRole('employee');
+    setInviteOpen(false);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">Users</h1>
-        <Button iconLeft={<UserPlus className="w-4 h-4" />} size="sm" onClick={() => toast('Invite feature coming soon!')}>
+        <Button iconLeft={<UserPlus className="w-4 h-4" />} size="sm" onClick={() => setInviteOpen(true)}>
           Invite User
         </Button>
       </div>
@@ -181,6 +196,34 @@ export function AdminUsers() {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        title="Invite User"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
+            <Button iconLeft={<UserPlus className="w-4 h-4" />} onClick={handleInvite}>Send Invite</Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <Input label="Full Name" value={inviteName} onChange={e => setInviteName(e.target.value)} placeholder="e.g. Priya Sharma" />
+          <Input label="Email" type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="name@company.com" />
+          <Select
+            label="Role"
+            value={inviteRole}
+            onChange={e => setInviteRole(e.target.value)}
+            options={[
+              { value: 'employee', label: 'Employee' },
+              { value: 'manager', label: 'Manager' },
+              { value: 'admin', label: 'Admin' },
+            ]}
+          />
+        </div>
       </Modal>
     </div>
   );

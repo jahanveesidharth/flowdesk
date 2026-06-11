@@ -45,7 +45,10 @@ export function Header({ title }: { title?: string }) {
 
         {/* Theme Toggle */}
         <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={(e) => {
+            setTheme(theme === 'dark' ? 'light' : 'dark');
+            e.currentTarget.blur();
+          }}
           className="p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900/60 transition-all text-gray-500 dark:text-gray-400 hover:scale-105 active:scale-95 border border-transparent hover:border-gray-200/30"
           title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         >

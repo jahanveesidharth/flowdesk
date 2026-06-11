@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Save, Trash2, Move, Edit3, Grid, Layers, X, Trash, Hammer, ShieldAlert, Check } from 'lucide-react';
+import { Plus, Save, Trash2, Move, Edit3, Grid, Layers, X, Trash, Hammer, Check, ZoomIn, ZoomOut } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -8,7 +8,7 @@ import { Modal, ConfirmModal } from '../../components/ui/Modal';
 import { Tabs } from '../../components/ui/Tabs';
 import { StatusBadge } from '../../components/ui/Badge';
 import type { Desk } from '../../types';
-import { cn, getDeskTypeLabel, getAmenityLabel } from '../../lib/utils';
+import { cn, getDeskTypeLabel, getAmenityLabel, getZoneColors } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
 const CELL = 42; // Slightly larger grid cell size for premium high-density display and touch targets
@@ -22,12 +22,17 @@ export function FloorBuilder() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [tab, setTab] = useState('map');
   const [hoveredCell, setHoveredCell] = useState<{ x: number; y: number } | null>(null);
+  const [zoom, setZoom] = useState(1);
 
   const floor = floors.find(f => f.id === selectedFloorId);
   const floorDesks = desks.filter(d => d.floorId === selectedFloorId);
   const floorRooms = rooms.filter(r => r.floorId === selectedFloorId);
 
   if (!floor) return <div className="text-center py-12 text-gray-500 font-bold">No floors available</div>;
+
+  const getZoneAt = (x: number, y: number) => (
+    floor.zones.find(z => x >= z.x && x < z.x + z.width && y >= z.y && y < z.y + z.height)
+  );
 
   const handleCellClick = (x: number, y: number) => {
     if (tool === 'add_desk') {
@@ -40,6 +45,7 @@ export function FloorBuilder() {
           status: 'available',
           x, y,
           width: 1, height: 1,
+          zoneId: getZoneAt(x, y)?.id,
           amenities: [],
           isActive: true,
         });
@@ -68,7 +74,7 @@ export function FloorBuilder() {
         toast.error('This grid coordinate is already occupied');
         return;
       }
-      updateDesk(draggedDeskId, { x, y });
+      updateDesk(draggedDeskId, { x, y, zoneId: getZoneAt(x, y)?.id });
       toast.success('Desk relocated successfully');
       return;
     }
@@ -88,6 +94,7 @@ export function FloorBuilder() {
         status: 'available',
         x, y,
         width: 1, height: 1,
+        zoneId: getZoneAt(x, y)?.id,
         amenities: [],
         isActive: true,
       });
@@ -219,7 +226,7 @@ export function FloorBuilder() {
           </div>
 
           {/* Designer Controls Toolbar */}
-          <div className="flex items-center justify-between gap-4 flex-wrap bg-white/40 dark:bg-gray-950/40 p-2 rounded-xl border border-gray-250/50 dark:border-gray-800/80">
+          <div className="flex items-center justify-between gap-4 flex-wrap bg-white dark:bg-gray-950 p-2 rounded-xl border border-gray-250/70 dark:border-gray-800/80 shadow-sm">
             <div className="flex items-center gap-2">
               {[
                 { id: 'select' as const, icon: <Move className="w-4 h-4" />, label: 'Pointer / Move' },
@@ -241,51 +248,95 @@ export function FloorBuilder() {
                 </button>
               ))}
             </div>
-            <div className="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-tight">
-              {floorDesks.length} assets mapped • Grid capacity: {floor.gridWidth}×{floor.gridHeight} coordinates
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <div className="flex items-center gap-1 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-1">
+                <button
+                  type="button"
+                  onClick={() => setZoom(z => Math.max(0.7, +(z - 0.1).toFixed(2)))}
+                  className="p-1.5 rounded-md text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <span className="min-w-12 text-center text-xs font-bold text-gray-700 dark:text-gray-200">{Math.round(zoom * 100)}%</span>
+                <button
+                  type="button"
+                  onClick={() => setZoom(z => Math.min(1.5, +(z + 0.1).toFixed(2)))}
+                  className="p-1.5 rounded-md text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="text-xs font-bold text-gray-600 dark:text-gray-300 tracking-tight">
+                {hoveredCell ? `Cell (${hoveredCell.x}, ${hoveredCell.y})` : `${floorDesks.length} assets mapped`}
+                <span className="text-gray-400 dark:text-gray-500"> / {floor.gridWidth}x{floor.gridHeight}</span>
+              </div>
             </div>
           </div>
 
           {/* Canvas & Properties Panel */}
           <div className="flex gap-4 flex-col lg:flex-row">
             {/* Map Canvas */}
-            <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950/80 rounded-2xl border border-gray-200 dark:border-gray-850 p-6 shadow-inner relative min-h-[300px]">
+            <div className="flex-1 overflow-auto rounded-2xl border border-gray-300 dark:border-gray-700 bg-slate-100 dark:bg-slate-950 p-6 shadow-inner relative min-h-[420px]">
               <div 
-                className="absolute inset-0 opacity-[0.05] dark:opacity-[0.03] pointer-events-none"
+                className="absolute inset-0 pointer-events-none"
                 style={{ 
-                  backgroundImage: `radial-gradient(circle, ${theme === 'dark' ? '#ffffff' : '#000000'} 1.5px, transparent 1.5px)`, 
-                  backgroundSize: `${CELL}px ${CELL}px` 
+                  backgroundImage: `radial-gradient(circle, ${theme === 'dark' ? 'rgba(148,163,184,0.28)' : 'rgba(71,85,105,0.2)'} 1.5px, transparent 1.5px)`, 
+                  backgroundSize: `${CELL}px ${CELL}px`,
+                  backgroundPosition: '24px 24px',
                 }}
               />
+              <div className="absolute right-4 top-4 z-10 rounded-lg border border-gray-200 bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-900/90 dark:text-gray-300">
+                {tool === 'select' ? 'Click or drag desks' : tool === 'add_desk' ? 'Click empty cells to add' : 'Click desks to erase'}
+              </div>
               <div
                 className="relative mx-auto"
                 style={{ 
-                  width: floor.gridWidth * CELL, 
-                  height: floor.gridHeight * CELL,
+                  width: floor.gridWidth * CELL * zoom, 
+                  height: floor.gridHeight * CELL * zoom,
                 }}
               >
+                <div
+                  className="relative"
+                  style={{
+                    width: floor.gridWidth * CELL,
+                    height: floor.gridHeight * CELL,
+                    transform: `scale(${zoom})`,
+                    transformOrigin: 'top left',
+                  }}
+                >
                 {/* Zone boundaries overlay */}
-                {floor.zones.map(z => (
-                  <div 
-                    key={z.id} 
-                    className="absolute rounded-2xl border-2 border-dashed opacity-60 transition-all duration-300 bg-white/20 dark:bg-black/10"
-                    style={{ 
-                      left: z.x * CELL, 
-                      top: z.y * CELL, 
-                      width: z.width * CELL, 
-                      height: z.height * CELL, 
-                      borderColor: z.color,
-                      boxShadow: `inset 0 0 12px ${z.color}0a`
-                    }}
-                  >
-                    <span 
-                      className="absolute top-2 left-2 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm text-white"
-                      style={{ backgroundColor: z.color }}
+                {floor.zones.map(z => {
+                  const zColors = getZoneColors(z.color);
+                  const isDark = theme === 'dark';
+                  return (
+                    <div 
+                      key={z.id} 
+                      className="absolute rounded-2xl border-2 border-dashed transition-all duration-300"
+                      style={{ 
+                        left: z.x * CELL, 
+                        top: z.y * CELL, 
+                        width: z.width * CELL, 
+                        height: z.height * CELL, 
+                        borderColor: z.color,
+                        backgroundColor: isDark ? `${z.color}10` : `${z.color}25`,
+                        boxShadow: isDark 
+                          ? `inset 0 0 0 1px ${z.color}15, inset 0 0 24px ${z.color}05`
+                          : `inset 0 0 0 1px ${z.color}25, inset 0 0 24px ${z.color}08`
+                      }}
                     >
-                      {z.name}
-                    </span>
-                  </div>
-                ))}
+                      <span 
+                        className="absolute top-2 left-2 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm border select-none transition-all"
+                        style={{ 
+                          backgroundColor: isDark ? zColors.bgDark : zColors.bgLight, 
+                          color: isDark ? zColors.textDark : zColors.textLight,
+                          borderColor: isDark ? zColors.borderDark : zColors.borderLight,
+                        }}
+                      >
+                        {z.name}
+                      </span>
+                    </div>
+                  );
+                })}
 
                 {/* Grid cells generator */}
                 {Array.from({ length: floor.gridHeight }, (_, y) =>
@@ -383,6 +434,7 @@ export function FloorBuilder() {
                     );
                   })
                 )}
+                </div>
               </div>
             </div>
 

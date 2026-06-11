@@ -1,15 +1,31 @@
-import { useState } from 'react';
-import { User, Bell, Shield, Building2, Moon, Sun, Globe } from 'lucide-react';
+import { useRef, useState, type ChangeEvent } from 'react';
+import { User, Bell, Shield, Moon, Sun, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input, Select } from '../components/ui/Input';
 import { Tabs } from '../components/ui/Tabs';
 import { Avatar } from '../components/ui/Avatar';
+import { ConfirmModal } from '../components/ui/Modal';
 import toast from 'react-hot-toast';
 
 export function SettingsPage() {
-  const { currentUser, switchRole, isAdminMode, floors, updateProfile } = useAppStore();
+  const navigate = useNavigate();
+  const {
+    currentUser,
+    switchRole,
+    isAdminMode,
+    floors,
+    selectedFloorId,
+    theme,
+    updateProfile,
+    setSelectedFloor,
+    setTheme,
+    deleteAllBookingsForCurrentUser,
+    deleteCurrentAccount,
+  } = useAppStore();
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [tab, setTab] = useState('profile');
   const [name, setName] = useState(currentUser.name);
   const [email, setEmail] = useState(currentUser.email);
@@ -17,6 +33,12 @@ export function SettingsPage() {
   const [notifs, setNotifs] = useState(currentUser.preferences.notificationsEnabled);
   const [emailReminders, setEmailReminders] = useState(currentUser.preferences.emailReminders);
   const [reminderMins, setReminderMins] = useState(String(currentUser.preferences.reminderMinutes));
+  const [defaultFloor, setDefaultFloor] = useState(currentUser.preferences.defaultFloorId || selectedFloorId || '');
+  const [confirmDeleteBookings, setConfirmDeleteBookings] = useState(false);
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
+  const avatarImageUrl = currentUser.avatar?.startsWith('data:') || currentUser.avatar?.startsWith('http')
+    ? currentUser.avatar
+    : undefined;
 
   const handleSave = async () => {
     try {
@@ -28,15 +50,47 @@ export function SettingsPage() {
           notificationsEnabled: notifs,
           emailReminders: emailReminders,
           reminderMinutes: parseInt(reminderMins, 10),
-          theme: currentUser.preferences.theme,
+          theme,
           weekStartsOn: currentUser.preferences.weekStartsOn,
+          defaultFloorId: defaultFloor,
         }
       });
+      if (defaultFloor) setSelectedFloor(defaultFloor);
       toast.success('Settings saved!');
     } catch (err) {
       // toast.error is already handled inside updateProfile, but just in case
       console.error(err);
     }
+  };
+
+  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please choose an image file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      await updateProfile({ avatar: String(reader.result) });
+      toast.success('Profile photo updated.');
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  };
+
+  const handleDeleteBookings = async () => {
+    await deleteAllBookingsForCurrentUser();
+    setConfirmDeleteBookings(false);
+    toast.success('All your bookings were deleted.');
+  };
+
+  const handleDeleteAccount = async () => {
+    await deleteCurrentAccount();
+    setConfirmDeleteAccount(false);
+    toast.success('Account deleted.');
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -59,11 +113,14 @@ export function SettingsPage() {
           <CardHeader><CardTitle>Profile Information</CardTitle></CardHeader>
           <CardContent className="space-y-5">
             <div className="flex items-center gap-4">
-              <Avatar name={currentUser.name} size="xl" />
+              <Avatar name={currentUser.name} size="xl" imageUrl={avatarImageUrl} />
               <div>
                 <p className="font-semibold text-gray-900">{currentUser.name}</p>
                 <p className="text-sm text-gray-500 capitalize">{currentUser.role}</p>
-                <Button variant="outline" size="xs" className="mt-2">Change Photo</Button>
+                <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+                <Button variant="outline" size="xs" className="mt-2" onClick={() => photoInputRef.current?.click()}>
+                  Change Photo
+                </Button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -129,7 +186,19 @@ export function SettingsPage() {
               </div>
               <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
                 {[{ icon: <Sun className="w-4 h-4" />, label: 'Light' }, { icon: <Moon className="w-4 h-4" />, label: 'Dark' }].map(t => (
-                  <button key={t.label} className="flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium bg-white shadow text-gray-900">
+                  <button
+                    key={t.label}
+                    type="button"
+                    onClick={(e) => {
+                      setTheme(t.label.toLowerCase() as 'light' | 'dark');
+                      e.currentTarget.blur();
+                    }}
+                    className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                      theme === t.label.toLowerCase()
+                        ? 'bg-white dark:bg-gray-800 shadow text-gray-900 dark:text-white'
+                        : 'text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                    }`}
+                  >
                     {t.icon} {t.label}
                   </button>
                 ))}
@@ -137,8 +206,8 @@ export function SettingsPage() {
             </div>
             <Select 
               label="Default Floor" 
-              value={currentUser.preferences.defaultFloorId || ''} 
-              onChange={() => {}} 
+              value={defaultFloor} 
+              onChange={e => setDefaultFloor(e.target.value)} 
               options={floors.map(f => ({ value: f.id, label: f.name }))} 
             />
             <Button onClick={handleSave}>Save Preferences</Button>
@@ -167,13 +236,36 @@ export function SettingsPage() {
             <CardContent>
               <p className="text-sm text-gray-500 mb-3">These actions are irreversible. Please proceed with caution.</p>
               <div className="flex gap-3">
-                <Button variant="outline" size="sm" className="text-red-500 border-red-200">Delete all bookings</Button>
-                <Button variant="danger" size="sm">Delete Account</Button>
+                <Button variant="outline" size="sm" className="text-red-500 border-red-200" onClick={() => setConfirmDeleteBookings(true)}>
+                  Delete all bookings
+                </Button>
+                <Button variant="danger" size="sm" onClick={() => setConfirmDeleteAccount(true)}>
+                  Delete Account
+                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmDeleteBookings}
+        onClose={() => setConfirmDeleteBookings(false)}
+        onConfirm={handleDeleteBookings}
+        title="Delete all bookings?"
+        message="This will permanently remove all bookings, waitlist entries, and booking notifications for your account."
+        confirmLabel="Delete bookings"
+        variant="danger"
+      />
+      <ConfirmModal
+        isOpen={confirmDeleteAccount}
+        onClose={() => setConfirmDeleteAccount(false)}
+        onConfirm={handleDeleteAccount}
+        title="Delete account?"
+        message="This removes your profile and all account-related booking data from this workspace."
+        confirmLabel="Delete account"
+        variant="danger"
+      />
     </div>
   );
 }

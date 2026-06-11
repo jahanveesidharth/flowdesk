@@ -8,8 +8,27 @@ import toast from 'react-hot-toast';
 
 export function AdminSettings() {
   const [tab, setTab] = useState('general');
+  const [general, setGeneral] = useState({
+    timezone: 'America/Los_Angeles',
+    officeStart: '08:00',
+    officeEnd: '18:00',
+  });
+  const [integrations, setIntegrations] = useState([
+    { name: 'Google Calendar', desc: 'Sync bookings with Google Calendar', icon: 'GC', connected: true },
+    { name: 'Slack', desc: 'Get booking notifications in Slack', icon: 'SL', connected: false },
+    { name: 'Microsoft Teams', desc: 'Teams integration for room bookings', icon: 'MT', connected: false },
+    { name: 'Okta SSO', desc: 'Single sign-on via Okta', icon: 'OK', connected: true },
+    { name: 'QR Code System', desc: 'Check-in via QR codes', icon: 'QR', connected: true },
+  ]);
 
   const handleSave = () => toast.success('Settings saved!');
+  const toggleIntegration = (name: string) => {
+    const integration = integrations.find(item => item.name === name);
+    setIntegrations(items => items.map(item => (
+      item.name === name ? { ...item, connected: !item.connected } : item
+    )));
+    toast.success(`${name} ${integration?.connected ? 'disconnected' : 'connected'}.`);
+  };
 
   return (
     <div className="max-w-3xl space-y-6 animate-fade-in">
@@ -29,23 +48,23 @@ export function AdminSettings() {
             <CardContent className="space-y-4">
               <Input label="Organization Name" defaultValue="DeskFlow Inc." />
               <Input label="Admin Email" defaultValue="admin@deskflow.io" type="email" />
-              <Select label="Timezone" defaultValue="America/Los_Angeles" options={[
+              <Select label="Timezone" value={general.timezone} options={[
                 { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
                 { value: 'America/New_York', label: 'Eastern Time (ET)' },
                 { value: 'Europe/London', label: 'GMT / London' },
                 { value: 'Europe/Paris', label: 'Central European Time' },
                 { value: 'Asia/Tokyo', label: 'Japan Standard Time' },
-              ]} onChange={() => {}} />
-              <Select label="Office Hours Start" defaultValue="08:00" options={[
+              ]} onChange={e => setGeneral(s => ({ ...s, timezone: e.target.value }))} />
+              <Select label="Office Hours Start" value={general.officeStart} options={[
                 { value: '07:00', label: '7:00 AM' },
                 { value: '08:00', label: '8:00 AM' },
                 { value: '09:00', label: '9:00 AM' },
-              ]} onChange={() => {}} />
-              <Select label="Office Hours End" defaultValue="18:00" options={[
+              ]} onChange={e => setGeneral(s => ({ ...s, officeStart: e.target.value }))} />
+              <Select label="Office Hours End" value={general.officeEnd} options={[
                 { value: '17:00', label: '5:00 PM' },
                 { value: '18:00', label: '6:00 PM' },
                 { value: '20:00', label: '8:00 PM' },
-              ]} onChange={() => {}} />
+              ]} onChange={e => setGeneral(s => ({ ...s, officeEnd: e.target.value }))} />
               <Button onClick={handleSave} iconLeft={<Save className="w-4 h-4" />}>Save General Settings</Button>
             </CardContent>
           </Card>
@@ -97,9 +116,7 @@ export function AdminSettings() {
                   <p className="font-semibold text-sm text-gray-900">{name}</p>
                   <p className="text-xs text-gray-500">{desc}</p>
                 </div>
-                <Button size="sm" variant={connected ? 'outline' : 'primary'} onClick={() => toast(connected ? `${name} disconnected` : `${name} connected!`)}>
-                  {connected ? 'Disconnect' : 'Connect'}
-                </Button>
+                <IntegrationAction name={name} initialConnected={connected} />
               </div>
             </Card>
           ))}
@@ -136,5 +153,20 @@ export function AdminSettings() {
         </div>
       )}
     </div>
+  );
+}
+
+function IntegrationAction({ name, initialConnected }: { name: string; initialConnected: boolean }) {
+  const [connected, setConnected] = useState(initialConnected);
+
+  const toggle = () => {
+    setConnected(value => !value);
+    toast.success(`${name} ${connected ? 'disconnected' : 'connected'}.`);
+  };
+
+  return (
+    <Button size="sm" variant={connected ? 'outline' : 'primary'} onClick={toggle}>
+      {connected ? 'Disconnect' : 'Connect'}
+    </Button>
   );
 }

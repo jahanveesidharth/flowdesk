@@ -10,6 +10,7 @@ import { Tabs } from '../../components/ui/Tabs';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { MOCK_DAILY_STATS, MOCK_FLOOR_OCCUPANCY } from '../../data/mockData';
+import { downloadCsv } from '../../lib/exportCsv';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend
@@ -63,6 +64,20 @@ export function Analytics() {
     { dept: 'HR', bookings: 23, occupancyRate: 45 },
   ];
 
+  const handleExportCsv = () => {
+    downloadCsv(`analytics-${period}-${format(new Date(), 'yyyy-MM-dd')}.csv`, stats.map(d => ({
+      date: d.date,
+      deskBookings: d.deskBookings,
+      roomBookings: d.roomBookings,
+      parkingBookings: d.parkingBookings,
+      lockerBookings: d.lockerBookings,
+      checkIns: d.checkIns,
+      noShows: d.noShows,
+      cancellations: d.cancellations,
+      uniqueUsers: d.uniqueUsers,
+    })));
+  };
+
   // Glassmorphic Custom Tooltip for Recharts
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -111,7 +126,7 @@ export function Analytics() {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" className="rounded-xl shadow-sm font-bold text-xs" iconLeft={<Download className="w-4 h-4" />}>
+          <Button variant="outline" size="sm" className="rounded-xl shadow-sm font-bold text-xs" iconLeft={<Download className="w-4 h-4" />} onClick={handleExportCsv}>
             Export CSV
           </Button>
         </div>

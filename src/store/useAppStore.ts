@@ -212,9 +212,11 @@ interface AppState {
   // Actions - Bookings
   addBooking: (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Booking>;
   cancelBooking: (bookingId: string, reason?: string) => Promise<void>;
+  deleteAllBookingsForCurrentUser: () => Promise<void>;
   checkIn: (bookingId: string) => Promise<void>;
   checkOut: (bookingId: string) => Promise<void>;
   updateBooking: (bookingId: string, updates: Partial<Booking>) => Promise<void>;
+  deleteCurrentAccount: () => Promise<void>;
 
   // Actions - Attendance Planning
   setAttendancePlan: (userId: string, date: string, status: AttendanceStatus) => Promise<void>;
@@ -432,6 +434,28 @@ export const useAppStore = create<AppState>()(
         }));
       },
 
+      deleteAllBookingsForCurrentUser: async () => {
+        const { currentUser } = get();
+
+        if (canUseSupabase() && isValidUuid(currentUser.id)) {
+          try {
+            const { error } = await db.from('bookings')
+              .delete()
+              .eq('user_id', currentUser.id);
+            if (error) throw error;
+          } catch (err: any) {
+            console.error('Delete all bookings in Supabase failed:', err);
+            toast.error(`Delete bookings error: ${err.message || err}`);
+          }
+        }
+
+        set(s => ({
+          bookings: s.bookings.filter(b => b.userId !== currentUser.id),
+          notifications: s.notifications.filter(n => n.userId !== currentUser.id),
+          waitlist: s.waitlist.filter(w => w.userId !== currentUser.id),
+        }));
+      },
+
       checkIn: async (bookingId) => {
         const timeStr = format(new Date(), 'HH:mm');
         if (canUseSupabase() && isValidUuid(bookingId)) {
@@ -504,6 +528,37 @@ export const useAppStore = create<AppState>()(
             b.id === bookingId ? { ...b, ...updates, updatedAt: new Date().toISOString() } : b
           ),
         }));
+      },
+
+      deleteCurrentAccount: async () => {
+        const { currentUser } = get();
+
+        if (canUseSupabase() && isValidUuid(currentUser.id)) {
+          try {
+            await db.from('bookings').delete().eq('user_id', currentUser.id);
+            await db.from('notifications').delete().eq('user_id', currentUser.id);
+            await db.from('waitlist').delete().eq('user_id', currentUser.id);
+            await db.from('profiles').delete().eq('id', currentUser.id);
+            await supabase.auth.signOut();
+          } catch (err: any) {
+            console.error('Delete account in Supabase failed:', err);
+            toast.error(`Delete account error: ${err.message || err}`);
+          }
+        }
+
+        set(s => {
+          const remainingUsers = s.users.filter(u => u.id !== currentUser.id);
+          const fallbackUser = remainingUsers[0] || CURRENT_USER;
+          return {
+            currentUser: fallbackUser,
+            isAdminMode: fallbackUser.role === 'admin',
+            users: remainingUsers.length ? remainingUsers : MOCK_USERS,
+            bookings: s.bookings.filter(b => b.userId !== currentUser.id),
+            notifications: s.notifications.filter(n => n.userId !== currentUser.id),
+            waitlist: s.waitlist.filter(w => w.userId !== currentUser.id),
+            attendancePlans: s.attendancePlans.filter(p => p.userId !== currentUser.id),
+          };
+        });
       },
 
       setAttendancePlan: async (userId, date, status) => {

@@ -11,6 +11,7 @@ import { Modal } from '../../components/ui/Modal';
 import { BookingCard } from '../../components/booking/BookingCard';
 import { Tabs } from '../../components/ui/Tabs';
 import { formatDate, formatTimeRange } from '../../lib/utils';
+import { downloadCsv } from '../../lib/exportCsv';
 import type { Booking } from '../../types';
 
 export function AdminBookings() {
@@ -48,11 +49,33 @@ export function AdminBookings() {
     return b.resourceId;
   };
 
+  const handleExportCsv = () => {
+    downloadCsv(`bookings-${format(new Date(), 'yyyy-MM-dd')}.csv`, filtered.map(booking => {
+      const user = users.find(u => u.id === booking.userId);
+      const floor = floors.find(f => f.id === booking.floorId);
+      return {
+        id: booking.id,
+        user: user?.name || 'Unknown',
+        department: user?.department || '',
+        resourceType: booking.resourceType,
+        resource: getResourceLabel(booking),
+        floor: floor?.name || '',
+        date: booking.date,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        status: booking.status,
+        title: booking.title || '',
+        notes: booking.notes || '',
+        createdAt: booking.createdAt,
+      };
+    }));
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">All Bookings</h1>
-        <Button variant="outline" size="sm" iconLeft={<Download className="w-4 h-4" />} onClick={() => alert('Exporting CSV...')}>
+        <Button variant="outline" size="sm" iconLeft={<Download className="w-4 h-4" />} onClick={handleExportCsv}>
           Export CSV
         </Button>
       </div>

@@ -119,3 +119,87 @@ input[type="date"] {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
+
+/* Dark mode readability guardrails.
+   Several older screens use light-mode utility classes without a matching dark
+   variant, and some helper text used very dim grays on near-black surfaces. */
+.dark .bg-white:not(.rounded-full) {
+  background-color: #0f172a;
+}
+
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: #111827;
+}
+
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-50\/50:hover,
+.dark .hover\:bg-gray-50\/60:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: #1e293b !important;
+}
+
+.dark .bg-gray-150\/50,
+.dark .bg-gray-150\/60 {
+  background-color: rgba(31, 41, 55, 0.7);
+}
+
+.dark .border-gray-100,
+.dark .border-gray-150,
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: #374151;
+}
+
+.dark .text-gray-950,
+.dark .text-gray-900,
+.dark .text-gray-850,
+.dark .text-gray-800 {
+  color: #f9fafb;
+}
+
+.dark .text-gray-750,
+.dark .text-gray-700,
+.dark .text-gray-650,
+.dark .text-gray-655,
+.dark .text-gray-600 {
+  color: #e5e7eb;
+}
+
+.dark .text-gray-550,
+.dark .text-gray-500,
+.dark .text-gray-450,
+.dark .text-gray-400,
+.dark .text-gray-350 {
+  color: #cbd5e1;
+}
+
+.dark .text-gray-300 {
+  color: #d1d5db;
+}
+
+.dark .dark\:text-gray-700,
+.dark .dark\:text-gray-650,
+.dark .dark\:text-gray-550,
+.dark .dark\:text-gray-500,
+.dark .dark\:text-gray-450,
+.dark .dark\:text-gray-400,
+.dark .dark\:text-gray-350 {
+  color: #cbd5e1 !important;
+}
+
+.dark .placeholder\:text-gray-400::placeholder,
+.dark .dark\:placeholder\:text-gray-500::placeholder {
+  color: #94a3b8 !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  color: #f9fafb;
+}
+
+.dark option {
+  background-color: #0f172a;
+  color: #f9fafb;
+}

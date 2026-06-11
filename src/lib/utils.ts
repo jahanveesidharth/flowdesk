@@ -146,3 +146,103 @@ export function getAmenityLabel(amenity: string): string {
 export function pluralize(count: number, singular: string, plural?: string): string {
   return count === 1 ? `${count} ${singular}` : `${count} ${plural || singular + 's'}`;
 }
+
+export interface ZoneColors {
+  bgLight: string;
+  textLight: string;
+  borderLight: string;
+  bgDark: string;
+  textDark: string;
+  borderDark: string;
+}
+
+export function getZoneColors(color: string): ZoneColors {
+  const norm = color.toLowerCase();
+  
+  // Blue / Engineering / Conference
+  if (norm === '#dbeafe' || norm === '#f0f9ff') {
+    return {
+      bgLight: '#dbeafe',
+      textLight: '#1e40af', // blue-800
+      borderLight: '#bfdbfe', // blue-200
+      bgDark: 'rgba(30, 41, 59, 0.85)', // slate-800/85
+      textDark: '#93c5fd', // blue-300
+      borderDark: 'rgba(59, 130, 246, 0.4)', // blue-500/40
+    };
+  }
+  // Pink / Design
+  if (norm === '#fce7f3') {
+    return {
+      bgLight: '#fce7f3',
+      textLight: '#9d174d', // pink-800
+      borderLight: '#fbcfe8',
+      bgDark: 'rgba(30, 41, 59, 0.85)',
+      textDark: '#fbcfe8', // pink-200
+      borderDark: 'rgba(236, 72, 153, 0.4)', // pink-500/40
+    };
+  }
+  // Green / Quiet Zone / Open Space
+  if (norm === '#f0fdf4') {
+    return {
+      bgLight: '#dcfce7', // green-100
+      textLight: '#166534', // green-800
+      borderLight: '#bbf7d0',
+      bgDark: 'rgba(30, 41, 59, 0.85)',
+      textDark: '#a7f3d0', // green-200
+      borderDark: 'rgba(16, 185, 129, 0.4)', // green-500/40
+    };
+  }
+  // Yellow / Collaboration
+  if (norm === '#fef9c3') {
+    return {
+      bgLight: '#fef9c3',
+      textLight: '#854d0e', // yellow-800
+      borderLight: '#fef08a',
+      bgDark: 'rgba(30, 41, 59, 0.85)',
+      textDark: '#fde047', // yellow-300
+      borderDark: 'rgba(234, 179, 8, 0.4)', // yellow-500/40
+    };
+  }
+  // Amber / Sales
+  if (norm === '#fef3c7') {
+    return {
+      bgLight: '#fef3c7',
+      textLight: '#92400e', // amber-800
+      borderLight: '#fde68a',
+      bgDark: 'rgba(30, 41, 59, 0.85)',
+      textDark: '#fde68a', // amber-200
+      borderDark: 'rgba(245, 158, 11, 0.4)', // amber-500/40
+    };
+  }
+  // Purple / Marketing
+  if (norm === '#ede9fe') {
+    return {
+      bgLight: '#ede9fe',
+      textLight: '#5b21b6', // purple-800
+      borderLight: '#ddd6fe',
+      bgDark: 'rgba(30, 41, 59, 0.85)',
+      textDark: '#ddd6fe', // purple-200
+      borderDark: 'rgba(139, 92, 246, 0.4)', // purple-500/40
+    };
+  }
+  // Red / Executive
+  if (norm === '#fef2f2') {
+    return {
+      bgLight: '#fee2e2', // red-100
+      textLight: '#991b1b', // red-800
+      borderLight: '#fecaca',
+      bgDark: 'rgba(30, 41, 59, 0.85)',
+      textDark: '#fca5a5', // red-300
+      borderDark: 'rgba(239, 68, 68, 0.4)', // red-500/40
+    };
+  }
+  // Gray / Hot Desks
+  return {
+    bgLight: '#f3f4f6',
+    textLight: '#374151', // gray-700
+    borderLight: '#e5e7eb',
+    bgDark: 'rgba(30, 41, 59, 0.85)',
+    textDark: '#cbd5e1', // gray-300
+    borderDark: 'rgba(107, 114, 128, 0.4)', // gray-500/40
+  };
+}

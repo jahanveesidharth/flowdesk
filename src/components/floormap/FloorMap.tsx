@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Layers, Tag, Filter, Eye } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import type { Desk, Room, Floor, ParkingSpace } from '../../types';
-import { cn, getDeskStatusColor, formatDate } from '../../lib/utils';
+import { cn, getDeskStatusColor, formatDate, getZoneColors } from '../../lib/utils';
 import { Tooltip } from '../ui/Tooltip';
 import { Button } from '../ui/Button';
 import { Select } from '../ui/Input';
@@ -24,7 +24,7 @@ interface FloorMapProps {
 }
 
 export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, highlightAvailable, date, adminMode, onDeskDragEnd }: FloorMapProps) {
-  const { desks, rooms, bookings, currentUser } = useAppStore();
+  const { desks, rooms, bookings, currentUser, theme } = useAppStore();
   const [zoom, setZoom] = useState(1);
   const [showZones, setShowZones] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
@@ -179,29 +179,45 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
             height: mapH,
             position: 'relative',
             transition: isPanning.current ? 'none' : 'transform 0.1s ease',
+            backgroundImage: `radial-gradient(circle, ${theme === 'dark' ? 'rgba(148,163,184,0.18)' : 'rgba(71,85,105,0.08)'} 1.5px, transparent 1.5px)`, 
+            backgroundSize: `${CELL}px ${CELL}px`,
           }}
         >
           {/* Zone backgrounds */}
-          {showZones && floor.zones.map(zone => (
-            <div
-              key={zone.id}
-              className="absolute rounded-lg border border-dashed border-opacity-50"
-              style={{
-                left: zone.x * CELL,
-                top: zone.y * CELL,
-                width: zone.width * CELL,
-                height: zone.height * CELL,
-                backgroundColor: zone.color + '60',
-                borderColor: zone.color,
-              }}
-            >
-              {showLabels && (
-                <span className="absolute top-2 left-3 text-xs font-semibold opacity-70" style={{ color: '#374151' }}>
-                  {zone.name}
-                </span>
-              )}
-            </div>
-          ))}
+          {showZones && floor.zones.map(zone => {
+            const zColors = getZoneColors(zone.color);
+            const isDark = theme === 'dark';
+            return (
+              <div
+                key={zone.id}
+                className="absolute rounded-2xl border-2 border-dashed transition-all duration-300"
+                style={{
+                  left: zone.x * CELL,
+                  top: zone.y * CELL,
+                  width: zone.width * CELL,
+                  height: zone.height * CELL,
+                  borderColor: zone.color,
+                  backgroundColor: isDark ? `${zone.color}10` : `${zone.color}25`,
+                  boxShadow: isDark
+                    ? `inset 0 0 0 1px ${zone.color}15, inset 0 0 20px ${zone.color}05`
+                    : `inset 0 0 0 1px ${zone.color}25, inset 0 0 20px ${zone.color}08`
+                }}
+              >
+                {showLabels && (
+                  <span 
+                    className="absolute top-2 left-2 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm border select-none transition-all"
+                    style={{ 
+                      backgroundColor: isDark ? zColors.bgDark : zColors.bgLight, 
+                      color: isDark ? zColors.textDark : zColors.textLight,
+                      borderColor: isDark ? zColors.borderDark : zColors.borderLight,
+                    }}
+                  >
+                    {zone.name}
+                  </span>
+                )}
+              </div>
+            );
+          })}
 
           {/* Desks */}
           {floorDesks.filter(shouldShowDesk).map(desk => {
