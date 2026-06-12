@@ -201,6 +201,7 @@ interface AppState {
   bookingFilters: BookingFilters;
   sidebarOpen: boolean;
   theme: 'light' | 'dark';
+  integrations: { name: string; desc: string; icon: string; connected: boolean }[];
 
   // Actions - Navigation
   setSelectedFloor: (floorId: string) => void;
@@ -208,6 +209,7 @@ interface AppState {
   setBookingFilters: (filters: Partial<BookingFilters>) => void;
   setSidebarOpen: (open: boolean) => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  toggleIntegration: (name: string) => void;
 
   // Actions - Bookings
   addBooking: (booking: Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Booking>;
@@ -275,6 +277,13 @@ export const useAppStore = create<AppState>()(
       bookingFilters: {},
       sidebarOpen: true,
       theme: 'light',
+      integrations: [
+        { name: 'Google Calendar', desc: 'Sync bookings with Google Calendar', icon: '📅', connected: true },
+        { name: 'Slack', desc: 'Get booking notifications in Slack', icon: '💬', connected: false },
+        { name: 'Microsoft Teams', desc: 'Teams integration for room bookings', icon: '🤝', connected: false },
+        { name: 'Okta SSO', desc: 'Single sign-on via Okta', icon: '🔐', connected: true },
+        { name: 'QR Code System', desc: 'Check-in via QR codes', icon: '📱', connected: true },
+      ],
 
       switchRole: () => set(s => {
         const nextAdminMode = !s.isAdminMode;
@@ -332,7 +341,15 @@ export const useAppStore = create<AppState>()(
       setBookingFilters: (filters) => set(s => ({ bookingFilters: { ...s.bookingFilters, ...filters } })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       setTheme: (theme) => set({ theme }),
-      resetToDemoData: () => set({
+      toggleIntegration: (name) => set(s => {
+        const next = s.integrations.map(item =>
+          item.name === name ? { ...item, connected: !item.connected } : item
+        );
+        const integration = s.integrations.find(item => item.name === name);
+        toast.success(`${name} ${integration?.connected ? 'disconnected' : 'connected'}.`);
+        return { integrations: next };
+      }),
+      resetToDemoData: () => set(s => ({
         currentUser: CURRENT_USER,
         isAdminMode: false,
         users: MOCK_USERS,
@@ -348,7 +365,8 @@ export const useAppStore = create<AppState>()(
         selectedFloorId: 'f1',
         selectedDate: format(new Date(), 'yyyy-MM-dd'),
         bookingFilters: {},
-      }),
+        integrations: s.integrations,
+      })),
 
       // ─── Actions with Supabase Integrations ─────────────────────────────────
 
@@ -408,6 +426,18 @@ export const useAppStore = create<AppState>()(
           read: false,
           bookingId: resultBooking.id,
         });
+
+        // Check active integrations to perform mock syncing actions
+        const currentIntegrations = get().integrations;
+        const googleConnected = currentIntegrations.find(i => i.name === 'Google Calendar')?.connected;
+        const slackConnected = currentIntegrations.find(i => i.name === 'Slack')?.connected;
+
+        if (googleConnected) {
+          toast.success('Synced booking with Google Calendar 📅');
+        }
+        if (slackConnected) {
+          toast.success('Sent booking notification to Slack 💬');
+        }
 
         return resultBooking;
       },

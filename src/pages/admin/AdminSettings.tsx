@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { Input, Select } from '../../components/ui/Input';
 import { Tabs } from '../../components/ui/Tabs';
 import toast from 'react-hot-toast';
+import { useAppStore } from '../../store/useAppStore';
 
 export function AdminSettings() {
   const [tab, setTab] = useState('general');
@@ -13,22 +14,10 @@ export function AdminSettings() {
     officeStart: '08:00',
     officeEnd: '18:00',
   });
-  const [integrations, setIntegrations] = useState([
-    { name: 'Google Calendar', desc: 'Sync bookings with Google Calendar', icon: 'GC', connected: true },
-    { name: 'Slack', desc: 'Get booking notifications in Slack', icon: 'SL', connected: false },
-    { name: 'Microsoft Teams', desc: 'Teams integration for room bookings', icon: 'MT', connected: false },
-    { name: 'Okta SSO', desc: 'Single sign-on via Okta', icon: 'OK', connected: true },
-    { name: 'QR Code System', desc: 'Check-in via QR codes', icon: 'QR', connected: true },
-  ]);
+  
+  const { integrations, toggleIntegration } = useAppStore();
 
   const handleSave = () => toast.success('Settings saved!');
-  const toggleIntegration = (name: string) => {
-    const integration = integrations.find(item => item.name === name);
-    setIntegrations(items => items.map(item => (
-      item.name === name ? { ...item, connected: !item.connected } : item
-    )));
-    toast.success(`${name} ${integration?.connected ? 'disconnected' : 'connected'}.`);
-  };
 
   return (
     <div className="max-w-3xl space-y-6 animate-fade-in">
@@ -81,20 +70,9 @@ export function AdminSettings() {
               { label: 'Cancellation Notice', desc: 'Notify when a booking is cancelled', enabled: true },
               { label: 'Waitlist Updates', desc: 'Notify when a waitlist spot opens', enabled: false },
               { label: 'Weekly Summary', desc: 'Weekly report to admin', enabled: true },
-            ].map(({ label, desc, enabled }) => {
-              const [on, setOn] = useState(enabled);
-              return (
-                <div key={label} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                  <div>
-                    <p className="font-medium text-sm text-gray-900">{label}</p>
-                    <p className="text-xs text-gray-500">{desc}</p>
-                  </div>
-                  <button onClick={() => setOn(!on)} className={`relative w-12 h-6 rounded-full transition-colors ${on ? 'bg-brand-500' : 'bg-gray-300'}`}>
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${on ? 'translate-x-7' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-              );
-            })}
+            ].map(({ label, desc, enabled }) => (
+              <SettingRow key={label} label={label} desc={desc} enabled={enabled} />
+            ))}
             <Button onClick={handleSave}>Save Email Settings</Button>
           </CardContent>
         </Card>
@@ -102,13 +80,7 @@ export function AdminSettings() {
 
       {tab === 'integrations' && (
         <div className="space-y-4">
-          {[
-            { name: 'Google Calendar', desc: 'Sync bookings with Google Calendar', icon: '📅', connected: true },
-            { name: 'Slack', desc: 'Get booking notifications in Slack', icon: '💬', connected: false },
-            { name: 'Microsoft Teams', desc: 'Teams integration for room bookings', icon: '🤝', connected: false },
-            { name: 'Okta SSO', desc: 'Single sign-on via Okta', icon: '🔐', connected: true },
-            { name: 'QR Code System', desc: 'Check-in via QR codes', icon: '📱', connected: true },
-          ].map(({ name, desc, icon, connected }) => (
+          {integrations.map(({ name, desc, icon, connected }) => (
             <Card key={name}>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{icon}</span>
@@ -116,7 +88,13 @@ export function AdminSettings() {
                   <p className="font-semibold text-sm text-gray-900">{name}</p>
                   <p className="text-xs text-gray-500">{desc}</p>
                 </div>
-                <IntegrationAction name={name} initialConnected={connected} />
+                <Button
+                  size="sm"
+                  variant={connected ? 'outline' : 'primary'}
+                  onClick={() => toggleIntegration(name)}
+                >
+                  {connected ? 'Disconnect' : 'Connect'}
+                </Button>
               </div>
             </Card>
           ))}
@@ -133,20 +111,9 @@ export function AdminSettings() {
                 { label: 'IP Allowlist', desc: 'Restrict access to office IP ranges', enabled: false },
                 { label: 'Session Timeout', desc: 'Auto-logout after inactivity', enabled: true },
                 { label: 'Audit Log', desc: 'Log all admin actions', enabled: true },
-              ].map(({ label, desc, enabled }) => {
-                const [on, setOn] = useState(enabled);
-                return (
-                  <div key={label} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                    <div>
-                      <p className="font-medium text-sm text-gray-900">{label}</p>
-                      <p className="text-xs text-gray-500">{desc}</p>
-                    </div>
-                    <button onClick={() => setOn(!on)} className={`relative w-12 h-6 rounded-full transition-colors ${on ? 'bg-brand-500' : 'bg-gray-300'}`}>
-                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${on ? 'translate-x-7' : 'translate-x-1'}`} />
-                    </button>
-                  </div>
-                );
-              })}
+              ].map(({ label, desc, enabled }) => (
+                <SettingRow key={label} label={label} desc={desc} enabled={enabled} />
+              ))}
               <Button onClick={handleSave}>Save Security Settings</Button>
             </CardContent>
           </Card>
@@ -156,17 +123,18 @@ export function AdminSettings() {
   );
 }
 
-function IntegrationAction({ name, initialConnected }: { name: string; initialConnected: boolean }) {
-  const [connected, setConnected] = useState(initialConnected);
-
-  const toggle = () => {
-    setConnected(value => !value);
-    toast.success(`${name} ${connected ? 'disconnected' : 'connected'}.`);
-  };
+function SettingRow({ label, desc, enabled }: { label: string; desc: string; enabled: boolean }) {
+  const [on, setOn] = useState(enabled);
 
   return (
-    <Button size="sm" variant={connected ? 'outline' : 'primary'} onClick={toggle}>
-      {connected ? 'Disconnect' : 'Connect'}
-    </Button>
+    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+      <div>
+        <p className="font-medium text-sm text-gray-900">{label}</p>
+        <p className="text-xs text-gray-500">{desc}</p>
+      </div>
+      <button onClick={() => setOn(!on)} className={`relative w-12 h-6 rounded-full transition-colors ${on ? 'bg-brand-500' : 'bg-gray-300'}`}>
+        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${on ? 'translate-x-7' : 'translate-x-1'}`} />
+      </button>
+    </div>
   );
 }

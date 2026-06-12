@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { generateQrSvg } from '../../lib/qr';
@@ -19,21 +19,33 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
   const [scanning, setScanning] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [success, setSuccess] = useState(false);
+  const cameraTimerRef = useRef<number | null>(null);
 
   const floor = floors.find(f => f.id === booking.floorId);
-  const qrSvg = generateQrSvg(`deskflow://check-in?bookingId=${booking.id}`);
+  const qrSvg = useMemo(
+    () => generateQrSvg(`deskflow://check-in?bookingId=${booking.id}`),
+    [booking.id],
+  );
 
   useEffect(() => {
     if (!isOpen) {
       setScanning(false);
       setCameraActive(false);
       setSuccess(false);
+      if (cameraTimerRef.current) {
+        window.clearTimeout(cameraTimerRef.current);
+        cameraTimerRef.current = null;
+      }
     }
   }, [isOpen]);
 
+  useEffect(() => () => {
+    if (cameraTimerRef.current) window.clearTimeout(cameraTimerRef.current);
+  }, []);
+
   const handleSimulateScan = async () => {
+    if (scanning) return;
     setScanning(true);
-    // Simulate camera scan delay
     await new Promise(r => setTimeout(r, 1500));
     setScanning(false);
     
@@ -47,16 +59,19 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
   };
 
   const handleCameraScan = () => {
+    if (scanning) return;
     setCameraActive(true);
     setScanning(true);
-    // Simulate camera detecting QR code
-    setTimeout(() => {
+    cameraTimerRef.current = window.setTimeout(() => {
       setScanning(false);
       setCameraActive(false);
-      checkIn(booking.id).then(() => {
-        setSuccess(true);
-        toast.success('Check-in successful via camera stream.');
-      });
+      cameraTimerRef.current = null;
+      checkIn(booking.id)
+        .then(() => {
+          setSuccess(true);
+          toast.success('Check-in successful via camera stream.');
+        })
+        .catch((err: any) => toast.error(err.message || 'Check-in failed'));
     }, 2000);
   };
 
@@ -103,8 +118,8 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
             </div>
           ) : (
             // Standard QR display
-            <div 
-              className={cn("w-full h-full transition-all", scanning && "blur-sm opacity-50")}
+            <div
+              className={cn("w-full h-full transition-opacity", scanning && "opacity-40")}
               dangerouslySetInnerHTML={{ __html: qrSvg }}
             />
           )}
@@ -130,6 +145,7 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
             <>
               <Button 
                 onClick={handleSimulateScan}
+                disabled={scanning}
                 loading={scanning && !cameraActive}
                 className="w-full"
                 variant="primary"
@@ -138,6 +154,7 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
               </Button>
               <Button 
                 onClick={handleCameraScan}
+                disabled={scanning}
                 loading={scanning && cameraActive}
                 className="w-full"
                 variant="outline"

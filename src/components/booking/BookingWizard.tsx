@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Select, Input, Textarea } from '../ui/Input';
@@ -27,6 +28,7 @@ interface BookingWizardProps {
 
 export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, prefillFloorId }: BookingWizardProps) {
   const { floors, desks, rooms, parkingSpaces, lockers, addBooking, currentUser, selectedDate, getDeskAvailability, bookings, selectedFloorId: storeFloorId } = useAppStore();
+  const navigate = useNavigate();
 
   const [step, setStep] = useState<Step>('type');
   const [resourceType, setResourceType] = useState<ResourceTab>('desk');
@@ -144,7 +146,7 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
           </div>
           <div className="flex gap-3 w-full border-t border-gray-100 dark:border-gray-900 pt-4 mt-1">
             <Button variant="outline" className="flex-1 rounded-xl font-bold" onClick={handleClose}>Done</Button>
-            <Button className="flex-1 rounded-xl font-bold" onClick={() => { handleClose(); }}>View List</Button>
+            <Button className="flex-1 rounded-xl font-bold" onClick={() => { handleClose(); navigate('/my-bookings'); }}>View List</Button>
           </div>
         </div>
       </Modal>

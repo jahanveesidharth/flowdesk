@@ -16,9 +16,14 @@ interface BookingCardProps {
 }
 
 export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
-  const { desks, rooms, parkingSpaces, lockers, floors, users, cancelBooking, checkIn, checkOut, currentUser } = useAppStore();
+  const { desks, rooms, parkingSpaces, lockers, floors, users, cancelBooking, checkIn, checkOut, currentUser, integrations } = useAppStore();
   const [showCancel, setShowCancel] = useState(false);
   const [showQrCheckIn, setShowQrCheckIn] = useState(false);
+
+  const qrSystemConnected = integrations?.find(i => i.name === 'QR Code System')?.connected ?? true;
+  const googleCalendarConnected = integrations?.find(i => i.name === 'Google Calendar')?.connected ?? true;
+  const teamsConnected = integrations?.find(i => i.name === 'Microsoft Teams')?.connected ?? true;
+  const isRoomBooking = booking.resourceType === 'room';
 
   const getResource = () => {
     if (booking.resourceType === 'desk') return desks.find(d => d.id === booking.resourceId);
@@ -107,6 +112,11 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
               <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {formatDate(booking.date)}</span>
               <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {formatTimeRange(booking.startTime, booking.endTime)}</span>
               {floor && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {floor.name}</span>}
+              {googleCalendarConnected && (
+                <span className="inline-flex items-center gap-0.5 text-xs text-blue-500 bg-blue-50 dark:bg-blue-950/20 px-1.5 py-0.5 rounded font-medium border border-blue-100 dark:border-blue-900/30">
+                  📅 Synced
+                </span>
+              )}
             </div>
             {showUser && user && (
               <div className="text-xs text-gray-400 mt-1">{user.name} · {user.department}</div>
@@ -121,16 +131,32 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
         </div>
 
         {isMyBooking && (canCheckIn || canCheckOut || canCancel) && (
-          <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 items-center">
             {canCheckIn && (
-              <Button size="xs" variant="success" iconLeft={<LogIn className="w-3.5 h-3.5" />} onClick={() => setShowQrCheckIn(true)}>
-                Check In / QR
-              </Button>
+              qrSystemConnected ? (
+                <Button size="xs" variant="success" iconLeft={<LogIn className="w-3.5 h-3.5" />} onClick={() => setShowQrCheckIn(true)}>
+                  Check In / QR
+                </Button>
+              ) : (
+                <Button size="xs" variant="success" iconLeft={<LogIn className="w-3.5 h-3.5" />} onClick={handleCheckIn}>
+                  Check In
+                </Button>
+              )
             )}
             {canCheckOut && (
               <Button size="xs" variant="secondary" iconLeft={<LogOut className="w-3.5 h-3.5" />} onClick={handleCheckOut}>
                 Check Out
               </Button>
+            )}
+            {teamsConnected && isRoomBooking && ['confirmed', 'checked_in'].includes(booking.status) && (
+              <a 
+                href={`https://teams.microsoft.com/l/meetup-join/mock-${booking.id}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 rounded px-2 py-1 hover:bg-indigo-100 transition-colors"
+              >
+                🤝 Join Teams Meeting
+              </a>
             )}
             {canCancel && (
               <Button size="xs" variant="outline" className="ml-auto text-red-500 hover:text-red-600 border-red-200 dark:border-red-900/60" onClick={() => setShowCancel(true)}>

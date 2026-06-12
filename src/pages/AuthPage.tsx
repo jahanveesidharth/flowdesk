@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Mail, Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { 
+  Building2, Mail, Lock, User, Eye, EyeOff, ArrowRight,
+  Map, Zap, Users, BarChart3, Sparkles
+} from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { DEMO_CREDENTIALS, enterDemoMode } from '../lib/demoMode';
 import { useAppStore } from '../store/useAppStore';
@@ -22,8 +25,12 @@ export function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
+  
   const resetToDemoData = useAppStore(s => s.resetToDemoData);
-
+  const integrations = useAppStore(s => s.integrations);
+  const theme = useAppStore(s => s.theme);
+  
+  const oktaConnected = integrations?.find(i => i.name === 'Okta SSO')?.connected ?? true;
   const notConfigured = !isSupabaseConfigured();
 
   const handleDemoLogin = () => {
@@ -88,13 +95,13 @@ export function AuthPage() {
 
   if (magicSent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-brand-50 to-white flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 max-w-sm w-full text-center">
-          <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#030712] flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-[#0f172a] rounded-2xl shadow-xl border border-gray-100 dark:border-[#1e293b] p-8 max-w-sm w-full text-center">
+          <div className="w-16 h-16 bg-brand-100 dark:bg-brand-950/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mail className="w-8 h-8 text-brand-500" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Check your inbox</h2>
-          <p className="text-gray-500 text-sm mb-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Check your inbox</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
             We sent a magic link to <strong>{email}</strong>.<br />
             Click it to sign in — no password needed.
           </p>
@@ -106,182 +113,296 @@ export function AuthPage() {
     );
   }
 
+  const features = [
+    { 
+      icon: <Map className="w-4.5 h-4.5 text-brand-500" />, 
+      title: 'Interactive floor maps', 
+      desc: 'Find and book the perfect spot.' 
+    },
+    { 
+      icon: <Zap className="w-4.5 h-4.5 text-brand-500" />, 
+      title: 'One-click booking', 
+      desc: 'Book desks, rooms, and parking instantly.' 
+    },
+    { 
+      icon: <Users className="w-4.5 h-4.5 text-brand-500" />, 
+      title: 'Team coordination', 
+      desc: "See who's in and where your team sits." 
+    },
+    { 
+      icon: <BarChart3 className="w-4.5 h-4.5 text-brand-500" />, 
+      title: 'Usage analytics', 
+      desc: 'Understand space usage and optimise.' 
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-blue-50 flex">
-      {/* Left panel – branding */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gray-950 text-white p-12">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-bold">DeskFlow</span>
-        </div>
-        <div className="space-y-6">
-          <h1 className="text-4xl font-bold leading-tight">
-            Your office,<br />
-            <span className="text-brand-400">perfectly organised.</span>
-          </h1>
-          <p className="text-gray-400 text-lg">
-            Book desks, rooms, and parking in seconds. See where your team sits. Never fight over a hot desk again.
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { icon: '🗺', text: 'Interactive floor maps' },
-              { icon: '⚡', text: 'One-click booking' },
-              { icon: '👥', text: 'Team coordination' },
-              { icon: '📊', text: 'Usage analytics' },
-            ].map(f => (
-              <div key={f.text} className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
-                <span className="text-xl">{f.icon}</span>
-                <span className="text-sm text-gray-300">{f.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <p className="text-gray-600 text-sm">© 2026 DeskFlow. All rights reserved.</p>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-[#030712] flex items-center justify-center p-4 md:p-8">
+      {/* Responsive SVG Clip-Path Definition for Organic Wave Curve */}
+      <svg className="absolute w-0 h-0">
+        <defs>
+          <clipPath id="organic-curve" clipPathUnits="objectBoundingBox">
+            <path d="M 1,0 L 0.35,0 C 0.2,0.2 0.05,0.35 0.05,0.5 C 0.05,0.65 0.2,0.8 0.35,1 L 1,1 Z" />
+          </clipPath>
+        </defs>
+      </svg>
 
-      {/* Right panel – form */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          {/* Mobile logo */}
-          <div className="flex items-center justify-center gap-2 mb-8 lg:hidden">
-            <div className="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-white" />
+      {/* Main card box */}
+      <div className="w-full max-w-6xl bg-white dark:bg-[#090f1d] rounded-[24px] border border-gray-150 dark:border-[#1e293b] shadow-2xl overflow-hidden flex min-h-[680px]">
+        
+        {/* Left Side: Branding & Features (Width: 55%-58%) */}
+        <div className="w-[55%] lg:w-[58%] shrink-0 hidden md:flex p-8 lg:p-12 relative z-10 bg-gray-50/50 dark:bg-[#070b14]/50 border-r border-gray-150 dark:border-[#1e293b]">
+          
+          {/* Content column: constrained to leave space for the wavy image */}
+          <div className="w-[54%] lg:w-[52%] flex flex-col justify-between h-full relative z-20">
+            {/* Logo & Headline */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center shadow-sm">
+                  <Building2 className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-lg font-bold text-gray-900 dark:text-white">DeskFlow</span>
+              </div>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50/50 dark:bg-brand-950/10 border border-brand-100/40 dark:border-brand-900/10 text-xs font-semibold text-brand-600 dark:text-brand-400">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>All-in-one workspace management</span>
+              </div>
+              
+              <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight tracking-tight">
+                Your office,<br />
+                <span className="text-brand-500">perfectly organised.</span>
+              </h1>
+              
+              <p className="text-gray-550 dark:text-gray-400 text-xs font-semibold leading-relaxed">
+                Book desks, rooms, and parking in seconds. See where your team sits. Never fight over a hot desk again.
+              </p>
             </div>
-            <span className="text-xl font-bold text-gray-900">DeskFlow</span>
+
+            {/* Features cards list */}
+            <div className="space-y-3">
+              {features.map((f, i) => (
+                <div 
+                  key={i} 
+                  className="flex items-start gap-4 p-3.5 rounded-2xl bg-white dark:bg-[#131f30]/20 border border-gray-200/50 dark:border-[#202e43]/30 shadow-xs hover:translate-x-1 transition-transform"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/20 flex items-center justify-center shrink-0">
+                    {f.icon}
+                  </div>
+                  <div className="space-y-0.5">
+                    <h4 className="text-xs font-bold text-gray-900 dark:text-white">{f.title}</h4>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-normal">{f.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Copyright */}
+            <p className="text-gray-400 dark:text-gray-600 text-xs font-semibold">© 2025 DeskFlow. All rights reserved.</p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-            {/* Demo mode banner */}
-            {notConfigured && (
-              <div className="mb-5 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
-                <strong>Demo mode</strong> — Supabase not configured. Any credentials will log you into the demo.
+          {/* Vertical organic wavy image strip (aligned to absolute right) */}
+          <div className="w-[42%] lg:w-[44%] absolute top-0 bottom-0 right-0 overflow-hidden select-none pointer-events-none z-10">
+            <div 
+              className="w-full h-full bg-cover bg-center"
+              style={{ 
+                clipPath: 'url(#organic-curve)',
+                backgroundImage: `url('https://images.unsplash.com/photo-1606857521015-7f9fcf423740?auto=format&fit=crop&w=800&q=80')`
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Right Side: Authentication Form Card */}
+        <div className="flex-1 flex items-center justify-center p-6 md:p-8 relative z-20">
+          
+          {/* Main Auth Form Container Card */}
+          <div className="w-full max-w-sm bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-150 dark:border-[#1e293b] shadow-xl p-8 relative flex flex-col pt-10">
+            
+            {/* Floating Logo Badge */}
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-150 dark:border-[#1e293b] shadow-md flex items-center justify-center">
+              <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center shadow-sm">
+                <Building2 className="w-5 h-5 text-white" />
               </div>
-            )}
+            </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">
-              {mode === 'login'       ? 'Welcome back'      :
-               mode === 'signup'      ? 'Create your account' :
-               mode === 'magic_link'  ? 'Sign in with email' :
-               'Reset password'}
-            </h2>
-            <p className="text-gray-500 text-sm mb-6">
-              {mode === 'login'       ? 'Sign in to your DeskFlow workspace'    :
-               mode === 'signup'      ? 'Get started with DeskFlow for free'    :
-               mode === 'magic_link'  ? 'We\'ll send you a one-time link'       :
-               'Enter your email and we\'ll send a reset link'}
-            </p>
+            {/* Title / Header */}
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {mode === 'login'       ? 'Welcome back'        :
+                 mode === 'signup'      ? 'Create account'      :
+                 mode === 'magic_link'  ? 'Sign in with email'  :
+                 'Reset password'}
+              </h2>
+              <p className="text-gray-400 dark:text-gray-500 text-xs mt-1 font-semibold">
+                {mode === 'login'       ? 'Sign in to your DeskFlow workspace'  :
+                 mode === 'signup'      ? 'Get started with DeskFlow for free'  :
+                 mode === 'magic_link'  ? "We'll send you a one-time link"      :
+                 'Enter your email and we\'ll send a reset link'}
+              </p>
+            </div>
 
+            {/* Credentials Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === 'signup' && (
-                <Input
-                  label="Full Name"
-                  placeholder="Lisa Chen"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  iconLeft={<User className="w-4 h-4" />}
-                  required
-                />
+                <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                  <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className="w-full bg-transparent border-0 outline-none text-sm placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white"
+                    required
+                  />
+                </div>
               )}
 
-              <Input
-                label="Email"
-                type="email"
-                placeholder="lisa@company.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                iconLeft={<Mail className="w-4 h-4" />}
-                required
-              />
+              <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <input
+                  type="email"
+                  placeholder="name@company.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full bg-transparent border-0 outline-none text-sm placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white"
+                  required
+                />
+              </div>
 
               {(mode === 'login' || mode === 'signup') && (
-                <Input
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  iconLeft={<Lock className="w-4 h-4" />}
-                  iconRight={
-                    <button type="button" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  }
-                  required
-                  minLength={mode === 'signup' ? 8 : 6}
-                  pattern={mode === 'signup' ? PASSWORD_PATTERN.source : undefined}
-                  title={mode === 'signup' ? 'Password must be at least 8 characters and include a number.' : undefined}
-                />
+                <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                  <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="w-full bg-transparent border-0 outline-none text-sm placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white"
+                    required
+                    minLength={mode === 'signup' ? 8 : 6}
+                    pattern={mode === 'signup' ? PASSWORD_PATTERN.source : undefined}
+                    title={mode === 'signup' ? 'Password must be at least 8 characters and include a number.' : undefined}
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="focus:outline-none">
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    ) : (
+                      <Eye className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    )}
+                  </button>
+                </div>
               )}
 
               {mode === 'login' && (
                 <div className="flex justify-end">
-                  <button type="button" onClick={() => setMode('forgot')} className="text-xs text-brand-600 hover:underline">
+                  <button type="button" onClick={() => setMode('forgot')} className="text-xs text-brand-500 hover:text-brand-600 font-semibold transition-colors">
                     Forgot password?
                   </button>
                 </div>
               )}
 
-              <Button type="submit" className="w-full h-10" loading={loading} iconRight={<ArrowRight className="w-4 h-4" />}>
-                {mode === 'login'       ? 'Sign in'            :
-                 mode === 'signup'      ? 'Create account'     :
-                 mode === 'magic_link'  ? 'Send magic link'    :
-                 'Send reset email'}
+              <Button type="submit" className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 mt-4 shadow-sm" loading={loading}>
+                <span>
+                  {mode === 'login'       ? 'Sign in'            :
+                   mode === 'signup'      ? 'Create account'     :
+                   mode === 'magic_link'  ? 'Send magic link'    :
+                   'Send reset email'}
+                </span>
+                <ArrowRight className="w-4 h-4" />
               </Button>
             </form>
 
+            {/* SSO / Alternative Login Section */}
             {(mode === 'login' || mode === 'signup') && (
               <>
-                <div className="relative my-5">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-                  <div className="relative flex justify-center text-xs text-gray-400 bg-white px-3">or</div>
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-150 dark:border-[#1e293b]" /></div>
+                  <div className="relative flex justify-center text-xs text-gray-400 dark:text-gray-500 bg-white dark:bg-[#0f172a] px-3 font-medium">or</div>
                 </div>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  iconLeft={<User className="w-4 h-4" />}
-                  type="button"
-                  onClick={handleDemoLogin}
-                >
-                  Try demo
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full mt-3"
-                  iconLeft={<Mail className="w-4 h-4" />}
-                  type="button"
-                  onClick={() => setMode('magic_link')}
-                >
-                  Continue with magic link
-                </Button>
+
+                <div className="space-y-3">
+                  {/* Try Demo Option */}
+                  <button
+                    type="button"
+                    onClick={handleDemoLogin}
+                    className="w-full bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/20 hover:dark:bg-brand-950/35 border border-brand-200 dark:border-brand-900/40 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-bold text-brand-600 dark:text-brand-400 transition-colors shadow-2xs"
+                  >
+                    <User className="w-4 h-4 shrink-0 text-brand-500" />
+                    <span>Try Demo Login</span>
+                  </button>
+
+                  {/* Google Login Option */}
+                  <button
+                    type="button"
+                    onClick={() => toast.success('Google OAuth redirection...')}
+                    className="w-full bg-transparent hover:bg-gray-50 dark:hover:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors shadow-2xs"
+                  >
+                    <svg className="w-4 h-4 mr-1 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
+                    </svg>
+                    <span>Continue with Google</span>
+                  </button>
+
+                  {/* Okta SSO Option (Conditional) */}
+                  {oktaConnected && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        toast.success('Initiating Okta SSO authentication...');
+                        setTimeout(() => {
+                          handleDemoLogin();
+                        }, 1000);
+                      }}
+                      className="w-full bg-blue-50 hover:bg-blue-100/80 dark:bg-blue-950/20 hover:dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-semibold text-blue-700 dark:text-blue-400 transition-colors shadow-2xs"
+                    >
+                      <Lock className="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                      <span>Sign in with Okta SSO</span>
+                    </button>
+                  )}
+
+                  {/* Magic Link Option */}
+                  <button
+                    type="button"
+                    onClick={() => setMode('magic_link')}
+                    className="w-full bg-transparent hover:bg-gray-50 dark:hover:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors shadow-2xs"
+                  >
+                    <Mail className="w-4 h-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                    <span>Continue with magic link</span>
+                  </button>
+                </div>
               </>
             )}
 
-            <div className="mt-5 text-center text-sm">
+            {/* Footer switcher */}
+            <div className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400 font-medium">
               {mode === 'login' ? (
-                <span className="text-gray-500">
-                  No account?{' '}
-                  <button onClick={() => setMode('signup')} className="text-brand-600 font-medium hover:underline">
-                    Sign up free
+                <span>
+                  New to DeskFlow?{' '}
+                  <button onClick={() => setMode('signup')} className="text-brand-500 font-bold hover:underline">
+                    Create account
                   </button>
                 </span>
               ) : (
-                <span className="text-gray-500">
+                <span>
                   Already have an account?{' '}
-                  <button onClick={() => setMode('login')} className="text-brand-600 font-medium hover:underline">
+                  <button onClick={() => setMode('login')} className="text-brand-500 font-bold hover:underline">
                     Sign in
                   </button>
                 </span>
               )}
             </div>
-          </div>
 
-          <p className="text-center text-xs text-gray-400 mt-5">
-            By signing in, you agree to our{' '}
-            <a href="#" className="underline">Terms</a> and{' '}
-            <a href="#" className="underline">Privacy Policy</a>.
-          </p>
+            {/* Form terms footer */}
+            <p className="mt-5 text-center text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+              By signing in, you agree to our{' '}
+              <a href="#" className="underline hover:text-gray-600 dark:hover:text-gray-300">Terms</a> and{' '}
+              <a href="#" className="underline hover:text-gray-600 dark:hover:text-gray-300">Privacy Policy</a>.
+            </p>
+          </div>
         </div>
       </div>
     </div>
