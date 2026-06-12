@@ -8,15 +8,18 @@ import { Avatar } from '../../components/ui/Avatar';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { formatDate } from '../../lib/utils';
-import type { User } from '../../types';
+import type { User, UserRole } from '../../types';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
+type BadgeVariant = NonNullable<Parameters<typeof Badge>[0]['variant']>;
+
 export function AdminUsers() {
-  const { users, bookings, floors } = useAppStore();
+  const { users, bookings, floors, currentUser, updateUserRole } = useAppStore();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedRole, setSelectedRole] = useState<UserRole>('employee');
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
@@ -44,7 +47,21 @@ export function AdminUsers() {
     };
   };
 
-  const roleColors: Record<string, string> = { admin: 'warning', manager: 'info', employee: 'default' };
+  const roleColors: Record<UserRole, BadgeVariant> = { admin: 'warning', manager: 'info', employee: 'default' };
+  const canChangeRoles = currentUser.role === 'admin';
+  const canChangeSelectedRole = !!selectedUser && canChangeRoles && selectedUser.id !== currentUser.id;
+
+  const openUser = (user: User) => {
+    setSelectedUser(user);
+    setSelectedRole(user.role);
+  };
+
+  const handleRoleSave = async () => {
+    if (!selectedUser) return;
+    await updateUserRole(selectedUser.id, selectedRole);
+    setSelectedUser({ ...selectedUser, role: selectedRole });
+  };
+
   const handleInvite = () => {
     if (!inviteName.trim() || !inviteEmail.trim()) {
       toast.error('Enter a name and email to send an invite.');
@@ -61,9 +78,11 @@ export function AdminUsers() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">Users</h1>
-        <Button iconLeft={<UserPlus className="w-4 h-4" />} size="sm" onClick={() => setInviteOpen(true)}>
-          Invite User
-        </Button>
+        {canChangeRoles && (
+          <Button iconLeft={<UserPlus className="w-4 h-4" />} size="sm" onClick={() => setInviteOpen(true)}>
+            Invite User
+          </Button>
+        )}
       </div>
 
       {/* Stats */}
@@ -79,8 +98,8 @@ export function AdminUsers() {
           <div className="text-xs text-green-500">In Office Today</div>
         </Card>
         <Card className="text-center bg-purple-50 border-0">
-          <div className="text-2xl font-bold text-purple-700">{users.filter(u => u.role === 'admin').length}</div>
-          <div className="text-xs text-purple-500">Admins</div>
+          <div className="text-2xl font-bold text-purple-700">{users.filter(u => u.role === 'manager').length}</div>
+          <div className="text-xs text-purple-500">Managers</div>
         </Card>
       </div>
 
@@ -126,7 +145,7 @@ export function AdminUsers() {
                     </div>
                   </td>
                   <td className="p-3">
-                    <Badge variant={(roleColors[user.role] || 'default') as any} size="sm" className="capitalize">{user.role}</Badge>
+                    <Badge variant={roleColors[user.role]} size="sm" className="capitalize">{user.role}</Badge>
                   </td>
                   <td className="p-3 text-gray-600">{user.department}</td>
                   <td className="p-3">
@@ -142,7 +161,7 @@ export function AdminUsers() {
                     <span className="text-xs text-gray-400 ml-1">total</span>
                   </td>
                   <td className="p-3">
-                    <Button size="xs" variant="ghost" iconLeft={<Edit3 className="w-3.5 h-3.5" />} onClick={() => setSelectedUser(user)}>
+                    <Button size="xs" variant="ghost" iconLeft={<Edit3 className="w-3.5 h-3.5" />} onClick={() => openUser(user)}>
                       View
                     </Button>
                   </td>
@@ -162,10 +181,33 @@ export function AdminUsers() {
               <div>
                 <p className="font-bold text-gray-900">{selectedUser.name}</p>
                 <p className="text-gray-500">{selectedUser.email}</p>
-                <Badge variant={(roleColors[selectedUser.role] || 'default') as any} className="capitalize mt-1">{selectedUser.role}</Badge>
+                <Badge variant={roleColors[selectedUser.role]} className="capitalize mt-1">{selectedUser.role}</Badge>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="bg-gray-50 rounded-xl p-3 col-span-2">
+                <Select
+                  label="Role"
+                  value={selectedRole}
+                  onChange={e => setSelectedRole(e.target.value as UserRole)}
+                  disabled={!canChangeSelectedRole}
+                  options={[
+                    { value: 'employee', label: 'Employee' },
+                    { value: 'manager', label: 'Manager' },
+                    { value: 'admin', label: 'Admin' },
+                  ]}
+                />
+                <div className="flex items-center justify-between gap-3 mt-3">
+                  <p className="text-xs text-gray-500">
+                    {selectedUser.id === currentUser.id
+                      ? 'You cannot change your own role from here.'
+                      : 'Managers can view admin dashboards, bookings, and analytics, but cannot change roles or admin settings.'}
+                  </p>
+                  <Button size="sm" onClick={handleRoleSave} disabled={!canChangeSelectedRole || selectedRole === selectedUser.role}>
+                    Save Role
+                  </Button>
+                </div>
+              </div>
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-gray-500 text-xs">Department</p>
                 <p className="font-medium text-gray-900 mt-0.5">{selectedUser.department}</p>

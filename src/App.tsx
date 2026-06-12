@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { useAppStore } from './store/useAppStore';
 import { Layout } from './components/layout/Layout';
 import { AuthGuard } from './components/layout/AuthGuard';
 import { LandingPage } from './pages/LandingPage';
@@ -20,6 +22,14 @@ import { AdminPolicies } from './pages/admin/AdminPolicies';
 import { AdminSettings } from './pages/admin/AdminSettings';
 import { Toaster } from 'react-hot-toast';
 
+function RoleRoute({ allow, children }: { allow: Array<'admin' | 'manager' | 'employee'>; children: ReactNode }) {
+  const role = useAppStore(s => s.currentUser.role);
+  if (!allow.includes(role)) {
+    return <Navigate to={role === 'employee' ? '/dashboard' : '/admin/dashboard'} replace />;
+  }
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -40,13 +50,13 @@ export default function App() {
           <Route path="/notifications"   element={<NotificationsPage />} />
           <Route path="/settings"        element={<SettingsPage />} />
           {/* Admin routes */}
-          <Route path="/admin/dashboard"     element={<AdminDashboard />} />
-          <Route path="/admin/floor-builder" element={<FloorBuilder />} />
-          <Route path="/admin/bookings"      element={<AdminBookings />} />
-          <Route path="/admin/users"         element={<AdminUsers />} />
-          <Route path="/admin/analytics"     element={<Analytics />} />
-          <Route path="/admin/policies"      element={<AdminPolicies />} />
-          <Route path="/admin/settings"      element={<AdminSettings />} />
+          <Route path="/admin/dashboard"     element={<RoleRoute allow={['admin', 'manager']}><AdminDashboard /></RoleRoute>} />
+          <Route path="/admin/floor-builder" element={<RoleRoute allow={['admin', 'manager']}><FloorBuilder /></RoleRoute>} />
+          <Route path="/admin/bookings"      element={<RoleRoute allow={['admin', 'manager']}><AdminBookings /></RoleRoute>} />
+          <Route path="/admin/users"         element={<RoleRoute allow={['admin', 'manager']}><AdminUsers /></RoleRoute>} />
+          <Route path="/admin/analytics"     element={<RoleRoute allow={['admin', 'manager']}><Analytics /></RoleRoute>} />
+          <Route path="/admin/policies"      element={<RoleRoute allow={['admin']}><AdminPolicies /></RoleRoute>} />
+          <Route path="/admin/settings"      element={<RoleRoute allow={['admin']}><AdminSettings /></RoleRoute>} />
           <Route path="*"                    element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>

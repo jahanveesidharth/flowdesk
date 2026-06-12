@@ -30,10 +30,26 @@ const ADMIN_NAV = [
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
+const MANAGER_NAV = [
+  { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Manager Dashboard' },
+  { to: '/admin/floor-builder', icon: Building2, label: 'Floor Builder' },
+  { to: '/admin/bookings', icon: Calendar, label: 'All Bookings' },
+  { to: '/admin/users', icon: Users, label: 'Users' },
+  { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+  { to: '/floor-map', icon: Map, label: 'Floor Map' },
+  { to: '/my-bookings', icon: Calendar, label: 'My Bookings' },
+  { to: '/parking-lockers', icon: Car, label: 'Parking & Lockers' },
+  { to: '/team', icon: Users, label: 'Team' },
+  { to: '/my-week', icon: Calendar, label: 'My Week' },
+];
+
 export function Sidebar() {
-  const { currentUser, isAdminMode, sidebarOpen, setSidebarOpen, switchRole, notifications } = useAppStore();
+  const { currentUser, sidebarOpen, setSidebarOpen, notifications } = useAppStore();
   const unreadCount = notifications.filter(n => !n.read && n.userId === currentUser.id).length;
-  const nav = isAdminMode ? ADMIN_NAV : EMPLOYEE_NAV;
+  const isAdmin = currentUser.role === 'admin';
+  const isManager = currentUser.role === 'manager';
+  const nav = isAdmin ? ADMIN_NAV : isManager ? MANAGER_NAV : EMPLOYEE_NAV;
+  const roleLabel = isAdmin ? 'Admin Panel' : isManager ? 'Manager Panel' : 'Workspace';
 
   return (
     <aside className={cn(
@@ -53,31 +69,43 @@ export function Sidebar() {
       {/* Role badge */}
       {sidebarOpen && (
         <div className="px-3.5 pt-3.5 pb-1">
-          <button
-            onClick={switchRole}
+          <div
             className={cn(
               'w-full text-[11px] py-2 px-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-between shadow-sm border',
-              isAdminMode 
-                ? 'bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/10 text-orange-700 dark:text-orange-400 border-orange-200/50 dark:border-orange-900/30' 
+              isAdmin
+                ? 'bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/10 text-orange-700 dark:text-orange-400 border-orange-200/50 dark:border-orange-900/30'
+                : isManager
+                ? 'bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-950/20 dark:to-sky-950/10 text-blue-700 dark:text-blue-400 border-blue-200/50 dark:border-blue-900/30'
                 : 'bg-gradient-to-r from-gray-50 to-white dark:from-gray-900/60 dark:to-gray-950/60 text-gray-650 dark:text-gray-300 border-gray-200/40 dark:border-gray-800/60',
             )}
           >
-            <span className="truncate">{isAdminMode ? 'Admin Panel' : 'Workspace'}</span>
+            <span className="truncate">{roleLabel}</span>
             <span className={cn(
               "px-1.5 py-0.5 rounded-md text-[9px] uppercase tracking-wider shrink-0 font-bold ml-2",
-              isAdminMode ? "bg-orange-200/60 dark:bg-orange-900/50 text-orange-850 dark:text-orange-300" : "bg-gray-200/60 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+              isAdmin
+                ? "bg-orange-200/60 dark:bg-orange-900/50 text-orange-850 dark:text-orange-300"
+                : isManager
+                ? "bg-blue-200/60 dark:bg-blue-900/50 text-blue-850 dark:text-blue-300"
+                : "bg-gray-200/60 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
             )}>
-              Switch
+              {currentUser.role}
             </span>
-          </button>
+          </div>
         </div>
       )}
       {!sidebarOpen && (
         <div className="px-2 pt-2 flex justify-center">
-          <Tooltip content={isAdminMode ? 'Admin Mode' : 'Employee Mode'} side="right">
-            <button onClick={switchRole} className={cn('w-9 h-7 rounded-lg text-[10px] font-extrabold shadow-sm transition-all border flex items-center justify-center', isAdminMode ? 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-orange-200/30' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200/30')}>
-              {isAdminMode ? 'A' : 'E'}
-            </button>
+          <Tooltip content={roleLabel} side="right">
+            <div className={cn(
+              'w-9 h-7 rounded-lg text-[10px] font-extrabold shadow-sm transition-all border flex items-center justify-center',
+              isAdmin
+                ? 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-orange-200/30'
+                : isManager
+                ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200/30'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200/30'
+            )}>
+              {isAdmin ? 'A' : isManager ? 'M' : 'E'}
+            </div>
           </Tooltip>
         </div>
       )}
@@ -115,8 +143,8 @@ export function Sidebar() {
         <Tooltip content={sidebarOpen ? null : 'Notifications'} side="right">
           <NavLink to="/notifications" className={({ isActive }) => cn(
             'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
-            isActive 
-              ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold' 
+            isActive
+              ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold'
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50/60 dark:hover:bg-gray-900/40',
             !sidebarOpen && 'justify-center px-2',
           )}>
@@ -142,8 +170,8 @@ export function Sidebar() {
         <Tooltip content={sidebarOpen ? null : 'Settings'} side="right">
           <NavLink to="/settings" className={({ isActive }) => cn(
             'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
-            isActive 
-              ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold' 
+            isActive
+              ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold'
               : 'text-gray-650 dark:text-gray-400 hover:bg-gray-50/60 dark:hover:bg-gray-900/40',
             !sidebarOpen && 'justify-center px-2',
           )}>

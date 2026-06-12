@@ -54,8 +54,8 @@ export function LandingPage() {
             <span className="font-bold text-gray-900 text-lg">DESKFLOW</span>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/dashboard')} className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Log in</button>
-            <Button size="sm" onClick={() => navigate('/dashboard')}>Get started free</Button>
+            <button onClick={() => navigate('/login')} className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Log in</button>
+            <Button size="sm" onClick={() => navigate('/login')}>Get started free</Button>
           </div>
         </div>
       </nav>
@@ -69,7 +69,7 @@ export function LandingPage() {
         <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-10">
           DeskFlow makes it effortless to book desks, meeting rooms, and resources. See who's in the office, coordinate with your team, and never fight over a hot desk again.
         </p>
-        <Button size="lg" className="text-base px-8" iconRight={<ArrowRight className="w-5 h-5" />} onClick={() => navigate('/dashboard')}>
+        <Button size="lg" className="text-base px-8" iconRight={<ArrowRight className="w-5 h-5" />} onClick={() => navigate('/login')}>
           Get started free
         </Button>
 
@@ -222,7 +222,7 @@ export function LandingPage() {
           size="lg"
           className="bg-white text-brand-600 hover:bg-gray-100 text-base px-8"
           iconRight={<ArrowRight className="w-5 h-5" />}
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/login')}
         >
           Get started free
         </Button>

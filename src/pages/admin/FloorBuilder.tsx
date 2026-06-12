@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 const CELL = 42; // Slightly larger grid cell size for premium high-density display and touch targets
 
 export function FloorBuilder() {
-  const { floors, desks, rooms, updateDesk, addDesk, removeDesk, theme } = useAppStore();
+  const { floors, desks, rooms, currentUser, updateDesk, addDesk, removeDesk, theme } = useAppStore();
   const [selectedFloorId, setSelectedFloorId] = useState(floors[0]?.id || '');
   const [tool, setTool] = useState<'select' | 'add_desk' | 'erase'>('select');
   const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
@@ -27,6 +27,12 @@ export function FloorBuilder() {
   const floor = floors.find(f => f.id === selectedFloorId);
   const floorDesks = desks.filter(d => d.floorId === selectedFloorId);
   const floorRooms = rooms.filter(r => r.floorId === selectedFloorId);
+  const canErase = currentUser.role === 'admin';
+  const designerTools = [
+    { id: 'select' as const, icon: <Move className="w-4 h-4" />, label: 'Pointer / Move' },
+    { id: 'add_desk' as const, icon: <Plus className="w-4 h-4" />, label: 'Draw Desks' },
+    ...(canErase ? [{ id: 'erase' as const, icon: <Trash2 className="w-4 h-4" />, label: 'Eraser Mode' }] : []),
+  ];
 
   if (!floor) return <div className="text-center py-12 text-gray-500 font-bold">No floors available</div>;
 
@@ -54,7 +60,7 @@ export function FloorBuilder() {
     } else if (tool === 'select') {
       const desk = floorDesks.find(d => d.x === x && d.y === y);
       setSelectedDesk(desk || null);
-    } else if (tool === 'erase') {
+    } else if (tool === 'erase' && canErase) {
       const desk = floorDesks.find(d => d.x === x && d.y === y);
       if (desk) {
         removeDesk(desk.id);
@@ -228,11 +234,7 @@ export function FloorBuilder() {
           {/* Designer Controls Toolbar */}
           <div className="flex items-center justify-between gap-4 flex-wrap bg-white dark:bg-gray-950 p-2 rounded-xl border border-gray-250/70 dark:border-gray-800/80 shadow-sm">
             <div className="flex items-center gap-2">
-              {[
-                { id: 'select' as const, icon: <Move className="w-4 h-4" />, label: 'Pointer / Move' },
-                { id: 'add_desk' as const, icon: <Plus className="w-4 h-4" />, label: 'Draw Desks' },
-                { id: 'erase' as const, icon: <Trash2 className="w-4 h-4" />, label: 'Eraser Mode' },
-              ].map(t => (
+              {designerTools.map(t => (
                 <button
                   key={t.id}
                   onClick={() => setTool(t.id)}
@@ -286,7 +288,7 @@ export function FloorBuilder() {
                 }}
               />
               <div className="absolute right-4 top-4 z-10 rounded-lg border border-gray-200 bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-900/90 dark:text-gray-300">
-                {tool === 'select' ? 'Click or drag desks' : tool === 'add_desk' ? 'Click empty cells to add' : 'Click desks to erase'}
+                {tool === 'select' ? 'Click or drag desks' : tool === 'add_desk' ? 'Click empty cells to add' : canErase ? 'Click desks to erase' : 'Edit floor layout'}
               </div>
               <div
                 className="relative mx-auto"
@@ -374,7 +376,7 @@ export function FloorBuilder() {
                           }}
                           onClick={() => {
                             if (tool === 'select') setSelectedDesk(desk);
-                            if (tool === 'erase') { 
+                            if (tool === 'erase' && canErase) { 
                               removeDesk(desk.id); 
                               toast('Desk deleted'); 
                             }
@@ -529,15 +531,17 @@ export function FloorBuilder() {
                         </Button>
                       )}
                       
-                      <Button 
-                        size="sm" 
-                        variant="danger" 
-                        iconLeft={<Trash className="w-3.5 h-3.5" />} 
-                        onClick={() => setShowDeleteConfirm(true)}
-                        className="w-full text-xs font-semibold"
-                      >
-                        Remove Asset
-                      </Button>
+                      {canErase && (
+                        <Button 
+                          size="sm" 
+                          variant="danger" 
+                          iconLeft={<Trash className="w-3.5 h-3.5" />} 
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="w-full text-xs font-semibold"
+                        >
+                          Remove Asset
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -607,17 +611,19 @@ export function FloorBuilder() {
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </Button>
-                        <Button 
-                          size="xs" 
-                          variant="ghost" 
-                          onClick={() => { 
-                            removeDesk(desk.id); 
-                            toast('Desk removed'); 
-                          }} 
-                          className="hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-500 hover:text-rose-600 p-1 h-7 w-7"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        {canErase && (
+                          <Button 
+                            size="xs" 
+                            variant="ghost" 
+                            onClick={() => { 
+                              removeDesk(desk.id); 
+                              toast('Desk removed'); 
+                            }} 
+                            className="hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-500 hover:text-rose-600 p-1 h-7 w-7"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>

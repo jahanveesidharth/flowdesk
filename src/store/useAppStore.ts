@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { 
-  User, Booking, Notification, Floor, Desk, Room, ParkingSpace, 
-  Locker, WaitlistEntry, BookingFilters, AttendancePlan, AttendanceStatus 
+import type {
+  User, Booking, Notification, Floor, Desk, Room, ParkingSpace,
+  Locker, WaitlistEntry, BookingFilters, AttendancePlan, AttendanceStatus, UserRole
 } from '../types';
+import type { Database } from '../lib/database.types';
 import {
   MOCK_USERS, MOCK_BOOKINGS, MOCK_NOTIFICATIONS, MOCK_FLOORS,
   MOCK_DESKS, MOCK_ROOMS, MOCK_PARKING, MOCK_LOCKERS, MOCK_WAITLIST,
@@ -13,6 +14,8 @@ import { format } from 'date-fns';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { isDemoMode } from '../lib/demoMode';
 import toast from 'react-hot-toast';
+
+type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 
 // Untyped client helper for database mutations to prevent strict TS generic payload complaints
 const db = supabase as any;
@@ -180,6 +183,8 @@ interface AppState {
   isAdminMode: boolean;
   switchRole: () => void;
   updateProfile: (updates: Partial<User>) => Promise<void>;
+  updateUserRole: (userId: string, role: UserRole) => Promise<void>;
+  setCurrentUserFromProfile: (profile: ProfileRow) => void;
   users: User[];
 
   // Resources
@@ -242,6 +247,7 @@ interface AppState {
   // Synchronization
   initSupabaseSync: () => () => void;
   resetToDemoData: () => void;
+  setDemoRole: (role: 'employee' | 'admin') => void;
 
   // Computed helpers
   getBookingsForDate: (date: string, userId?: string) => Booking[];
@@ -286,14 +292,15 @@ export const useAppStore = create<AppState>()(
       ],
 
       switchRole: () => set(s => {
+        if (s.currentUser.role !== 'admin') {
+          toast.error('Only admins can open admin mode.');
+          return {};
+        }
         const nextAdminMode = !s.isAdminMode;
         if (isValidUuid(s.currentUser.id)) {
           return {
             isAdminMode: nextAdminMode,
-            currentUser: {
-              ...s.currentUser,
-              role: nextAdminMode ? 'admin' : 'employee'
-            }
+            currentUser: s.currentUser,
           };
         }
         return {
@@ -327,7 +334,7 @@ export const useAppStore = create<AppState>()(
           const nextUser = {
             ...s.currentUser,
             ...updates,
-            preferences: updates.preferences 
+            preferences: updates.preferences
               ? { ...s.currentUser.preferences, ...updates.preferences }
               : s.currentUser.preferences
           };
@@ -335,6 +342,49 @@ export const useAppStore = create<AppState>()(
           return { currentUser: nextUser, users: nextUsers };
         });
       },
+
+      updateUserRole: async (userId, role) => {
+        const { currentUser } = get();
+        if (currentUser.role !== 'admin') {
+          toast.error('Only admins can change roles.');
+          return;
+        }
+
+        if (canUseSupabase() && isValidUuid(userId)) {
+          try {
+            const { error } = await db.from('profiles')
+              .update({ role })
+              .eq('id', userId);
+            if (error) throw error;
+          } catch (err: any) {
+            console.error('Update user role in Supabase failed:', err);
+            toast.error(`Role update failed: ${err.message || err}`);
+            return;
+          }
+        }
+
+        set(s => {
+          const nextUsers = s.users.map(u => u.id === userId ? { ...u, role } : u);
+          const nextCurrentUser = s.currentUser.id === userId ? { ...s.currentUser, role } : s.currentUser;
+          return {
+            users: nextUsers,
+            currentUser: nextCurrentUser,
+            isAdminMode: nextCurrentUser.role === 'admin' ? s.isAdminMode : false,
+          };
+        });
+        toast.success('User role updated.');
+      },
+
+      setCurrentUserFromProfile: (profile) => set(s => {
+        const user = mapProfileFromDb(profile);
+        return {
+          currentUser: user,
+          isAdminMode: user.role === 'admin',
+          users: s.users.some(u => u.id === user.id)
+            ? s.users.map(u => u.id === user.id ? user : u)
+            : [...s.users, user],
+        };
+      }),
 
       setSelectedFloor: (floorId) => set({ selectedFloorId: floorId }),
       setSelectedDate: (date) => set({ selectedDate: date }),
@@ -365,6 +415,12 @@ export const useAppStore = create<AppState>()(
         selectedFloorId: 'f1',
         selectedDate: format(new Date(), 'yyyy-MM-dd'),
         bookingFilters: {},
+        integrations: s.integrations,
+      })),
+      setDemoRole: (role) => set(s => ({
+        currentUser: role === 'admin' ? ADMIN_USER : CURRENT_USER,
+        isAdminMode: role === 'admin',
+        users: MOCK_USERS,
         integrations: s.integrations,
       })),
 
@@ -835,7 +891,7 @@ export const useAppStore = create<AppState>()(
       // ─── Realtime Hydration Synchronizer ────────────────────────────────────
 
       initSupabaseSync: () => {
-        if (!canUseSupabase()) return () => {};
+        if (!canUseSupabase()) return () => { };
 
         const fetchAll = async () => {
           try {
@@ -881,7 +937,7 @@ export const useAppStore = create<AppState>()(
               const { data: { user: authUser } } = await supabase.auth.getUser();
               if (authUser) {
                 const cur = mappedUsers.find(u => u.id === authUser.id);
-                if (cur) set({ currentUser: cur });
+                if (cur) set({ currentUser: cur, isAdminMode: cur.role === 'admin' });
               }
             }
           } catch (err) {
@@ -999,6 +1055,7 @@ export const useAppStore = create<AppState>()(
         desks: state.desks,
         theme: state.theme,
         attendancePlans: state.attendancePlans,
+        integrations: state.integrations,
       }),
     }
   )

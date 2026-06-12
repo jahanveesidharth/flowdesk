@@ -14,8 +14,6 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const {
     currentUser,
-    switchRole,
-    isAdminMode,
     floors,
     selectedFloorId,
     theme,
@@ -222,12 +220,9 @@ export function SettingsPage() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-sm text-gray-900">Current Mode</p>
-                  <p className="text-xs text-gray-500">{isAdminMode ? 'Admin mode — full access' : 'Employee mode — standard access'}</p>
+                  <p className="font-medium text-sm text-gray-900">Current Role</p>
+                  <p className="text-xs text-gray-500 capitalize">{currentUser.role}. Role changes are managed by an admin.</p>
                 </div>
-                <Button variant={isAdminMode ? 'secondary' : 'primary'} size="sm" onClick={switchRole}>
-                  Switch to {isAdminMode ? 'Employee' : 'Admin'} Mode
-                </Button>
               </div>
             </CardContent>
           </Card>

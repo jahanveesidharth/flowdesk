@@ -5,13 +5,15 @@ import {
   Map, Zap, Users, BarChart3, Sparkles
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import type { Database } from '../lib/database.types';
 import { DEMO_CREDENTIALS, enterDemoMode } from '../lib/demoMode';
 import { useAppStore } from '../store/useAppStore';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
 import toast from 'react-hot-toast';
 
 type AuthMode = 'login' | 'signup' | 'magic_link' | 'forgot';
+type AuthRole = 'employee' | 'admin';
+type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PASSWORD_PATTERN = /^(?=.*\d).{8,}$/;
@@ -25,19 +27,22 @@ export function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
+  const [authRole, setAuthRole] = useState<AuthRole>('employee');
   
   const resetToDemoData = useAppStore(s => s.resetToDemoData);
+  const setDemoRole = useAppStore(s => s.setDemoRole);
+  const setCurrentUserFromProfile = useAppStore(s => s.setCurrentUserFromProfile);
   const integrations = useAppStore(s => s.integrations);
-  const theme = useAppStore(s => s.theme);
   
   const oktaConnected = integrations?.find(i => i.name === 'Okta SSO')?.connected ?? true;
   const notConfigured = !isSupabaseConfigured();
 
-  const handleDemoLogin = () => {
+  const handleDemoLogin = (role: AuthRole = authRole) => {
     enterDemoMode();
     resetToDemoData();
+    setDemoRole(role);
     toast.success(`Demo mode - use ${DEMO_CREDENTIALS.email} / ${DEMO_CREDENTIALS.password}`);
-    navigate('/dashboard');
+    navigate(role === 'admin' ? '/admin/dashboard' : '/dashboard');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,14 +74,27 @@ export function AuthPage() {
       } else if (mode === 'signup') {
         const { error } = await supabase.auth.signUp({
           email: trimmedEmail, password,
-          options: { data: { name } },
+          options: { data: { name, role: authRole } },
         });
         if (error) throw error;
-        toast.success('Account created! Check your email to confirm.');
+        toast.success(`${authRole === 'admin' ? 'Admin' : 'Employee'} account created! Check your email to confirm.`);
       } else if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password });
         if (error) throw error;
-        navigate('/dashboard');
+        let nextRole: AuthRole | 'manager' = authRole;
+        const userId = data.user?.id;
+        if (userId) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single() as { data: ProfileRow | null };
+          if (profile) {
+            setCurrentUserFromProfile(profile);
+            nextRole = profile.role || authRole;
+          }
+        }
+        navigate(nextRole === 'admin' || nextRole === 'manager' ? '/admin/dashboard' : '/dashboard');
       } else if (mode === 'forgot') {
         const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
           redirectTo: `${window.location.origin}/reset-password`,
@@ -242,6 +260,28 @@ export function AuthPage() {
               </p>
             </div>
 
+            {(mode === 'login' || mode === 'signup') && (
+              <div className="grid grid-cols-2 gap-1 bg-gray-100 dark:bg-[#090f1d] rounded-xl p-1 mb-5">
+                {([
+                  { value: 'employee', label: mode === 'signup' ? 'Sign up as Employee' : 'Login as Employee' },
+                  { value: 'admin', label: mode === 'signup' ? 'Sign up as Admin' : 'Login as Admin' },
+                ] as Array<{ value: AuthRole; label: string }>).map(option => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setAuthRole(option.value)}
+                    className={`h-9 rounded-lg text-[11px] font-bold transition-all ${
+                      authRole === option.value
+                        ? 'bg-white dark:bg-[#131f30] text-brand-600 shadow-sm'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Credentials Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === 'signup' && (
@@ -325,7 +365,7 @@ export function AuthPage() {
                   {/* Try Demo Option */}
                   <button
                     type="button"
-                    onClick={handleDemoLogin}
+                    onClick={() => handleDemoLogin()}
                     className="w-full bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/20 hover:dark:bg-brand-950/35 border border-brand-200 dark:border-brand-900/40 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-bold text-brand-600 dark:text-brand-400 transition-colors shadow-2xs"
                   >
                     <User className="w-4 h-4 shrink-0 text-brand-500" />
