@@ -219,7 +219,7 @@ export function Sidebar() {
 
       {/* User profile */}
       <div className={cn('border-t border-gray-100 bg-gray-50/60 dark:border-gray-855/80 dark:bg-gray-900/30 p-3.5 flex items-center', sidebarOpen ? 'gap-3' : 'justify-center')}>
-        <Avatar name={currentUser.name} size="sm" className="ring-2 ring-brand-500/10 shrink-0" />
+        <Avatar name={currentUser.name} imageUrl={currentUser.avatar} size="sm" className="ring-2 ring-brand-500/10 shrink-0" />
         {sidebarOpen && (
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-gray-900 dark:text-white truncate leading-tight">{currentUser.name}</p>

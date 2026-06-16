@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { generateQrSvg } from '../../lib/qr';
@@ -7,6 +7,7 @@ import type { Booking } from '../../types';
 import { cn, formatDate } from '../../lib/utils';
 import { CheckCircle, Clock, MapPin, Camera, AlertCircle, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Html5Qrcode } from 'html5-qrcode';
 
 interface QrCheckInModalProps {
   isOpen: boolean;
@@ -19,11 +20,10 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
   const [scanning, setScanning] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [success, setSuccess] = useState(false);
-  const cameraTimerRef = useRef<number | null>(null);
 
   const floor = floors.find(f => f.id === booking.floorId);
   const qrSvg = useMemo(
-    () => generateQrSvg(`deskflow://check-in?bookingId=${booking.id}`),
+    () => generateQrSvg(`${window.location.origin}/dashboard?checkin=${booking.id}`),
     [booking.id],
   );
 
@@ -32,16 +32,70 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
       setScanning(false);
       setCameraActive(false);
       setSuccess(false);
-      if (cameraTimerRef.current) {
-        window.clearTimeout(cameraTimerRef.current);
-        cameraTimerRef.current = null;
-      }
     }
   }, [isOpen]);
 
-  useEffect(() => () => {
-    if (cameraTimerRef.current) window.clearTimeout(cameraTimerRef.current);
-  }, []);
+  // Real Camera QR Code Scanner Hook
+  useEffect(() => {
+    let html5QrCode: Html5Qrcode | null = null;
+
+    if (cameraActive) {
+      // Small timeout to guarantee element is fully mounted in DOM first
+      const startScanner = async () => {
+        try {
+          html5QrCode = new Html5Qrcode('qr-reader');
+          await html5QrCode.start(
+            { facingMode: 'environment' },
+            {
+              fps: 10,
+              qrbox: { width: 150, height: 150 },
+            },
+            (decodedText) => {
+              // Successfully decoded
+              let checkinId = '';
+              try {
+                const url = new URL(decodedText);
+                checkinId = url.searchParams.get('checkin') || url.searchParams.get('bookingId') || '';
+              } catch (e) {
+                checkinId = decodedText;
+              }
+
+              if (checkinId === booking.id) {
+                html5QrCode?.stop().then(() => {
+                  setCameraActive(false);
+                  setScanning(false);
+                  checkIn(booking.id)
+                    .then(() => {
+                      setSuccess(true);
+                      toast.success('Check-in successful via QR scan!');
+                    })
+                    .catch((err) => toast.error(err.message || 'Check-in failed'));
+                }).catch(err => console.error(err));
+              } else {
+                toast.error('Scanned QR code does not match this booking.');
+              }
+            },
+            () => {
+              // Verbose error callback ignored for performance
+            }
+          );
+        } catch (err: any) {
+          console.error('Failed to start camera scanner:', err);
+          toast.error('Unable to start camera scanner. Please verify camera permissions.');
+          setCameraActive(false);
+          setScanning(false);
+        }
+      };
+
+      const timer = setTimeout(startScanner, 100);
+      return () => {
+        clearTimeout(timer);
+        if (html5QrCode && html5QrCode.isScanning) {
+          html5QrCode.stop().catch(err => console.error(err));
+        }
+      };
+    }
+  }, [cameraActive, booking.id, checkIn]);
 
   const handleSimulateScan = async () => {
     if (scanning) return;
@@ -62,17 +116,6 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
     if (scanning) return;
     setCameraActive(true);
     setScanning(true);
-    cameraTimerRef.current = window.setTimeout(() => {
-      setScanning(false);
-      setCameraActive(false);
-      cameraTimerRef.current = null;
-      checkIn(booking.id)
-        .then(() => {
-          setSuccess(true);
-          toast.success('Check-in successful via camera stream.');
-        })
-        .catch((err: any) => toast.error(err.message || 'Check-in failed'));
-    }, 2000);
   };
 
   return (
@@ -101,7 +144,7 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
           )}
         </div>
 
-        {/* QR Scanner/Display target */}
+        {/* QR Display target */}
         <div className="relative w-48 h-48 bg-white border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-3.5 flex items-center justify-center overflow-hidden">
           {success ? (
             <div className="flex flex-col items-center gap-2 animate-fade-in">
@@ -109,13 +152,8 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
               <span className="text-xs font-bold text-green-600 dark:text-green-400">Checked In</span>
             </div>
           ) : cameraActive ? (
-            // Mock video feed scanner
-            <div className="relative w-full h-full bg-gray-950 rounded-lg flex items-center justify-center border border-gray-800">
-              <Camera className="w-8 h-8 text-gray-700 animate-pulse" />
-              <div className="absolute top-2 left-2 text-[8px] text-green-400 font-mono">SCANNING CAM_1...</div>
-              {/* Scan beam line */}
-              <div className="absolute left-0 w-full h-0.5 bg-green-500 shadow-[0_0_8px_#22c55e] animate-[bounce_2s_infinite]" style={{ top: '10%' }} />
-            </div>
+            // Live web camera stream target container
+            <div id="qr-reader" className="w-full h-full bg-black rounded-lg overflow-hidden border border-gray-800" />
           ) : (
             // Standard QR display
             <div
@@ -135,7 +173,7 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
         {/* Instructions */}
         {!success && (
           <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs">
-            Scan this QR code at the desk terminal, or use the simulation triggers below to complete your check-in.
+            Scan this QR code with your mobile phone camera to confirm check-in, or scan the desk QR code using your phone camera.
           </p>
         )}
 
@@ -169,7 +207,7 @@ export function QrCheckInModal({ isOpen, onClose, booking }: QrCheckInModalProps
               <CheckCircle className="w-4 h-4" /> Check-in Completed
             </div>
           ) : booking.status !== 'confirmed' ? (
-            <div className="flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 font-semibold bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg py-2">
+            <div className="flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 font-semibold bg-gray-50 dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-lg py-2">
               <AlertCircle className="w-4 h-4" /> Status: {booking.status}
             </div>
           ) : null}

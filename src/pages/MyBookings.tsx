@@ -20,6 +20,8 @@ export function MyBookings() {
   const [typeFilter, setTypeFilter] = useState('all');
 
   const today = format(new Date(), 'yyyy-MM-dd');
+  const now = new Date();
+  const currentHourMin = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   const myBookings = bookings.filter(b => b.userId === currentUser.id);
 
   const filtered = myBookings.filter(b => {
@@ -28,16 +30,20 @@ export function MyBookings() {
       const s = search.toLowerCase();
       if (!b.resourceId.includes(s) && !(b.title || '').toLowerCase().includes(s) && !b.date.includes(s)) return false;
     }
+    const isTodayUpcoming = b.date === today && currentHourMin <= b.endTime;
+    const isFuture = b.date > today;
+    const isPast = b.date < today || (b.date === today && currentHourMin > b.endTime);
+
     if (tab === 'today') return b.date === today && b.status !== 'cancelled';
-    if (tab === 'upcoming') return b.date > today && b.status !== 'cancelled';
-    if (tab === 'past') return b.date < today || ['completed', 'cancelled', 'no_show'].includes(b.status);
+    if (tab === 'upcoming') return (isFuture || isTodayUpcoming) && b.status !== 'cancelled';
+    if (tab === 'past') return (isPast || ['completed', 'cancelled', 'no_show'].includes(b.status));
     return true;
   }).sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
 
   const counts = {
     today: myBookings.filter(b => b.date === today && b.status !== 'cancelled').length,
-    upcoming: myBookings.filter(b => b.date > today && b.status !== 'cancelled').length,
-    past: myBookings.filter(b => b.date < today || ['completed', 'cancelled', 'no_show'].includes(b.status)).length,
+    upcoming: myBookings.filter(b => (b.date > today || (b.date === today && currentHourMin <= b.endTime)) && b.status !== 'cancelled').length,
+    past: myBookings.filter(b => (b.date < today || (b.date === today && currentHourMin > b.endTime) || ['completed', 'cancelled', 'no_show'].includes(b.status))).length,
     all: myBookings.length,
   };
 

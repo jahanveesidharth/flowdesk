@@ -44,6 +44,21 @@ export interface Floor {
   isActive: boolean;
 }
 
+export type FurnitureType = 'plant' | 'couch' | 'printer' | 'coffee_machine' | 'water_cooler' | 'restroom_toilet' | 'restroom_sink' | 'tv' | 'dining_table' | 'pool_table' | 'ping_pong' | 'lounge_chair' | 'bed' | 'server_rack';
+
+export interface Furniture {
+  id: string;
+  floorId: string;
+  type: FurnitureType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: 0 | 90 | 180 | 270;
+  isActive: boolean;
+}
+
+
 export interface Zone {
   id: string;
   name: string;
@@ -80,7 +95,7 @@ export interface Room {
   name: string;
   floorId: string;
   capacity: number;
-  type: 'meeting' | 'phone_booth' | 'focus' | 'training' | 'boardroom';
+  type: 'meeting' | 'phone_booth' | 'focus' | 'training' | 'boardroom' | 'washroom' | 'pantry' | 'storage' | 'server_room' | 'printer_room';
   status: DeskStatus;
   amenities: RoomAmenity[];
   x: number;

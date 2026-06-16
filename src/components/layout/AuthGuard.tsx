@@ -59,6 +59,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!authed) return <Navigate to="/login" replace />;
+  if (!authed) {
+    const search = window.location.search;
+    return <Navigate to={`/login${search}`} replace />;
+  }
   return <>{children}</>;
 }

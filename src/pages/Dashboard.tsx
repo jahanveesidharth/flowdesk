@@ -90,10 +90,14 @@ export function Dashboard() {
   }, []);
 
   const today = format(new Date(), 'yyyy-MM-dd');
+  const nowTime = new Date();
+  const currentHourMin = `${String(nowTime.getHours()).padStart(2, '0')}:${String(nowTime.getMinutes()).padStart(2, '0')}`;
 
   const myBookings = bookings.filter(b => b.userId === currentUser.id && b.status !== 'cancelled');
   const todayBookings = myBookings.filter(b => b.date === today);
-  const upcomingBookings = myBookings.filter(b => b.date > today).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3);
+  const upcomingBookings = myBookings.filter(b => 
+    b.date > today || (b.date === today && currentHourMin <= b.endTime)
+  ).sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime)).slice(0, 3);
   const todayDesk = todayBookings.find(b => b.resourceType === 'desk');
 
   const unreadNotifs = notifications.filter(n => !n.read && n.userId === currentUser.id);

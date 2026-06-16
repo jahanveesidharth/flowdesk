@@ -1,4 +1,4 @@
-import type { User, Floor, Desk, Room, ParkingSpace, Locker, Booking, Team, Notification, Building, BookingPolicy, WaitlistEntry } from '../types';
+import type { User, Floor, Desk, Room, ParkingSpace, Locker, Booking, Team, Notification, Building, BookingPolicy, WaitlistEntry, Furniture } from '../types';
 import { addDays, format, subDays } from 'date-fns';
 
 const today = format(new Date(), 'yyyy-MM-dd');
@@ -16,7 +16,7 @@ export const MOCK_USERS: User[] = [
     role: 'employee',
     department: 'Engineering',
     teamId: 't1',
-    avatar: 'LC',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80',
     preferences: { notificationsEnabled: true, emailReminders: true, reminderMinutes: 30, theme: 'light', weekStartsOn: 1, defaultFloorId: 'f1' },
     createdAt: '2024-01-10T09:00:00Z',
   },
@@ -26,7 +26,7 @@ export const MOCK_USERS: User[] = [
     email: 'james@deskflow.io',
     role: 'admin',
     department: 'Operations',
-    avatar: 'JW',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&h=120&q=80',
     preferences: { notificationsEnabled: true, emailReminders: true, reminderMinutes: 15, theme: 'light', weekStartsOn: 1 },
     createdAt: '2024-01-05T09:00:00Z',
   },
@@ -37,7 +37,7 @@ export const MOCK_USERS: User[] = [
     role: 'manager',
     department: 'Engineering',
     teamId: 't1',
-    avatar: 'SM',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&h=120&q=80',
     preferences: { notificationsEnabled: true, emailReminders: false, reminderMinutes: 30, theme: 'light', weekStartsOn: 1 },
     createdAt: '2024-01-08T09:00:00Z',
   },
@@ -48,7 +48,7 @@ export const MOCK_USERS: User[] = [
     role: 'employee',
     department: 'Design',
     teamId: 't2',
-    avatar: 'DP',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80',
     preferences: { notificationsEnabled: true, emailReminders: true, reminderMinutes: 60, theme: 'light', weekStartsOn: 1 },
     createdAt: '2024-02-01T09:00:00Z',
   },
@@ -59,7 +59,7 @@ export const MOCK_USERS: User[] = [
     role: 'employee',
     department: 'Marketing',
     teamId: 't3',
-    avatar: 'MT',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&h=120&q=80',
     preferences: { notificationsEnabled: false, emailReminders: true, reminderMinutes: 30, theme: 'light', weekStartsOn: 1 },
     createdAt: '2024-02-15T09:00:00Z',
   },
@@ -70,7 +70,7 @@ export const MOCK_USERS: User[] = [
     role: 'employee',
     department: 'Engineering',
     teamId: 't1',
-    avatar: 'AJ',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80',
     preferences: { notificationsEnabled: true, emailReminders: true, reminderMinutes: 30, theme: 'light', weekStartsOn: 1 },
     createdAt: '2024-03-01T09:00:00Z',
   },
@@ -81,7 +81,7 @@ export const MOCK_USERS: User[] = [
     role: 'employee',
     department: 'HR',
     teamId: 't4',
-    avatar: 'EW',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
     preferences: { notificationsEnabled: true, emailReminders: true, reminderMinutes: 30, theme: 'light', weekStartsOn: 1 },
     createdAt: '2024-03-10T09:00:00Z',
   },
@@ -92,7 +92,7 @@ export const MOCK_USERS: User[] = [
     role: 'employee',
     department: 'Sales',
     teamId: 't5',
-    avatar: 'CB',
+    avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=120&h=120&q=80',
     preferences: { notificationsEnabled: true, emailReminders: false, reminderMinutes: 30, theme: 'light', weekStartsOn: 1 },
     createdAt: '2024-03-20T09:00:00Z',
   },
@@ -111,7 +111,7 @@ export const MOCK_BUILDINGS: Building[] = [
     city: 'San Francisco',
     country: 'US',
     timezone: 'America/Los_Angeles',
-    floors: ['f1', 'f2', 'f3'],
+    floors: ['f1', 'f2', 'f3', 'f4'],
     isActive: true,
   },
   {
@@ -121,8 +121,8 @@ export const MOCK_BUILDINGS: Building[] = [
     city: 'San Francisco',
     country: 'US',
     timezone: 'America/Los_Angeles',
-    floors: ['f4'],
-    isActive: true,
+    floors: [],
+    isActive: false,
   },
 ];
 
@@ -179,15 +179,15 @@ export const MOCK_FLOORS: Floor[] = [
   },
   {
     id: 'f4',
-    name: 'East Campus - Main',
-    level: 0,
-    buildingId: 'b2',
-    gridWidth: 16,
-    gridHeight: 12,
+    name: 'Third Floor',
+    level: 3,
+    buildingId: 'b1',
+    gridWidth: 18,
+    gridHeight: 14,
     zones: [
-      { id: 'z10', name: 'Open Space', floorId: 'f4', color: '#f0fdf4', x: 0, y: 0, width: 16, height: 12 },
+      { id: 'z10', name: 'Cafeteria & Lounge', floorId: 'f4', color: '#ecfdf5', x: 0, y: 0, width: 18, height: 14 },
     ],
-    amenities: ['kitchen', 'parking'],
+    amenities: ['kitchen', 'gaming_zone', 'terrace'],
     capacity: 30,
     isActive: true,
   },
@@ -241,11 +241,11 @@ export const MOCK_DESKS: Desk[] = [
   ...generateDesks('f1', 'z4', 10, 8, 4, 2, 33, 'collaboration'),
   // Floor 2
   ...generateDesks('f2', 'z5', 1, 1, 4, 2, 41, 'fixed'),
-  ...generateDesks('f2', 'z6', 10, 1, 4, 2, 49, 'hot'),
-  ...generateDesks('f2', 'z7', 1, 8, 8, 2, 57, 'hot'),
+  ...generateDesks('f2', 'z6', 10, 1, 2, 2, 49, 'hot'),
+  ...generateDesks('f2', 'z7', 1, 8, 4, 2, 57, 'hot'),
   // Floor 3
-  ...generateDesks('f3', 'z8', 1, 1, 4, 2, 73, 'fixed'),
-  ...generateDesks('f3', 'z9', 1, 8, 4, 2, 81, 'hot'),
+  ...generateDesks('f3', 'z8', 6, 4, 4, 2, 73, 'fixed'),
+  ...generateDesks('f3', 'z9', 6, 7, 4, 2, 81, 'hot'),
   // Floor 4
   ...generateDesks('f4', 'z10', 1, 1, 6, 3, 89, 'hot'),
 ];
@@ -253,41 +253,48 @@ export const MOCK_DESKS: Desk[] = [
 // ─── Rooms ────────────────────────────────────────────────────────────────────
 
 export const MOCK_ROOMS: Room[] = [
-  {
-    id: 'r1', name: 'Maple', floorId: 'f1', capacity: 8, type: 'meeting',
-    status: 'available', amenities: ['tv', 'whiteboard', 'video_conf'],
-    x: 1, y: 11, width: 3, height: 2, isActive: true,
-  },
-  {
-    id: 'r2', name: 'Oak', floorId: 'f1', capacity: 4, type: 'phone_booth',
-    status: 'occupied', amenities: ['phone', 'tv'],
-    x: 5, y: 11, width: 2, height: 2, isActive: true,
-  },
-  {
-    id: 'r3', name: 'Cedar', floorId: 'f1', capacity: 12, type: 'training',
-    status: 'available', amenities: ['projector', 'whiteboard', 'video_conf', 'tv'],
-    x: 11, y: 11, width: 4, height: 2, isActive: true,
-  },
-  {
-    id: 'r4', name: 'Birch', floorId: 'f2', capacity: 6, type: 'meeting',
-    status: 'available', amenities: ['tv', 'whiteboard'],
-    x: 1, y: 11, width: 3, height: 2, isActive: true,
-  },
-  {
-    id: 'r5', name: 'Sequoia', floorId: 'f3', capacity: 20, type: 'boardroom',
-    status: 'reserved', amenities: ['projector', 'video_conf', 'catering', 'whiteboard', 'standing_table'],
-    x: 1, y: 1, width: 6, height: 4, isActive: true,
-  },
-  {
-    id: 'r6', name: 'Willow', floorId: 'f3', capacity: 4, type: 'focus',
-    status: 'available', amenities: ['whiteboard', 'phone'],
-    x: 8, y: 1, width: 2, height: 2, isActive: true,
-  },
-  {
-    id: 'r7', name: 'Pine', floorId: 'f2', capacity: 2, type: 'phone_booth',
-    status: 'available', amenities: ['phone'],
-    x: 5, y: 11, width: 2, height: 2, isActive: true,
-  },
+  // Ground Floor (f1)
+  { id: 'r1', name: 'Private Office 1', floorId: 'f1', capacity: 4, type: 'meeting', status: 'available', amenities: ['tv', 'whiteboard'], x: 6, y: 0, width: 3, height: 3, isActive: true },
+  { id: 'r2', name: 'Conference Room', floorId: 'f1', capacity: 12, type: 'boardroom', status: 'available', amenities: ['projector', 'whiteboard', 'video_conf'], x: 12, y: 2.5, width: 6, height: 6, isActive: true },
+  { id: 'r3', name: 'Manager Office', floorId: 'f1', capacity: 3, type: 'meeting', status: 'occupied', amenities: ['tv'], x: 6, y: 5, width: 3, height: 3.5, isActive: true },
+  { id: 'r4', name: 'Meeting Room', floorId: 'f1', capacity: 6, type: 'meeting', status: 'available', amenities: ['whiteboard'], x: 9, y: 5, width: 3, height: 3.5, isActive: true },
+  { id: 'r5', name: 'Bedroom Suite', floorId: 'f1', capacity: 2, type: 'focus', status: 'available', amenities: ['phone'], x: 0, y: 8, width: 3.5, height: 3.5, isActive: true },
+  { id: 'r6', name: 'Private Office 2', floorId: 'f1', capacity: 4, type: 'meeting', status: 'available', amenities: ['tv'], x: 15, y: 8.5, width: 3, height: 4, isActive: true },
+  // Non-bookable structural rooms for f1 (Ground Floor)
+  { id: 'f1-r_wc1', name: 'Washroom', floorId: 'f1', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 9, y: 0, width: 1.5, height: 3, isActive: true },
+  { id: 'f1-r_wc2', name: 'Washroom', floorId: 'f1', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 10.5, y: 0, width: 1.5, height: 3, isActive: true },
+  { id: 'f1-r_pantry', name: 'Pantry', floorId: 'f1', capacity: 8, type: 'pantry', status: 'available', amenities: [], x: 12, y: 0, width: 3, height: 2.5, isActive: true },
+  { id: 'f1-r_storage', name: 'Storage', floorId: 'f1', capacity: 0, type: 'storage', status: 'available', amenities: [], x: 15, y: 0, width: 3, height: 2.5, isActive: true },
+  { id: 'f1-r_wc3', name: 'Washroom', floorId: 'f1', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 3.5, y: 9, width: 2.5, height: 2.5, isActive: true },
+  { id: 'f1-r_server', name: 'Server Room', floorId: 'f1', capacity: 0, type: 'server_room', status: 'available', amenities: [], x: 0, y: 11.5, width: 3, height: 2.5, isActive: true },
+  { id: 'f1-r_printer', name: 'Printer / Copy Room', floorId: 'f1', capacity: 2, type: 'printer_room', status: 'available', amenities: [], x: 3, y: 11.5, width: 3, height: 2.5, isActive: true },
+  { id: 'f1-r_lobby', name: 'Lobby / Reception', floorId: 'f1', capacity: 10, type: 'meeting', status: 'available', amenities: [], x: 6, y: 8.5, width: 6, height: 4, isActive: true },
+  { id: 'f1-r_waiting', name: 'Waiting Area', floorId: 'f1', capacity: 6, type: 'meeting', status: 'available', amenities: [], x: 12, y: 8.5, width: 3, height: 4, isActive: true },
+
+  // First Floor (f2)
+  { id: 'r7', name: 'Sales Manager', floorId: 'f2', capacity: 4, type: 'meeting', status: 'available', amenities: ['tv'], x: 6, y: 4.5, width: 3, height: 3.5, isActive: true },
+  { id: 'r8', name: 'Meeting Room 1', floorId: 'f2', capacity: 6, type: 'meeting', status: 'occupied', amenities: ['whiteboard'], x: 9, y: 4.5, width: 3, height: 3.5, isActive: true },
+  { id: 'r9', name: 'Training Room', floorId: 'f2', capacity: 16, type: 'training', status: 'available', amenities: ['projector', 'whiteboard'], x: 12, y: 4.5, width: 6, height: 5, isActive: true },
+  { id: 'r10', name: 'Quiet Booth 1', floorId: 'f2', capacity: 2, type: 'focus', status: 'available', amenities: ['phone'], x: 0, y: 9, width: 3.5, height: 2.5, isActive: true },
+  { id: 'r11', name: 'Quiet Booth 2', floorId: 'f2', capacity: 2, type: 'focus', status: 'available', amenities: ['phone'], x: 0, y: 11.5, width: 3.5, height: 2.5, isActive: true },
+  // Non-bookable structural rooms for f2 (First Floor)
+  { id: 'f2-r_pantry', name: 'Cafeteria & Pantry', floorId: 'f2', capacity: 24, type: 'pantry', status: 'available', amenities: [], x: 12, y: 0, width: 6, height: 4.5, isActive: true },
+  { id: 'f2-r_server', name: 'Server Room', floorId: 'f2', capacity: 0, type: 'server_room', status: 'available', amenities: [], x: 0, y: 6, width: 3, height: 3, isActive: true },
+  { id: 'f2-r_lobby', name: 'Lobby / Reception', floorId: 'f2', capacity: 15, type: 'meeting', status: 'available', amenities: [], x: 3.5, y: 9, width: 8.5, height: 5, isActive: true },
+  { id: 'f2-r_collab', name: 'Collaboration Lounge', floorId: 'f2', capacity: 12, type: 'meeting', status: 'available', amenities: [], x: 12, y: 9.5, width: 6, height: 4.5, isActive: true },
+
+  // Second Floor (f3)
+  { id: 'r12', name: 'CEO Suite', floorId: 'f3', capacity: 6, type: 'boardroom', status: 'available', amenities: ['tv', 'video_conf'], x: 0, y: 0, width: 5.5, height: 4.5, isActive: true },
+  { id: 'r13', name: 'VIP Boardroom', floorId: 'f3', capacity: 14, type: 'boardroom', status: 'reserved', amenities: ['projector', 'video_conf', 'whiteboard'], x: 11, y: 4, width: 7, height: 6, isActive: true },
+  { id: 'r14', name: 'VP Sales Office', floorId: 'f3', capacity: 3, type: 'meeting', status: 'available', amenities: ['tv'], x: 0, y: 9, width: 2.75, height: 5, isActive: true },
+  { id: 'r15', name: 'VP Eng Office', floorId: 'f3', capacity: 3, type: 'meeting', status: 'available', amenities: ['tv'], x: 2.75, y: 9, width: 2.75, height: 5, isActive: true },
+  { id: 'r16', name: 'R&D Innovation Lab', floorId: 'f3', capacity: 10, type: 'training', status: 'available', amenities: ['whiteboard'], x: 11, y: 10, width: 7, height: 4, isActive: true },
+  // Non-bookable structural rooms for f3 (Second Floor)
+  { id: 'f3-r_wc1', name: 'Washroom', floorId: 'f3', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 9, y: 0, width: 1.5, height: 3, isActive: true },
+  { id: 'f3-r_wc2', name: 'Washroom', floorId: 'f3', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 10.5, y: 0, width: 1.5, height: 3, isActive: true },
+  { id: 'f3-r_ceo_wc', name: 'CEO Washroom', floorId: 'f3', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 0, y: 4.5, width: 2, height: 2, isActive: true },
+  { id: 'f3-r_cafe', name: 'Executive Cafe', floorId: 'f3', capacity: 12, type: 'pantry', status: 'available', amenities: [], x: 12, y: 0, width: 6, height: 4, isActive: true },
+  { id: 'f3-r_recept', name: 'Executive Reception', floorId: 'f3', capacity: 8, type: 'meeting', status: 'available', amenities: [], x: 5.5, y: 10, width: 5.5, height: 4, isActive: true },
 ];
 
 // ─── Parking ──────────────────────────────────────────────────────────────────
@@ -510,3 +517,56 @@ export const MOCK_TIME_SLOTS = [
   '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
   '16:00', '16:30', '17:00', '17:30', '18:00',
 ];
+
+export const MOCK_FURNITURE: Furniture[] = [
+  // Floor 1 (Ground)
+  { id: 'f1-fur_bed1', floorId: 'f1', type: 'bed', x: 0.5, y: 9, width: 1.5, height: 2, rotation: 0, isActive: true },
+  { id: 'f1-fur_wc1_toilet', floorId: 'f1', type: 'restroom_toilet', x: 9.25, y: 0.2, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_wc1_sink', floorId: 'f1', type: 'restroom_sink', x: 9.25, y: 2.2, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_wc2_toilet', floorId: 'f1', type: 'restroom_toilet', x: 10.75, y: 0.2, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_wc2_sink', floorId: 'f1', type: 'restroom_sink', x: 10.75, y: 2.2, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_wc3_toilet', floorId: 'f1', type: 'restroom_toilet', x: 4.25, y: 9.2, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_wc3_sink', floorId: 'f1', type: 'restroom_sink', x: 4.25, y: 10.8, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_srv1', floorId: 'f1', type: 'server_rack', x: 0.4, y: 12, width: 1, height: 1.5, rotation: 0, isActive: true },
+  { id: 'f1-fur_srv2', floorId: 'f1', type: 'server_rack', x: 1.6, y: 12, width: 1, height: 1.5, rotation: 0, isActive: true },
+  { id: 'f1-fur_prn1', floorId: 'f1', type: 'printer', x: 4, y: 12, width: 1, height: 1, rotation: 180, isActive: true },
+  
+  // Lobby/Reception counter and waiting room couch
+  { id: 'f1-fur_lobby_desk', floorId: 'f1', type: 'dining_table', x: 8, y: 10, width: 2, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_lobby_couch', floorId: 'f1', type: 'couch', x: 6.2, y: 11, width: 2, height: 1, rotation: 90, isActive: true },
+  { id: 'f1-fur_wait_couch', floorId: 'f1', type: 'couch', x: 12.2, y: 10, width: 2, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_wait_chair', floorId: 'f1', type: 'lounge_chair', x: 13.5, y: 11, width: 1, height: 1, rotation: 90, isActive: true },
+  { id: 'f1-fur_pantry_sink', floorId: 'f1', type: 'restroom_sink', x: 13, y: 0.2, width: 1, height: 1, rotation: 0, isActive: true },
+
+  // Plants
+  { id: 'f1-fur_p1', floorId: 'f1', type: 'plant', x: 0, y: 0, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_p2', floorId: 'f1', type: 'plant', x: 0, y: 7, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_p3', floorId: 'f1', type: 'plant', x: 17, y: 7, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_p4', floorId: 'f1', type: 'plant', x: 17, y: 13, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f1-fur_p5', floorId: 'f1', type: 'plant', x: 6, y: 13, width: 1, height: 1, rotation: 0, isActive: true },
+  
+  // Floor 2 (First)
+  { id: 'f2-fur1', floorId: 'f2', type: 'dining_table', x: 12, y: 2, width: 2, height: 1, rotation: 0, isActive: true },
+  { id: 'f2-fur2', floorId: 'f2', type: 'dining_table', x: 15, y: 2, width: 2, height: 1, rotation: 0, isActive: true },
+  { id: 'f2-fur3', floorId: 'f2', type: 'coffee_machine', x: 17, y: 1, width: 1, height: 1, rotation: 270, isActive: true },
+  { id: 'f2-fur4', floorId: 'f2', type: 'water_cooler', x: 11, y: 1, width: 1, height: 1, rotation: 180, isActive: true },
+  { id: 'f2-fur5', floorId: 'f2', type: 'plant', x: 0, y: 1, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f2-fur6', floorId: 'f2', type: 'plant', x: 17, y: 6, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f2-fur7', floorId: 'f2', type: 'couch', x: 5, y: 9, width: 2, height: 1, rotation: 0, isActive: true },
+  
+  // Floor 3 (Second)
+  { id: 'f3-fur1', floorId: 'f3', type: 'couch', x: 6, y: 10, width: 2, height: 1, rotation: 0, isActive: true },
+  { id: 'f3-fur2', floorId: 'f3', type: 'coffee_machine', x: 12, y: 9, width: 1, height: 1, rotation: 90, isActive: true },
+  { id: 'f3-fur3', floorId: 'f3', type: 'plant', x: 0, y: 1, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f3-fur4', floorId: 'f3', type: 'plant', x: 17, y: 1, width: 1, height: 1, rotation: 0, isActive: true },
+  
+  // Floor 4 (Third)
+  { id: 'f4-fur1', floorId: 'f4', type: 'pool_table', x: 13, y: 9, width: 2, height: 1, rotation: 0, isActive: true },
+  { id: 'f4-fur2', floorId: 'f4', type: 'ping_pong', x: 9, y: 9, width: 2, height: 1, rotation: 0, isActive: true },
+  { id: 'f4-fur3', floorId: 'f4', type: 'lounge_chair', x: 2, y: 11, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f4-fur4', floorId: 'f4', type: 'couch', x: 4, y: 11, width: 2, height: 1, rotation: 0, isActive: true },
+  { id: 'f4-fur5', floorId: 'f4', type: 'tv', x: 4, y: 13, width: 2, height: 1, rotation: 180, isActive: true },
+  { id: 'f4-fur6', floorId: 'f4', type: 'plant', x: 1, y: 2, width: 1, height: 1, rotation: 0, isActive: true },
+  { id: 'f4-fur7', floorId: 'f4', type: 'plant', x: 16, y: 2, width: 1, height: 1, rotation: 0, isActive: true }
+];
+

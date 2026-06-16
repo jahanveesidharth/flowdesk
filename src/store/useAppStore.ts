@@ -2,13 +2,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
   User, Booking, Notification, Floor, Desk, Room, ParkingSpace,
-  Locker, WaitlistEntry, BookingFilters, AttendancePlan, AttendanceStatus, UserRole
+  Locker, WaitlistEntry, BookingFilters, AttendancePlan, AttendanceStatus, UserRole, Furniture
 } from '../types';
 import type { Database } from '../lib/database.types';
 import {
   MOCK_USERS, MOCK_BOOKINGS, MOCK_NOTIFICATIONS, MOCK_FLOORS,
   MOCK_DESKS, MOCK_ROOMS, MOCK_PARKING, MOCK_LOCKERS, MOCK_WAITLIST,
-  CURRENT_USER, ADMIN_USER,
+  CURRENT_USER, ADMIN_USER, MOCK_FURNITURE,
 } from '../data/mockData';
 import { format } from 'date-fns';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -29,7 +29,7 @@ const mapProfileFromDb = (p: any): User => ({
   role: p.role || 'employee',
   department: p.department || 'General',
   teamId: p.team_id || undefined,
-  avatar: p.name ? p.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : '',
+  avatar: p.avatar_url || (p.name ? p.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : ''),
   preferences: {
     notificationsEnabled: p.preferences?.notificationsEnabled ?? true,
     emailReminders: p.preferences?.emailReminders ?? true,
@@ -193,6 +193,7 @@ interface AppState {
   rooms: Room[];
   parkingSpaces: ParkingSpace[];
   lockers: Locker[];
+  furniture: Furniture[];
 
   // Bookings & Schedules
   bookings: Booking[];
@@ -238,7 +239,12 @@ interface AppState {
   updateRoom: (roomId: string, updates: Partial<Room>) => Promise<void>;
   addDesk: (desk: Omit<Desk, 'id'>) => Promise<void>;
   removeDesk: (deskId: string) => Promise<void>;
+  addRoom: (room: Omit<Room, 'id'>) => Promise<void>;
+  removeRoom: (roomId: string) => Promise<void>;
   updateFloor: (floorId: string, updates: Partial<Floor>) => Promise<void>;
+  addFurniture: (item: Omit<Furniture, 'id'>) => Promise<void>;
+  updateFurniture: (id: string, updates: Partial<Furniture>) => Promise<void>;
+  removeFurniture: (id: string) => Promise<void>;
 
   // Actions - Waitlist
   addToWaitlist: (entry: Omit<WaitlistEntry, 'id' | 'createdAt' | 'position'>) => Promise<void>;
@@ -274,6 +280,7 @@ export const useAppStore = create<AppState>()(
       rooms: MOCK_ROOMS,
       parkingSpaces: MOCK_PARKING,
       lockers: MOCK_LOCKERS,
+      furniture: MOCK_FURNITURE,
       bookings: MOCK_BOOKINGS,
       notifications: MOCK_NOTIFICATIONS,
       waitlist: MOCK_WAITLIST,
@@ -317,6 +324,7 @@ export const useAppStore = create<AppState>()(
             if (updates.name !== undefined) payload.name = updates.name;
             if (updates.email !== undefined) payload.email = updates.email;
             if (updates.department !== undefined) payload.department = updates.department;
+            if (updates.avatar !== undefined) payload.avatar_url = updates.avatar;
             if (updates.preferences !== undefined) {
               payload.preferences = { ...currentUser.preferences, ...updates.preferences };
             }
@@ -408,6 +416,7 @@ export const useAppStore = create<AppState>()(
         rooms: MOCK_ROOMS,
         parkingSpaces: MOCK_PARKING,
         lockers: MOCK_LOCKERS,
+        furniture: MOCK_FURNITURE,
         bookings: MOCK_BOOKINGS,
         notifications: MOCK_NOTIFICATIONS,
         waitlist: MOCK_WAITLIST,
@@ -747,6 +756,10 @@ export const useAppStore = create<AppState>()(
             if (updates.type) payload.type = updates.type;
             if (updates.x !== undefined) payload.x = updates.x;
             if (updates.y !== undefined) payload.y = updates.y;
+            if (updates.width !== undefined) payload.width = updates.width;
+            if (updates.height !== undefined) payload.height = updates.height;
+            if (updates.zoneId !== undefined) payload.zone_id = updates.zoneId;
+            if (updates.isActive !== undefined) payload.is_active = updates.isActive;
             if (updates.amenities) payload.amenities = updates.amenities;
 
             await db.from('desks').update(payload).eq('id', deskId);
@@ -766,6 +779,12 @@ export const useAppStore = create<AppState>()(
             if (updates.status) payload.status = updates.status;
             if (updates.name) payload.name = updates.name;
             if (updates.capacity !== undefined) payload.capacity = updates.capacity;
+            if (updates.type) payload.type = updates.type;
+            if (updates.x !== undefined) payload.x = updates.x;
+            if (updates.y !== undefined) payload.y = updates.y;
+            if (updates.width !== undefined) payload.width = updates.width;
+            if (updates.height !== undefined) payload.height = updates.height;
+            if (updates.amenities) payload.amenities = updates.amenities;
 
             await db.from('rooms').update(payload).eq('id', roomId);
           } catch (err) {
@@ -817,20 +836,130 @@ export const useAppStore = create<AppState>()(
         set(s => ({ desks: s.desks.filter(d => d.id !== deskId) }));
       },
 
+      addRoom: async (room) => {
+        const localId = `room-${Date.now()}`;
+        if (canUseSupabase() && isValidUuid(room.floorId)) {
+          try {
+            const { data } = await db.from('rooms').insert({
+              name: room.name,
+              floor_id: room.floorId,
+              capacity: room.capacity,
+              type: room.type,
+              status: room.status,
+              amenities: room.amenities,
+              x: room.x,
+              y: room.y,
+              width: room.width,
+              height: room.height,
+              image_url: room.imageUrl,
+              is_active: true,
+            }).select().single();
+            if (data) {
+              set(s => ({ rooms: [...s.rooms, mapRoomFromDb(data)] }));
+              return;
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        }
+        const newRoom: Room = { ...room, id: localId };
+        set(s => ({ rooms: [...s.rooms, newRoom] }));
+      },
+
+      removeRoom: async (roomId) => {
+        if (canUseSupabase() && isValidUuid(roomId)) {
+          try {
+            await db.from('rooms').update({ is_active: false }).eq('id', roomId);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+        set(s => ({ rooms: s.rooms.filter(r => r.id !== roomId) }));
+      },
+
       updateFloor: async (floorId, updates) => {
+        let finalUpdates = { ...updates };
         if (canUseSupabase() && isValidUuid(floorId)) {
           try {
             const payload: Record<string, any> = {};
             if (updates.name) payload.name = updates.name;
             if (updates.capacity !== undefined) payload.capacity = updates.capacity;
 
-            await db.from('floors').update(payload).eq('id', floorId);
+            if (Object.keys(payload).length > 0) {
+              await db.from('floors').update(payload).eq('id', floorId);
+            }
+
+            if (updates.zones !== undefined) {
+              // Get current database zones for this floor to compute diff
+              const { data: dbZones } = await db.from('zones')
+                .select('id')
+                .eq('floor_id', floorId);
+              
+              const existingDbIds = new Set<string>((dbZones || []).map((z: any) => String(z.id)));
+              const nextZones = [...updates.zones];
+              const nextIds = new Set<string>(nextZones.map(z => z.id).filter(isValidUuid));
+
+              // 1. Delete zones that are in DB but not in updates
+              const toDelete = Array.from(existingDbIds).filter((id: string) => !nextIds.has(id));
+              if (toDelete.length > 0) {
+                await db.from('zones').delete().in('id', toDelete);
+              }
+
+              // 2. Upsert zones
+              for (let i = 0; i < nextZones.length; i++) {
+                const zone = nextZones[i];
+                const zonePayload = {
+                  floor_id: floorId,
+                  name: zone.name,
+                  color: zone.color,
+                  description: zone.description || null,
+                  x: zone.x,
+                  y: zone.y,
+                  width: zone.width,
+                  height: zone.height,
+                };
+
+                if (isValidUuid(zone.id)) {
+                  // Update existing
+                  await db.from('zones').update(zonePayload).eq('id', zone.id);
+                } else {
+                  // Insert new zone
+                  const { data: inserted } = await db.from('zones')
+                    .insert(zonePayload)
+                    .select()
+                    .single();
+                  
+                  if (inserted) {
+                    nextZones[i] = { ...zone, id: inserted.id };
+                  }
+                }
+              }
+              finalUpdates.zones = nextZones;
+            }
           } catch (err) {
-            console.error(err);
+            console.error('updateFloor database operation failed:', err);
           }
         }
         set(s => ({
-          floors: s.floors.map(f => f.id === floorId ? { ...f, ...updates } : f),
+          floors: s.floors.map(f => f.id === floorId ? { ...f, ...finalUpdates } : f),
+        }));
+      },
+
+      addFurniture: async (item) => {
+        const localId = `furn-${Date.now()}`;
+        const newFurniture: Furniture = { ...item, id: localId };
+        set(s => ({ furniture: [...s.furniture, newFurniture] }));
+      },
+
+      updateFurniture: async (id, updates) => {
+        set(s => ({
+          furniture: s.furniture.map(f => f.id === id ? { ...f, ...updates } : f),
+        }));
+      },
+
+      removeFurniture: async (id) => {
+        set(s => ({
+          furniture: s.furniture.filter(f => f.id !== id),
         }));
       },
 
@@ -991,6 +1120,16 @@ export const useAppStore = create<AppState>()(
               });
             }
           })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'floors' }, () => {
+            db.from('floors').select('*, zones(*)').eq('is_active', true).order('level').then(({ data }: any) => {
+              if (data) set({ floors: data.map(mapFloorFromDb) });
+            });
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'zones' }, () => {
+            db.from('floors').select('*, zones(*)').eq('is_active', true).order('level').then(({ data }: any) => {
+              if (data) set({ floors: data.map(mapFloorFromDb) });
+            });
+          })
           .on('postgres_changes', { event: '*', schema: 'public', table: 'desks' }, () => {
             db.from('desks').select('*').eq('is_active', true).order('label').then(({ data }: any) => {
               if (data) set({ desks: data.map(mapDeskFromDb) });
@@ -1053,6 +1192,7 @@ export const useAppStore = create<AppState>()(
         isAdminMode: state.isAdminMode,
         currentUser: state.currentUser,
         desks: state.desks,
+        rooms: state.rooms,
         theme: state.theme,
         attendancePlans: state.attendancePlans,
         integrations: state.integrations,

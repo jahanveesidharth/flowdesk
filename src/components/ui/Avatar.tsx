@@ -18,12 +18,18 @@ export function Avatar({ name, size = 'md', className, imageUrl }: AvatarProps) 
   const color = generateAvatarColor(name);
   const initials = getInitials(name);
 
-  if (imageUrl) {
+  const isImagePrefixed = (url?: string) => {
+    if (!url) return false;
+    return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image') || url.startsWith('/');
+  };
+
+  const displayUrl = isImagePrefixed(imageUrl) ? imageUrl : (isImagePrefixed(name) ? name : undefined);
+  if (displayUrl) {
     return (
       <img
-        src={imageUrl}
-        alt={name}
-        className={cn('rounded-full object-cover', sizeClasses[size], className)}
+        src={displayUrl}
+        alt="Avatar"
+        className={cn('rounded-full object-cover border border-gray-250/30 dark:border-gray-800/60', sizeClasses[size], className)}
       />
     );
   }

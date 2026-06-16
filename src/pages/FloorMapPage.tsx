@@ -6,15 +6,18 @@ import type { Desk, Room } from '../types';
 import { cn } from '../lib/utils';
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/ui/Badge';
+import { Avatar } from '../components/ui/Avatar';
 import { getDeskTypeLabel, getRoomTypeLabel, getAmenityLabel } from '../lib/utils';
-import { Users, Monitor, CheckCircle, X, Cpu, Landmark } from 'lucide-react';
+import { Users, Monitor, CheckCircle, X, Cpu, Landmark, Search } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export function FloorMapPage() {
-  const { floors, selectedFloorId, setSelectedFloor, selectedDate, setSelectedDate, bookings, currentUser, desks, rooms } = useAppStore();
+  const { floors, selectedFloorId, setSelectedFloor, selectedDate, setSelectedDate, bookings, currentUser, desks, rooms, users } = useAppStore();
   const [showBooking, setShowBooking] = useState(false);
   const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [prefillDeskId, setPrefillDeskId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const selectedFloor = floors.find(f => f.id === selectedFloorId) || floors[0];
 
@@ -35,6 +38,33 @@ export function FloorMapPage() {
     setShowBooking(true);
   };
 
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim().length > 1) {
+      const matchedUser = users.find(u => u.name.toLowerCase().includes(query.toLowerCase()));
+      if (matchedUser) {
+        // Find their booking for today
+        const userBooking = bookings.find(b =>
+          b.userId === matchedUser.id &&
+          b.date === selectedDate &&
+          b.resourceType === 'desk' &&
+          !['cancelled', 'completed', 'no_show'].includes(b.status)
+        );
+        if (userBooking) {
+          const desk = desks.find(d => d.id === userBooking.resourceId);
+          if (desk) {
+            setSelectedRoom(null);
+            setSelectedDesk(desk);
+            if (desk.floorId !== selectedFloorId) {
+              setSelectedFloor(desk.floorId);
+              toast.success(`Switched to ${floors.find(f => f.id === desk.floorId)?.name || 'occupied floor'}`);
+            }
+          }
+        }
+      }
+    }
+  };
+
   const deskBooking = selectedDesk ? bookings.find(b =>
     b.resourceId === selectedDesk.id && b.date === selectedDate && b.resourceType === 'desk' &&
     !['cancelled', 'completed', 'no_show'].includes(b.status)
@@ -42,18 +72,31 @@ export function FloorMapPage() {
 
   const isDeskMine = deskBooking?.userId === currentUser.id;
   const isDeskAvailable = !deskBooking && selectedDesk?.status !== 'maintenance';
+  const bookedByUser = deskBooking ? users.find(u => u.id === deskBooking.userId) : null;
 
   return (
-    <div className="flex flex-col h-full gap-6 animate-fade-in">
+    <div className="flex flex-col h-full gap-6 animate-fade-in text-gray-900 dark:text-gray-100">
       
       {/* 1. Header controls */}
       <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-100 dark:border-gray-850/80 pb-4">
         <div>
           <h1 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Interactive Office Map</h1>
-          <p className="text-xs text-gray-400 mt-0.5">Explore seat layouts and booking schedules in real time</p>
+          <p className="text-xs text-gray-400 mt-0.5 font-medium">Explore seat layouts and booking schedules in real time</p>
         </div>
         
         <div className="flex items-center gap-3">
+          {/* Coworker Search Bar */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Locate colleague..."
+              value={searchQuery}
+              onChange={e => handleSearchChange(e.target.value)}
+              className="text-xs font-semibold border border-gray-205 dark:border-gray-805 bg-white dark:bg-gray-900 rounded-xl pl-8 pr-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 text-gray-900 dark:text-white transition-all shadow-sm w-40 sm:w-48 md:w-56 placeholder-gray-400"
+            />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
+          </div>
+
           <input
             type="date"
             value={selectedDate}
@@ -148,35 +191,82 @@ export function FloorMapPage() {
             {/* A. Selected Desk Specific Content */}
             {selectedDesk && (
               <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Resource Type</p>
-                    <p className="text-sm font-semibold text-gray-750 dark:text-gray-205 mt-0.5">{getDeskTypeLabel(selectedDesk.type)}</p>
-                  </div>
-                  <StatusBadge status={isDeskAvailable ? 'available' : deskBooking ? 'occupied' : selectedDesk.status} />
-                </div>
-
-                {selectedDesk.zoneId && (
-                  <div>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Location Zone</p>
-                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-1">
-                      {selectedFloor?.zones.find(z => z.id === selectedDesk.zoneId)?.name || 'General Zone'}
-                    </p>
-                  </div>
-                )}
-
-                {/* Booking status block */}
-                {deskBooking ? (
-                  <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl p-3">
-                    <p className="text-xs font-bold text-red-800 dark:text-red-400 uppercase tracking-wider">Reserved Seat</p>
-                    <p className="text-xs font-semibold text-red-600 dark:text-red-300 mt-1">{deskBooking.startTime} – {deskBooking.endTime}</p>
-                    {isDeskMine && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-wider">This is your booking</p>}
+                
+                {/* Coworker Card if occupied by someone else */}
+                {deskBooking && bookedByUser && !isDeskMine ? (
+                  <div className="bg-gray-50/50 dark:bg-gray-900/40 border border-gray-150 dark:border-gray-800 rounded-2xl p-4 flex flex-col items-center text-center space-y-3.5 shadow-sm">
+                    <Avatar name={bookedByUser.name} imageUrl={bookedByUser.avatar} size="lg" className="ring-4 ring-brand-500/20" />
+                    <div>
+                      <h4 className="text-sm font-extrabold text-gray-900 dark:text-white leading-tight">{bookedByUser.name}</h4>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{bookedByUser.role} • {bookedByUser.department}</p>
+                    </div>
+                    <div className="w-full bg-white dark:bg-gray-950 rounded-xl p-3 border border-gray-150/40 dark:border-gray-850 text-left space-y-2.5">
+                      <div>
+                        <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block">Checked In Status</span>
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-250 mt-0.5 block flex items-center gap-1.5">
+                          {deskBooking.status === 'checked_in' ? (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                              Active at Desk
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-blue-500" />
+                              Reserved (Not Checked In)
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block">Reservation Window</span>
+                        <span className="text-xs font-mono font-bold text-brand-600 dark:text-brand-400 block mt-0.5">{deskBooking.startTime} – {deskBooking.endTime}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 w-full pt-1">
+                      <a href={`mailto:${bookedByUser.email}`} className="flex-1 bg-white hover:bg-gray-50 dark:bg-gray-950 dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-750 text-gray-700 dark:text-gray-250 text-xs py-2 rounded-xl font-bold transition-all text-center shadow-sm">
+                        Send Email
+                      </a>
+                      <button 
+                        onClick={() => toast.success(`Slack notification pinged to ${bookedByUser.name}`)} 
+                        className="flex-1 bg-brand-500 hover:bg-brand-600 text-white text-xs py-2 rounded-xl font-bold transition-all shadow-sm shadow-brand-500/10"
+                      >
+                        Ping Slack
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl p-3">
-                    <p className="text-xs font-bold text-emerald-800 dark:text-emerald-450 uppercase tracking-wider">Available Spot</p>
-                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Free to reserve for {selectedDate}</p>
-                  </div>
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Resource Type</p>
+                        <p className="text-sm font-semibold text-gray-750 dark:text-gray-205 mt-0.5">{getDeskTypeLabel(selectedDesk.type)}</p>
+                      </div>
+                      <StatusBadge status={isDeskAvailable ? 'available' : deskBooking ? 'occupied' : selectedDesk.status} />
+                    </div>
+
+                    {selectedDesk.zoneId && (
+                      <div>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Location Zone</p>
+                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mt-1">
+                          {selectedFloor?.zones.find(z => z.id === selectedDesk.zoneId)?.name || 'General Zone'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Booking status block for current user */}
+                    {deskBooking ? (
+                      <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl p-3">
+                        <p className="text-xs font-bold text-red-800 dark:text-red-400 uppercase tracking-wider">Reserved Seat</p>
+                        <p className="text-xs font-semibold text-red-600 dark:text-red-300 mt-1">{deskBooking.startTime} – {deskBooking.endTime}</p>
+                        {isDeskMine && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-wider">This is your booking</p>}
+                      </div>
+                    ) : (
+                      <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl p-3">
+                        <p className="text-xs font-bold text-emerald-800 dark:text-emerald-450 uppercase tracking-wider">Available Spot</p>
+                        <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Free to reserve for {selectedDate}</p>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* Desk Amenity Pills */}
@@ -185,7 +275,7 @@ export function FloorMapPage() {
                     <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Amenities Included</p>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedDesk.amenities.map(a => (
-                        <span key={a} className="text-[10px] font-bold bg-gray-50 dark:bg-gray-900/60 border border-gray-150/40 dark:border-gray-800/60 text-gray-650 dark:text-gray-350 rounded-lg px-2.5 py-1">
+                        <span key={a} className="text-[10px] font-bold bg-gray-50 dark:bg-gray-900/60 border border-gray-150/40 dark:border-gray-800/60 text-gray-655 dark:text-gray-350 rounded-lg px-2.5 py-1">
                           {getAmenityLabel(a)}
                         </span>
                       ))}

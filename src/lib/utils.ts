@@ -120,8 +120,25 @@ export function getRoomTypeLabel(type: string): string {
     focus: 'Focus Room',
     training: 'Training Room',
     boardroom: 'Boardroom',
+    washroom: 'Washroom / Restroom',
+    pantry: 'Pantry / Breakroom',
+    storage: 'Storage Room',
+    server_room: 'Server Room',
+    printer_room: 'Printer Room',
   };
   return map[type] || type;
+}
+
+export function getRoomDimensionsLabel(width: number, height: number): string {
+  const wTotalInches = width * 30; // 2.5 feet = 30 inches per cell
+  const hTotalInches = height * 30;
+  
+  const wFeet = Math.floor(wTotalInches / 12);
+  const wInches = Math.round(wTotalInches % 12);
+  const hFeet = Math.floor(hTotalInches / 12);
+  const hInches = Math.round(hTotalInches % 12);
+  
+  return `${wFeet}'${wInches}" x ${hFeet}'${hInches}"`;
 }
 
 export function getAmenityLabel(amenity: string): string {

@@ -71,6 +71,307 @@ input[type="date"] {
 .room-available { background: #f0fdf4; border-color: #4ade80; }
 .room-occupied { background: #fef2f2; border-color: #f87171; }
 
+/* Reference-style architectural floor map */
+.office-plan {
+  position: relative;
+  overflow: hidden;
+  background: #e8e0d0;
+  border: 0;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+
+.office-plan::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.reference-office-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.plan-room {
+  position: absolute;
+  border: 4px solid #596574;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.plan-room-label {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  z-index: 3;
+  display: flex;
+  max-width: 92%;
+  transform: translate(-50%, -50%);
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+  color: #111827;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.door-swing {
+  position: absolute;
+  left: -2px;
+  bottom: -2px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border: 2px solid #9aa4b2;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-radius: 0 0 0 34px;
+  background: #fff;
+}
+
+.plan-window-line {
+  position: absolute;
+  z-index: 4;
+  height: 5px;
+  background: repeating-linear-gradient(90deg, #6b7280 0 44px, #e5e7eb 44px 62px);
+}
+
+.plan-window-line.top {
+  left: 110px;
+  right: 20px;
+  top: 0;
+}
+
+.plan-window-line.bottom {
+  left: 120px;
+  right: 120px;
+  bottom: 0;
+}
+
+.realistic-desk {
+  z-index: 8;
+  border: 1.5px solid #a6b0be;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.96));
+  box-shadow: 0 2px 3px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+  color: #475569;
+}
+
+.realistic-desk:hover {
+  border-color: #14b8a6;
+  transform: scale(1.05);
+}
+
+.desk-chair {
+  position: absolute;
+  width: 12px;
+  height: 7px;
+  border: 1px solid #a6b0be;
+  border-radius: 7px 7px 3px 3px;
+  background: #eef2f7;
+}
+
+.desk-chair.top {
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.desk-chair.right {
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.desk-marker {
+  position: absolute;
+  right: -9px;
+  top: -9px;
+  z-index: 12;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.16);
+}
+
+.realistic-room {
+  z-index: 7;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #111827;
+  box-shadow: none;
+}
+
+.furniture {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: 88px;
+  height: 84px;
+  transform: translate(-50%, -50%);
+}
+
+.table-long {
+  position: absolute;
+  left: 24px;
+  top: 13px;
+  width: 38px;
+  height: 58px;
+  border: 2px solid #9aa4b2;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.chair {
+  position: absolute;
+  width: 13px;
+  height: 9px;
+  border: 1.5px solid #a6b0be;
+  border-radius: 8px 8px 3px 3px;
+  background: #eef2f7;
+}
+
+.chair.c1 { left: 7px; top: 14px; transform: rotate(90deg); }
+.chair.c2 { left: 7px; top: 34px; transform: rotate(90deg); }
+.chair.c3 { left: 7px; top: 54px; transform: rotate(90deg); }
+.chair.c4 { right: 8px; top: 14px; transform: rotate(-90deg); }
+.chair.c5 { right: 8px; top: 34px; transform: rotate(-90deg); }
+.chair.c6 { right: 8px; top: 54px; transform: rotate(-90deg); }
+.chair.c7 { left: 36px; top: 0; }
+.chair.c8 { left: 36px; bottom: 0; transform: rotate(180deg); }
+
+.dining {
+  top: 42%;
+  transform: translate(-50%, -50%) scale(0.85) rotate(90deg);
+}
+
+.collab-tables {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 18px;
+  height: 82px;
+}
+
+.round-table {
+  position: absolute;
+  top: 14px;
+  width: 48px;
+  height: 48px;
+  border: 2px solid #9aa4b2;
+  border-radius: 999px;
+  background: #f8fafc;
+}
+
+.round-chair {
+  position: absolute;
+  width: 11px;
+  height: 8px;
+  border: 1.5px solid #a6b0be;
+  border-radius: 7px 7px 3px 3px;
+  background: #eef2f7;
+}
+
+.round-chair.rc1 { left: 18px; top: -12px; }
+.round-chair.rc2 { right: -10px; top: 8px; transform: rotate(70deg); }
+.round-chair.rc3 { right: -5px; bottom: 0; transform: rotate(125deg); }
+.round-chair.rc4 { left: 18px; bottom: -12px; transform: rotate(180deg); }
+.round-chair.rc5 { left: -7px; bottom: 0; transform: rotate(235deg); }
+.round-chair.rc6 { left: -10px; top: 8px; transform: rotate(290deg); }
+
+.focus-furniture span,
+.lobby-furniture span,
+.office-desk span,
+.open-desks span {
+  position: absolute;
+  border: 1.5px solid #a6b0be;
+  background: #f8fafc;
+}
+
+.focus-furniture span:nth-child(1) { left: 44px; top: 22px; width: 34px; height: 24px; }
+.focus-furniture span:nth-child(2) { left: 78px; top: 76px; width: 27px; height: 22px; transform: rotate(-25deg); }
+.focus-furniture span:nth-child(3) { left: 28px; top: 90px; width: 26px; height: 20px; transform: rotate(35deg); }
+
+.stalls {
+  position: absolute;
+  inset: 54px 10px 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stalls span {
+  border: 1.5px solid #a6b0be;
+  border-radius: 0 0 18px 18px;
+  background: linear-gradient(#fff 0 50%, #eef2f7 50% 100%);
+}
+
+.lobby-furniture .sofa { left: 70px; top: 48px; width: 44px; height: 20px; border-radius: 5px; }
+.lobby-furniture .sofa.small { left: 70px; top: 102px; width: 34px; height: 18px; }
+.lobby-furniture .desk { left: 132px; top: 62px; width: 24px; height: 52px; }
+
+.office-desk .table { left: 46px; top: 58px; width: 48px; height: 30px; }
+.office-desk .chair.one { left: 48px; top: 94px; width: 16px; height: 10px; border-radius: 8px; }
+.office-desk .chair.two { left: 76px; top: 94px; width: 16px; height: 10px; border-radius: 8px; }
+
+.open-desks .bench {
+  width: 18px;
+  height: 70px;
+  border-radius: 2px;
+}
+
+.open-desks .b1 { left: 250px; top: 50px; }
+.open-desks .b2 { left: 330px; top: 50px; }
+.open-desks .b3 { left: 430px; top: 50px; }
+.open-desks .b4 { left: 512px; top: 50px; }
+.open-desks .b5 { left: 606px; top: 50px; }
+.open-desks .b6 { left: 688px; top: 50px; }
+.open-desks .b7 { left: 620px; top: 132px; }
+.open-desks .b8 { left: 700px; top: 132px; }
+
+.round-breakout {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+}
+
+.round-breakout.one { right: 42px; top: 120px; }
+.round-breakout.two { right: 40px; top: 286px; }
+
+.plant {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+}
+
+.plant span {
+  position: absolute;
+  width: 13px;
+  height: 19px;
+  border: 1px solid #b7c1ce;
+  border-radius: 999px 999px 3px 999px;
+  background: rgba(226, 232, 240, 0.65);
+}
+
+.plant span:nth-child(1) { left: 8px; top: 0; transform: rotate(-25deg); }
+.plant span:nth-child(2) { left: 0; top: 9px; transform: rotate(-70deg); }
+.plant span:nth-child(3) { right: 0; top: 9px; transform: rotate(55deg); }
+
 /* Animation classes */
 .animate-fade-in { animation: fadeIn 0.2s ease-in-out; }
 .animate-slide-up { animation: slideUp 0.3s ease-out; }

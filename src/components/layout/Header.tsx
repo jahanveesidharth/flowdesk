@@ -73,7 +73,7 @@ export function Header({ title }: { title?: string }) {
           onClick={() => navigate('/settings')}
           className="flex items-center gap-2.5 py-1 px-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900/60 transition-colors border border-transparent hover:border-gray-200/20"
         >
-          <Avatar name={currentUser.name} size="sm" className="ring-2 ring-brand-500/5" />
+          <Avatar name={currentUser.name} imageUrl={currentUser.avatar} size="sm" className="ring-2 ring-brand-500/5" />
           <div className="hidden sm:block text-left">
             <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">{currentUser.name}</p>
             <p className="text-[10px] text-gray-405 dark:text-gray-450 leading-none capitalize mt-0.5">{currentUser.role}</p>
