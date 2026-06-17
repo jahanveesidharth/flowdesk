@@ -86,6 +86,7 @@ export interface Desk {
   notes?: string;
   fixedUserId?: string;
   isActive: boolean;
+  rotation?: 0 | 90 | 180 | 270;
 }
 
 export type DeskAmenity = 'monitor' | 'docking_station' | 'standing_desk' | 'locker' | 'window' | 'quiet_zone' | 'phone' | 'whiteboard';

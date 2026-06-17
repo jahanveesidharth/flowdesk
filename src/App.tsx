@@ -22,6 +22,7 @@ import { AdminPolicies } from './pages/admin/AdminPolicies';
 import { AdminSettings } from './pages/admin/AdminSettings';
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
+import { BookingStatusWatcher } from './components/booking/BookingStatusWatcher';
 
 function CheckInWatcher() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -60,6 +61,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <CheckInWatcher />
+      <BookingStatusWatcher />
       <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />

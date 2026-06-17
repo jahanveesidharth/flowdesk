@@ -194,6 +194,14 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                   if (step === 'type') setStep('resource');
                   if (step === 'resource') setStep('time');
                   if (step === 'time') {
+                    // Check if time slot is in the past
+                    const todayStr = format(new Date(), 'yyyy-MM-dd');
+                    const nowTimeStr = format(new Date(), 'HH:mm');
+                    if (date < todayStr || (date === todayStr && endTime <= nowTimeStr)) {
+                      toast.error('Cannot create a booking that has already ended.');
+                      return;
+                    }
+
                     const hasConflict = bookings.some(b =>
                       b.resourceId === selectedResourceId &&
                       b.date === date &&

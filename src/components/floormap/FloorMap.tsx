@@ -39,6 +39,93 @@ function renderFurnitureAsset(type: string) {
   return <FurnitureAsset type={type} className="w-full h-full" />;
 }
 
+function getCircularChairs(capacity: number) {
+  const chairs = [];
+  const cap = capacity || 4;
+  for (let i = 0; i < cap; i++) {
+    const angle = (i * 2 * Math.PI) / cap - Math.PI / 2; // start from top
+    const dist = 32; // radius of meeting circular table + offset
+    const x = Math.cos(angle) * dist;
+    const y = Math.sin(angle) * dist;
+    chairs.push(
+      <div
+        key={`circle-${i}`}
+        className="absolute w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+        style={{
+          left: `calc(50% + ${x}px - 7.5px)`,
+          top: `calc(50% + ${y}px - 7.5px)`,
+        }}
+      />
+    );
+  }
+  return chairs;
+}
+
+function getRectangularChairs(capacity: number) {
+  const chairs = [];
+  const cap = capacity || 6;
+  let topCount = 0;
+  let bottomCount = 0;
+  let leftCount = 0;
+  let rightCount = 0;
+
+  if (cap <= 4) {
+    topCount = Math.ceil(cap / 2);
+    bottomCount = cap - topCount;
+  } else if (cap <= 6) {
+    topCount = Math.ceil(cap / 2);
+    bottomCount = cap - topCount;
+  } else {
+    leftCount = 1;
+    rightCount = (cap - 1) >= 8 ? 1 : 0;
+    const remaining = cap - leftCount - rightCount;
+    topCount = Math.ceil(remaining / 2);
+    bottomCount = remaining - topCount;
+  }
+
+  // Top row
+  for (let i = 0; i < topCount; i++) {
+    const pct = topCount === 1 ? 50 : 15 + (i * 70) / (topCount - 1);
+    chairs.push(
+      <div
+        key={`top-${i}`}
+        className="absolute -top-3 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+        style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}
+      />
+    );
+  }
+  // Bottom row
+  for (let i = 0; i < bottomCount; i++) {
+    const pct = bottomCount === 1 ? 50 : 15 + (i * 70) / (bottomCount - 1);
+    chairs.push(
+      <div
+        key={`bottom-${i}`}
+        className="absolute -bottom-3 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+        style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}
+      />
+    );
+  }
+  // Left end
+  for (let i = 0; i < leftCount; i++) {
+    chairs.push(
+      <div
+        key={`left-${i}`}
+        className="absolute -left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+      />
+    );
+  }
+  // Right end
+  for (let i = 0; i < rightCount; i++) {
+    chairs.push(
+      <div
+        key={`right-${i}`}
+        className="absolute -right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+      />
+    );
+  }
+  return chairs;
+}
+
 export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, highlightAvailable, date }: FloorMapProps) {
   const { desks, rooms, bookings, currentUser, furniture, users } = useAppStore();
   const [zoom, setZoom] = useState(1);
@@ -250,7 +337,7 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
                   'desk-cell absolute transition-all flex items-center justify-center shadow-sm',
                   status === 'maintenance' && 'cursor-not-allowed opacity-70',
                   selectedDeskId === desk.id 
-                    ? 'ring-2 ring-blue-500 scale-105 border-blue-500 shadow-md shadow-blue-500/10 z-[10]' 
+                    ? 'ring-2 ring-blue-500 border-blue-500 shadow-md shadow-blue-500/10 z-[10]' 
                     : 'bg-[#e8d2ba] dark:bg-[#5a4632] border-[#cfa376] dark:border-[#423120]',
                   borderClasses
                 )}
@@ -259,6 +346,8 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
                   top: desk.y * cellH + tableTopOffset,
                   width: Math.max(20, cellW - tableWidthOffset),
                   height: Math.max(16, cellH - tableHeightOffset),
+                  transform: `rotate(${desk.rotation || 0}deg) ${selectedDeskId === desk.id ? 'scale(1.05)' : ''}`,
+                  transformOrigin: 'center center',
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -338,6 +427,13 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
             // Room shape rendering depending on type
             const isBoardroom = room.type === 'boardroom' || room.type === 'training' || room.type === 'meeting';
 
+            const hasInteractiveDesks = floorDesks.some(d =>
+              d.x >= room.x &&
+              d.x + d.width <= room.x + room.width &&
+              d.y >= room.y &&
+              d.y + d.height <= room.y + room.height
+            );
+
             return (
               <div
                 key={room.id}
@@ -358,17 +454,14 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
                 }}
                 onMouseLeave={() => setHoveredRoom(null)}
               >
-                {isBoardroom ? (
+                {isBoardroom && !hasInteractiveDesks ? (
                   <div className="relative w-full h-full flex items-center justify-center p-4">
                     {/* Conference Table */}
                     {room.type === 'meeting' ? (
                       /* Circular table for meeting room */
                       <div className="w-16 h-16 bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded-full shadow-sm flex items-center justify-center relative z-10">
                         {/* Chairs around round table */}
-                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
-                        <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
-                        <div className="absolute -left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
-                        <div className="absolute -right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
+                        {getCircularChairs(room.capacity)}
                         
                         {host ? (
                           <div className="relative w-10 h-10 rounded-full ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md">
@@ -389,12 +482,7 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
                       /* Rectangular table for boardroom or training */
                       <div className="w-[70%] h-[50%] bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded-md shadow-sm flex items-center justify-center relative z-10">
                         {/* Chairs top and bottom */}
-                        <div className="absolute -top-3.5 left-[15%] w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
-                        <div className="absolute -top-3.5 left-[50%] -translate-x-1/2 w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
-                        <div className="absolute -top-3.5 right-[15%] w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
-                        <div className="absolute -bottom-3.5 left-[15%] w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
-                        <div className="absolute -bottom-3.5 left-[50%] -translate-x-1/2 w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
-                        <div className="absolute -bottom-3.5 right-[15%] w-4 h-4 bg-slate-900 border border-slate-700 rounded-full" />
+                        {getRectangularChairs(room.capacity)}
                         
                         {host ? (
                           <div className="relative w-9 h-9 rounded-full ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md">
@@ -414,9 +502,23 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
                     )}
                   </div>
                 ) : (
-                  /* Standard room/phone booth representation */
+                  /* Standard room/phone booth representation OR boardroom with interactive desks */
                   <div className="relative w-full h-full flex flex-col items-center justify-center bg-transparent border-0 p-2">
-                    {host ? (
+                    {hasInteractiveDesks ? (
+                      <div className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded border border-slate-200/50 dark:border-slate-800/50 text-left select-none pointer-events-none shadow-sm max-w-[90%] flex items-center gap-2">
+                        {host && (
+                          <div className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shrink-0">
+                            <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="text-[9px] font-black uppercase leading-tight text-slate-800 dark:text-slate-200">{room.name}</div>
+                          <div className="text-[7px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
+                            {getRoomDimensionsLabel(room.width, room.height)} • Cap: {room.capacity}
+                          </div>
+                        </div>
+                      </div>
+                    ) : host ? (
                       <div className="relative z-10 flex flex-col items-center justify-center scale-90">
                         <div className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white/90 dark:bg-gray-900/90 flex items-center justify-center shrink-0">
                           <Avatar name={host.name} imageUrl={host.avatar} size="xs" />

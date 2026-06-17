@@ -198,19 +198,15 @@ export function FloorStructure({
         );
       })}
 
-      {/* Dynamic Room Fills, Walls & Door swing gaps */}
+      {/* Pass 1: Room Background Fills & Wall borders */}
       {floorRooms.map(room => {
         const rx = room.x * cellW;
         const ry = room.y * cellH;
         const rw = room.width * cellW;
         const rh = room.height * cellH;
-        const isAtBottom = room.y + room.height >= gridHeight;
-        const doorWidth = Math.min(32, cellW * 0.8);
-        const doorX = rx + rw / 2 - doorWidth / 2;
-        const doorY = isAtBottom ? ry - 4 : ry + rh - 4;
 
         return (
-          <g key={room.id}>
+          <g key={`room-walls-${room.id}`}>
             {/* Room Background Fill */}
             <rect
               x={rx}
@@ -230,24 +226,116 @@ export function FloorStructure({
               stroke="#1a1a1a"
               strokeWidth="8"
             />
-            {/* Door swing gap */}
-            <rect
-              x={doorX}
-              y={doorY}
-              width={doorWidth}
-              height={8}
-              fill={isDark ? '#090d16' : '#EDE8DC'}
-            />
-            {/* Door Leaf and Swing Trajectory */}
-            {isAtBottom ? (
+          </g>
+        );
+      })}
+
+      {/* Pass 2: Door swing gaps and trajectories */}
+      {floorRooms.map(room => {
+        const rx = room.x * cellW;
+        const ry = room.y * cellH;
+        const rw = room.width * cellW;
+        const rh = room.height * cellH;
+
+        // Check adjacent walls blocked by other rooms on this floor
+        const isTopBlocked = floorRooms.some(r => r.id !== room.id && Math.abs(r.y + r.height - room.y) < 0.1 && !(r.x + r.width <= room.x || r.x >= room.x + room.width));
+        const isBottomBlocked = floorRooms.some(r => r.id !== room.id && Math.abs(r.y - (room.y + room.height)) < 0.1 && !(r.x + r.width <= room.x || r.x >= room.x + room.width));
+        const isLeftBlocked = floorRooms.some(r => r.id !== room.id && Math.abs(r.x + r.width - room.x) < 0.1 && !(r.y + r.height <= room.y || r.y >= room.y + room.height));
+        const isRightBlocked = floorRooms.some(r => r.id !== room.id && Math.abs(r.x - (room.x + room.width)) < 0.1 && !(r.y + r.height <= room.y || r.y >= room.y + room.height));
+
+        const isBottomOuter = room.y + room.height >= gridHeight;
+        const isTopOuter = room.y <= 0;
+        const isLeftOuter = room.x <= 0;
+        const isRightOuter = room.x + room.width >= gridWidth;
+
+        // Candidate walls in priority order
+        const candidates: ('bottom' | 'top' | 'left' | 'right')[] = ['bottom', 'top', 'left', 'right'];
+
+        // Find the first candidate that is neither blocked nor an outer wall boundary
+        let doorWall = candidates.find(wall => {
+          if (wall === 'bottom') return !isBottomBlocked && !isBottomOuter;
+          if (wall === 'top') return !isTopBlocked && !isTopOuter;
+          if (wall === 'left') return !isLeftBlocked && !isLeftOuter;
+          if (wall === 'right') return !isRightBlocked && !isRightOuter;
+          return false;
+        });
+
+        // If none found, find any wall that is not blocked by another room (even if outer wall)
+        if (!doorWall) {
+          doorWall = candidates.find(wall => {
+            if (wall === 'bottom') return !isBottomBlocked;
+            if (wall === 'top') return !isTopBlocked;
+            if (wall === 'left') return !isLeftBlocked;
+            if (wall === 'right') return !isRightBlocked;
+            return false;
+          });
+        }
+
+        // Default fallback
+        if (!doorWall) {
+          doorWall = 'bottom';
+        }
+
+        const doorWidth = Math.min(32, cellW * 0.8);
+        const doorX = rx + rw / 2 - doorWidth / 2;
+        const doorY = ry + rh / 2 - doorWidth / 2;
+
+        return (
+          <g key={`room-door-${room.id}`}>
+            {/* Door swing gap and trajectory depending on wall selection */}
+            {doorWall === 'bottom' && (
               <g>
+                <rect
+                  x={doorX}
+                  y={ry + rh - 4}
+                  width={doorWidth}
+                  height={8}
+                  fill={isDark ? '#090d16' : '#EDE8DC'}
+                />
+                <line x1={doorX} y1={ry + rh} x2={doorX} y2={ry + rh + doorWidth} stroke="#555" strokeWidth="2.5" />
+                <path d={`M ${doorX} ${ry + rh + doorWidth} A ${doorWidth} ${doorWidth} 0 0 0 ${doorX + doorWidth} ${ry + rh}`} stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+              </g>
+            )}
+
+            {doorWall === 'top' && (
+              <g>
+                <rect
+                  x={doorX}
+                  y={ry - 4}
+                  width={doorWidth}
+                  height={8}
+                  fill={isDark ? '#090d16' : '#EDE8DC'}
+                />
                 <line x1={doorX} y1={ry} x2={doorX} y2={ry - doorWidth} stroke="#555" strokeWidth="2.5" />
                 <path d={`M ${doorX} ${ry - doorWidth} A ${doorWidth} ${doorWidth} 0 0 1 ${doorX + doorWidth} ${ry}`} stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
               </g>
-            ) : (
+            )}
+
+            {doorWall === 'left' && (
               <g>
-                <line x1={doorX} y1={ry + rh} x2={doorX} y2={ry + rh + doorWidth} stroke="#555" strokeWidth="2.5" />
-                <path d={`M ${doorX} ${ry + rh + doorWidth} A ${doorWidth} ${doorWidth} 0 0 0 ${doorX + doorWidth} ${ry + rh}`} stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+                <rect
+                  x={rx - 4}
+                  y={doorY}
+                  width={8}
+                  height={doorWidth}
+                  fill={isDark ? '#090d16' : '#EDE8DC'}
+                />
+                <line x1={rx} y1={doorY} x2={rx - doorWidth} y2={doorY} stroke="#555" strokeWidth="2.5" />
+                <path d={`M ${rx - doorWidth} ${doorY} A ${doorWidth} ${doorWidth} 0 0 1 ${rx} ${doorY + doorWidth}`} stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+              </g>
+            )}
+
+            {doorWall === 'right' && (
+              <g>
+                <rect
+                  x={rx + rw - 4}
+                  y={doorY}
+                  width={8}
+                  height={doorWidth}
+                  fill={isDark ? '#090d16' : '#EDE8DC'}
+                />
+                <line x1={rx + rw} y1={doorY} x2={rx + rw + doorWidth} y2={doorY} stroke="#555" strokeWidth="2.5" />
+                <path d={`M ${rx + rw + doorWidth} ${doorY} A ${doorWidth} ${doorWidth} 0 0 0 ${rx + rw} ${doorY + doorWidth}`} stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
               </g>
             )}
           </g>

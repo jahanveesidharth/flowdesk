@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { isDemoMode } from '../lib/demoMode';
 import toast from 'react-hot-toast';
+import { isBookingWithinCheckInWindow } from '../lib/utils';
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 
@@ -55,6 +56,7 @@ const mapDeskFromDb = (d: any): Desk => ({
   notes: d.notes || undefined,
   fixedUserId: d.fixed_user_id || undefined,
   isActive: d.is_active ?? true,
+  rotation: d.rotation || 0,
 });
 
 const mapRoomFromDb = (r: any): Room => ({
@@ -436,6 +438,12 @@ export const useAppStore = create<AppState>()(
       // ─── Actions with Supabase Integrations ─────────────────────────────────
 
       addBooking: async (booking) => {
+        const todayStr = format(new Date(), 'yyyy-MM-dd');
+        const nowTimeStr = format(new Date(), 'HH:mm');
+        if (booking.date < todayStr || (booking.date === todayStr && booking.endTime <= nowTimeStr)) {
+          throw new Error('Cannot create a booking in the past.');
+        }
+
         const newBookingId = `bk${++bookingCounter}`;
         const newBooking: Booking = {
           ...booking,
@@ -552,6 +560,15 @@ export const useAppStore = create<AppState>()(
       },
 
       checkIn: async (bookingId) => {
+        const { bookings } = get();
+        const booking = bookings.find(b => b.id === bookingId);
+        if (!booking) {
+          throw new Error('Booking not found');
+        }
+        if (!isBookingWithinCheckInWindow(booking.date, booking.startTime, booking.endTime)) {
+          throw new Error('Check-in is only available between 30 minutes before and 30 minutes after your booking period.');
+        }
+
         const timeStr = format(new Date(), 'HH:mm');
         if (canUseSupabase() && isValidUuid(bookingId)) {
           try {
@@ -761,6 +778,7 @@ export const useAppStore = create<AppState>()(
             if (updates.zoneId !== undefined) payload.zone_id = updates.zoneId;
             if (updates.isActive !== undefined) payload.is_active = updates.isActive;
             if (updates.amenities) payload.amenities = updates.amenities;
+            if (updates.rotation !== undefined) payload.rotation = updates.rotation;
 
             await db.from('desks').update(payload).eq('id', deskId);
           } catch (err) {

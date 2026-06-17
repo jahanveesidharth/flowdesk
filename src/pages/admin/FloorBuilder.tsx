@@ -44,6 +44,93 @@ function renderFurnitureAsset(type: string, rotation: number) {
   );
 }
 
+function getCircularChairs(capacity: number) {
+  const chairs = [];
+  const cap = capacity || 4;
+  for (let i = 0; i < cap; i++) {
+    const angle = (i * 2 * Math.PI) / cap - Math.PI / 2; // start from top
+    const dist = 32; // radius of meeting circular table + offset
+    const x = Math.cos(angle) * dist;
+    const y = Math.sin(angle) * dist;
+    chairs.push(
+      <div
+        key={`circle-${i}`}
+        className="absolute w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+        style={{
+          left: `calc(50% + ${x}px - 7.5px)`,
+          top: `calc(50% + ${y}px - 7.5px)`,
+        }}
+      />
+    );
+  }
+  return chairs;
+}
+
+function getRectangularChairs(capacity: number) {
+  const chairs = [];
+  const cap = capacity || 6;
+  let topCount = 0;
+  let bottomCount = 0;
+  let leftCount = 0;
+  let rightCount = 0;
+
+  if (cap <= 4) {
+    topCount = Math.ceil(cap / 2);
+    bottomCount = cap - topCount;
+  } else if (cap <= 6) {
+    topCount = Math.ceil(cap / 2);
+    bottomCount = cap - topCount;
+  } else {
+    leftCount = 1;
+    rightCount = (cap - 1) >= 8 ? 1 : 0;
+    const remaining = cap - leftCount - rightCount;
+    topCount = Math.ceil(remaining / 2);
+    bottomCount = remaining - topCount;
+  }
+
+  // Top row
+  for (let i = 0; i < topCount; i++) {
+    const pct = topCount === 1 ? 50 : 15 + (i * 70) / (topCount - 1);
+    chairs.push(
+      <div
+        key={`top-${i}`}
+        className="absolute -top-3 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+        style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}
+      />
+    );
+  }
+  // Bottom row
+  for (let i = 0; i < bottomCount; i++) {
+    const pct = bottomCount === 1 ? 50 : 15 + (i * 70) / (bottomCount - 1);
+    chairs.push(
+      <div
+        key={`bottom-${i}`}
+        className="absolute -bottom-3 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+        style={{ left: `${pct}%`, transform: 'translateX(-50%)' }}
+      />
+    );
+  }
+  // Left end
+  for (let i = 0; i < leftCount; i++) {
+    chairs.push(
+      <div
+        key={`left-${i}`}
+        className="absolute -left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+      />
+    );
+  }
+  // Right end
+  for (let i = 0; i < rightCount; i++) {
+    chairs.push(
+      <div
+        key={`right-${i}`}
+        className="absolute -right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full"
+      />
+    );
+  }
+  return chairs;
+}
+
 export function FloorBuilder() {
   const { floors, desks, rooms, bookings, users, currentUser, updateDesk, addDesk, removeDesk, updateRoom, addRoom, removeRoom, theme, furniture, addFurniture, updateFurniture, removeFurniture, updateFloor } = useAppStore();
   const activeDate = new Date().toISOString().split('T')[0];
@@ -103,6 +190,100 @@ export function FloorBuilder() {
   const floorDesks = desks.filter(d => d.floorId === selectedFloorId);
   const floorRooms = rooms.filter(r => r.floorId === selectedFloorId);
   const floorFurniture = furniture.filter(f => f.floorId === selectedFloorId && f.isActive);
+
+  const checkAssetOverlap = (
+    id: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    type: string
+  ): boolean => {
+    if (type === 'zone') return false;
+
+    // 1. Desk overlap checking
+    if (type === 'desk') {
+      const deskOverlap = floorDesks.some(d => 
+        d.id !== id && 
+        x < d.x + 1 && x + w > d.x && 
+        y < d.y + 1 && y + h > d.y
+      );
+      if (deskOverlap) return true;
+
+      const furnitureOverlap = floorFurniture.some(f => 
+        f.id !== id && 
+        x < f.x + f.width && x + w > f.x && 
+        y < f.y + f.height && y + h > f.y
+      );
+      if (furnitureOverlap) return true;
+
+      // Desks can be fully inside or fully outside rooms, but cannot cross their walls
+      const crossesRoom = floorRooms.some(r => {
+        const EPS = 0.01;
+        const isInside = x >= r.x - EPS && (x + w) <= (r.x + r.width) + EPS && y >= r.y - EPS && (y + h) <= (r.y + r.height) + EPS;
+        const isOutside = (x + w) <= r.x + EPS || x >= (r.x + r.width) - EPS || (y + h) <= r.y + EPS || y >= (r.y + r.height) - EPS;
+        return !isInside && !isOutside;
+      });
+      if (crossesRoom) return true;
+    }
+
+    // 2. Furniture overlap checking
+    if (type === 'furniture') {
+      const deskOverlap = floorDesks.some(d => 
+        d.id !== id && 
+        x < d.x + 1 && x + w > d.x && 
+        y < d.y + 1 && y + h > d.y
+      );
+      if (deskOverlap) return true;
+
+      const furnitureOverlap = floorFurniture.some(f => 
+        f.id !== id && 
+        x < f.x + f.width && x + w > f.x && 
+        y < f.y + f.height && y + h > f.y
+      );
+      if (furnitureOverlap) return true;
+
+      // Furniture can be fully inside or fully outside rooms, but cannot cross their walls
+      const crossesRoom = floorRooms.some(r => {
+        const EPS = 0.01;
+        const isInside = x >= r.x - EPS && (x + w) <= (r.x + r.width) + EPS && y >= r.y - EPS && (y + h) <= (r.y + r.height) + EPS;
+        const isOutside = (x + w) <= r.x + EPS || x >= (r.x + r.width) - EPS || (y + h) <= r.y + EPS || y >= (r.y + r.height) - EPS;
+        return !isInside && !isOutside;
+      });
+      if (crossesRoom) return true;
+    }
+
+    // 3. Room overlap checking
+    if (type === 'room') {
+      // Rooms cannot overlap other rooms
+      const roomOverlap = floorRooms.some(r => 
+        r.id !== id && 
+        x < r.x + r.width && x + w > r.x && 
+        y < r.y + r.height && y + h > r.y
+      );
+      if (roomOverlap) return true;
+
+      // Rooms cannot have desks crossing their walls (must be fully inside or fully outside)
+      const crossesDesk = floorDesks.some(d => {
+        const EPS = 0.01;
+        const isInside = d.x >= x - EPS && (d.x + 1) <= (x + w) + EPS && d.y >= y - EPS && (d.y + 1) <= (y + h) + EPS;
+        const isOutside = (d.x + 1) <= x + EPS || d.x >= (x + w) - EPS || (d.y + 1) <= y + EPS || d.y >= (y + h) - EPS;
+        return !isInside && !isOutside;
+      });
+      if (crossesDesk) return true;
+
+      // Rooms cannot have furniture crossing their walls (must be fully inside or fully outside)
+      const crossesFurniture = floorFurniture.some(f => {
+        const EPS = 0.01;
+        const isInside = f.x >= x - EPS && (f.x + f.width) <= (x + w) + EPS && f.y >= y - EPS && (f.y + f.height) <= (y + h) + EPS;
+        const isOutside = (f.x + f.width) <= x + EPS || f.x >= (x + w) - EPS || (f.y + f.height) <= y + EPS || f.y >= (y + h) - EPS;
+        return !isInside && !isOutside;
+      });
+      if (crossesFurniture) return true;
+    }
+
+    return false;
+  };
   const planWidth = 1200;
   const planHeight = 960;
   const cellW = floor ? planWidth / floor.gridWidth : CELL;
@@ -194,6 +375,57 @@ export function FloorBuilder() {
   const handlePointerUpDrag = (e: React.PointerEvent) => {
     e.stopPropagation();
     e.currentTarget.releasePointerCapture(e.pointerId);
+    if (draggingAsset) {
+      const { id, type, startX, startY } = draggingAsset;
+      let currentX = startX;
+      let currentY = startY;
+      let w = 1;
+      let h = 1;
+
+      if (type === 'desk') {
+        const item = floorDesks.find(d => d.id === id);
+        if (item) {
+          currentX = item.x;
+          currentY = item.y;
+        }
+      } else if (type === 'room') {
+        const item = floorRooms.find(r => r.id === id);
+        if (item) {
+          currentX = item.x;
+          currentY = item.y;
+          w = item.width;
+          h = item.height;
+        }
+      } else if (type === 'furniture') {
+        const item = floorFurniture.find(f => f.id === id);
+        if (item) {
+          currentX = item.x;
+          currentY = item.y;
+          w = item.width;
+          h = item.height;
+        }
+      }
+
+      if (type !== 'zone' && checkAssetOverlap(id, currentX, currentY, w, h, type)) {
+        toast.error('Overlap detected: cannot place asset here.');
+        if (type === 'desk') {
+          updateDesk(id, { x: startX, y: startY, zoneId: getZoneAt(startX, startY)?.id });
+          if (selectedDesk?.id === id) {
+            setSelectedDesk(prev => prev ? { ...prev, x: startX, y: startY, zoneId: getZoneAt(startX, startY)?.id } : null);
+          }
+        } else if (type === 'room') {
+          updateRoom(id, { x: startX, y: startY });
+          if (selectedRoom?.id === id) {
+            setSelectedRoom(prev => prev ? { ...prev, x: startX, y: startY } : null);
+          }
+        } else if (type === 'furniture') {
+          updateFurniture(id, { x: startX, y: startY });
+          if (selectedFurniture?.id === id) {
+            setSelectedFurniture(prev => prev ? { ...prev, x: startX, y: startY } : null);
+          }
+        }
+      }
+    }
     setDraggingAsset(null);
   };
 
@@ -285,6 +517,33 @@ export function FloorBuilder() {
   const handlePointerUpResize = (e: React.PointerEvent) => {
     e.stopPropagation();
     e.currentTarget.releasePointerCapture(e.pointerId);
+    if (resizingAsset) {
+      const { id, type, startX, startY, startWidth, startHeight } = resizingAsset;
+      let currentX = startX;
+      let currentY = startY;
+      let currentW = startWidth;
+      let currentH = startHeight;
+
+      if (type === 'room') {
+        const item = floorRooms.find(r => r.id === id);
+        if (item) {
+          currentX = item.x;
+          currentY = item.y;
+          currentW = item.width;
+          currentH = item.height;
+        }
+      }
+
+      if (type !== 'zone' && checkAssetOverlap(id, currentX, currentY, currentW, currentH, type)) {
+        toast.error('Overlap detected: cannot resize here.');
+        if (type === 'room') {
+          updateRoom(id, { x: startX, y: startY, width: startWidth, height: startHeight });
+          if (selectedRoom?.id === id) {
+            setSelectedRoom(prev => prev ? { ...prev, x: startX, y: startY, width: startWidth, height: startHeight } : null);
+          }
+        }
+      }
+    }
     setResizingAsset(null);
   };
 
@@ -314,6 +573,10 @@ export function FloorBuilder() {
 
     const draggedDeskId = e.dataTransfer.getData('draggedDeskId');
     if (draggedDeskId) {
+      if (checkAssetOverlap(draggedDeskId, x, y, 1, 1, 'desk')) {
+        toast.error('Overlap detected: cannot drop desk here.');
+        return;
+      }
       updateDesk(draggedDeskId, { x, y, zoneId: getZoneAt(x, y)?.id });
       toast.success('Desk relocated successfully');
       return;
@@ -321,6 +584,13 @@ export function FloorBuilder() {
 
     const draggedFurnitureId = e.dataTransfer.getData('draggedFurnitureId');
     if (draggedFurnitureId) {
+      const fItem = floorFurniture.find(item => item.id === draggedFurnitureId);
+      const w = fItem ? fItem.width : 1;
+      const h = fItem ? fItem.height : 1;
+      if (checkAssetOverlap(draggedFurnitureId, x, y, w, h, 'furniture')) {
+        toast.error('Overlap detected: cannot drop asset here.');
+        return;
+      }
       updateFurniture(draggedFurnitureId, { x, y });
       toast.success('Asset relocated');
       return;
@@ -328,6 +598,10 @@ export function FloorBuilder() {
 
     const resourceType = e.dataTransfer.getData('resourceType') as Desk['type'] | null;
     if (resourceType) {
+      if (checkAssetOverlap('', x, y, 1, 1, 'desk')) {
+        toast.error('Overlap detected: cannot place desk here.');
+        return;
+      }
       addDesk({
         label: `D-${String(floorDesks.length + 1).padStart(2, '0')}`,
         floorId: selectedFloorId,
@@ -346,6 +620,10 @@ export function FloorBuilder() {
     const furnitureType = e.dataTransfer.getData('furnitureType') as FurnitureType | null;
     if (furnitureType) {
       const size = getFurnitureDefaultSize(furnitureType);
+      if (checkAssetOverlap('', x, y, size.w, size.h, 'furniture')) {
+        toast.error('Overlap detected: cannot place asset here.');
+        return;
+      }
       addFurniture({
         floorId: selectedFloorId,
         type: furnitureType,
@@ -364,6 +642,12 @@ export function FloorBuilder() {
     if (!floor) return;
     const x = snapValue(floor.gridWidth / 2, 0.5);
     const y = snapValue(floor.gridHeight / 2, 0.5);
+    
+    if (checkAssetOverlap('', x, y, 1, 1, 'desk')) {
+      toast.error('Center position is occupied: please drag and drop the desk instead.');
+      return;
+    }
+
     const newDesk = {
       id: `desk-${Date.now()}`,
       label: `D-${String(floorDesks.length + 1).padStart(2, '0')}`,
@@ -389,6 +673,12 @@ export function FloorBuilder() {
     const x = snapValue(floor.gridWidth / 2, 0.5);
     const y = snapValue(floor.gridHeight / 2, 0.5);
     const size = getFurnitureDefaultSize(type);
+
+    if (checkAssetOverlap('', x, y, size.w, size.h, 'furniture')) {
+      toast.error('Center position is occupied: please drag and drop the asset instead.');
+      return;
+    }
+
     const newFurniture = {
       id: `furn-${Date.now()}`,
       floorId: selectedFloorId,
@@ -445,31 +735,49 @@ export function FloorBuilder() {
       if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
         e.preventDefault();
         if (selectedDesk && floor) {
+          const newX = Math.min(floor.gridWidth - 1, selectedDesk.x + 1);
+          const newY = Math.min(floor.gridHeight - 1, selectedDesk.y + 1);
+          if (checkAssetOverlap('', newX, newY, 1, 1, 'desk')) {
+            toast.error('Cannot duplicate: target position is occupied.');
+            return;
+          }
           const newDesk = {
             ...selectedDesk,
             id: `desk-${Date.now()}`,
             label: `${selectedDesk.label} (Copy)`,
-            x: Math.min(floor.gridWidth - 1, selectedDesk.x + 1),
-            y: Math.min(floor.gridHeight - 1, selectedDesk.y + 1),
+            x: newX,
+            y: newY,
           };
           addDesk(newDesk);
           toast.success('Desk duplicated');
         } else if (selectedRoom && floor) {
+          const newX = Math.min(floor.gridWidth - selectedRoom.width, selectedRoom.x + 1);
+          const newY = Math.min(floor.gridHeight - selectedRoom.height, selectedRoom.y + 1);
+          if (checkAssetOverlap('', newX, newY, selectedRoom.width, selectedRoom.height, 'room')) {
+            toast.error('Cannot duplicate: target position is occupied.');
+            return;
+          }
           const newRoom = {
             ...selectedRoom,
             id: `room-${Date.now()}`,
             name: `${selectedRoom.name} (Copy)`,
-            x: Math.min(floor.gridWidth - selectedRoom.width, selectedRoom.x + 1),
-            y: Math.min(floor.gridHeight - selectedRoom.height, selectedRoom.y + 1),
+            x: newX,
+            y: newY,
           };
           addRoom(newRoom);
           toast.success('Room duplicated');
         } else if (selectedFurniture && floor) {
+          const newX = Math.min(floor.gridWidth - selectedFurniture.width, selectedFurniture.x + 1);
+          const newY = Math.min(floor.gridHeight - selectedFurniture.height, selectedFurniture.y + 1);
+          if (checkAssetOverlap('', newX, newY, selectedFurniture.width, selectedFurniture.height, 'furniture')) {
+            toast.error('Cannot duplicate: target position is occupied.');
+            return;
+          }
           const newFurniture = {
             ...selectedFurniture,
             id: `furn-${Date.now()}`,
-            x: Math.min(floor.gridWidth - selectedFurniture.width, selectedFurniture.x + 1),
-            y: Math.min(floor.gridHeight - selectedFurniture.height, selectedFurniture.y + 1),
+            x: newX,
+            y: newY,
           };
           addFurniture(newFurniture);
           toast.success('Asset duplicated');
@@ -501,16 +809,28 @@ export function FloorBuilder() {
         if (selectedDesk) {
           const nextX = Math.max(0, Math.min(floor.gridWidth - 1, selectedDesk.x + dx));
           const nextY = Math.max(0, Math.min(floor.gridHeight - 1, selectedDesk.y + dy));
+          if (checkAssetOverlap(selectedDesk.id, nextX, nextY, 1, 1, 'desk')) {
+            toast.error('Nudge blocked: position is occupied.');
+            return;
+          }
           updateDesk(selectedDesk.id, { x: nextX, y: nextY, zoneId: getZoneAt(nextX, nextY)?.id });
           setSelectedDesk({ ...selectedDesk, x: nextX, y: nextY, zoneId: getZoneAt(nextX, nextY)?.id });
         } else if (selectedRoom) {
           const nextX = Math.max(0, Math.min(floor.gridWidth - selectedRoom.width, selectedRoom.x + dx));
           const nextY = Math.max(0, Math.min(floor.gridHeight - selectedRoom.height, selectedRoom.y + dy));
+          if (checkAssetOverlap(selectedRoom.id, nextX, nextY, selectedRoom.width, selectedRoom.height, 'room')) {
+            toast.error('Nudge blocked: position is occupied.');
+            return;
+          }
           updateRoom(selectedRoom.id, { x: nextX, y: nextY });
           setSelectedRoom({ ...selectedRoom, x: nextX, y: nextY });
         } else if (selectedFurniture) {
           const nextX = Math.max(0, Math.min(floor.gridWidth - selectedFurniture.width, selectedFurniture.x + dx));
           const nextY = Math.max(0, Math.min(floor.gridHeight - selectedFurniture.height, selectedFurniture.y + dy));
+          if (checkAssetOverlap(selectedFurniture.id, nextX, nextY, selectedFurniture.width, selectedFurniture.height, 'furniture')) {
+            toast.error('Nudge blocked: position is occupied.');
+            return;
+          }
           updateFurniture(selectedFurniture.id, { x: nextX, y: nextY });
           setSelectedFurniture({ ...selectedFurniture, x: nextX, y: nextY });
         } else if (selectedZone) {
@@ -537,21 +857,22 @@ export function FloorBuilder() {
 
   const handleCellClick = (x: number, y: number) => {
     if (tool === 'add_desk') {
-      const exists = floorDesks.some(d => d.x === x && d.y === y);
-      if (!exists) {
-        addDesk({
-          label: `D-${String(floorDesks.length + 1).padStart(2, '0')}`,
-          floorId: selectedFloorId,
-          type: 'hot',
-          status: 'available',
-          x, y,
-          width: 1, height: 1,
-          zoneId: getZoneAt(x, y)?.id,
-          amenities: [],
-          isActive: true,
-        });
-        toast.success('Desk added to grid');
+      if (checkAssetOverlap('', x, y, 1, 1, 'desk')) {
+        toast.error('Overlap detected: cannot place desk here.');
+        return;
       }
+      addDesk({
+        label: `D-${String(floorDesks.length + 1).padStart(2, '0')}`,
+        floorId: selectedFloorId,
+        type: 'hot',
+        status: 'available',
+        x, y,
+        width: 1, height: 1,
+        zoneId: getZoneAt(x, y)?.id,
+        amenities: [],
+        isActive: true,
+      });
+      toast.success('Desk added to grid');
     } else if (tool === 'add_room') {
       if (!roomStart) {
         setRoomStart({ x, y });
@@ -564,6 +885,13 @@ export function FloorBuilder() {
       const width = Math.max(1, Math.abs(x - roomStart.x) + 1);
       const height = Math.max(1, Math.abs(y - roomStart.y) + 1);
       const roomName = `Room ${floorRooms.length + 1}`;
+      
+      if (checkAssetOverlap('', left, top, width, height, 'room')) {
+        toast.error('Overlap detected: cannot place room here.');
+        setRoomStart(null);
+        return;
+      }
+
       addRoom({
         name: roomName,
         floorId: selectedFloorId,
@@ -670,6 +998,10 @@ export function FloorBuilder() {
 
   const handleSaveDesk = () => {
     if (!editDesk) return;
+    if (checkAssetOverlap(editDesk.id, editDesk.x, editDesk.y, 1, 1, 'desk')) {
+      toast.error('Overlap detected: cannot save desk at this position.');
+      return;
+    }
     updateDesk(editDesk.id, editDesk);
     if (selectedDesk?.id === editDesk.id) {
       setSelectedDesk(editDesk);
@@ -680,6 +1012,10 @@ export function FloorBuilder() {
 
   const handleSaveRoom = () => {
     if (!editRoom) return;
+    if (checkAssetOverlap(editRoom.id, editRoom.x, editRoom.y, editRoom.width, editRoom.height, 'room')) {
+      toast.error('Overlap detected: cannot save room at this position/size.');
+      return;
+    }
     updateRoom(editRoom.id, editRoom);
     if (selectedRoom?.id === editRoom.id) {
       setSelectedRoom(editRoom);
@@ -1079,6 +1415,13 @@ export function FloorBuilder() {
 
                   const isSelected = selectedRoom?.id === room.id;
 
+                  const hasInteractiveDesks = floorDesks.some(d =>
+                    d.x >= room.x &&
+                    d.x + d.width <= room.x + room.width &&
+                    d.y >= room.y &&
+                    d.y + d.height <= room.y + room.height
+                  );
+
                   return (
                     <div
                       key={room.id}
@@ -1117,14 +1460,11 @@ export function FloorBuilder() {
                         setEditRoom({ ...room });
                       }}
                     >
-                      {isBoardroom ? (
+                      {isBoardroom && !hasInteractiveDesks ? (
                         <div className="relative w-full h-full flex items-center justify-center p-3 select-none pointer-events-none">
                           {room.type === 'meeting' ? (
                             <div className="w-14 h-14 bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded-full shadow-sm flex items-center justify-center relative z-10">
-                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
-                              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
-                              <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
-                              <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
+                              {getCircularChairs(room.capacity)}
                               {host ? (
                                 <div className="relative w-8 h-8 rounded-full ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md">
                                   <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
@@ -1142,12 +1482,7 @@ export function FloorBuilder() {
                             </div>
                           ) : (
                             <div className="w-[70%] h-[50%] bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded shadow-sm flex items-center justify-center relative z-10">
-                              <div className="absolute -top-3 left-[15%] w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
-                              <div className="absolute -top-3 left-[50%] -translate-x-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
-                              <div className="absolute -top-3 right-[15%] w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
-                              <div className="absolute -bottom-3 left-[15%] w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
-                              <div className="absolute -bottom-3 left-[50%] -translate-x-1/2 w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
-                              <div className="absolute -bottom-3 right-[15%] w-3.5 h-3.5 bg-slate-900 border border-slate-700 rounded-full" />
+                              {getRectangularChairs(room.capacity)}
                               {host ? (
                                 <div className="relative w-8 h-8 rounded-full ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md">
                                   <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
@@ -1166,26 +1501,44 @@ export function FloorBuilder() {
                           )}
                         </div>
                       ) : (
-                        <div className="absolute left-1/2 top-1/2 max-w-[90%] -translate-x-1/2 -translate-y-1/2 text-center select-none pointer-events-none flex flex-col items-center justify-center">
-                          {host ? (
-                            <div className="relative z-10 flex flex-col items-center justify-center scale-90">
-                              <div className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white/90 dark:bg-gray-900/90 flex items-center justify-center shrink-0">
-                                <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
-                              </div>
-                              <div className="mt-1 text-center text-[8px] font-black text-purple-700 dark:text-purple-400 truncate max-w-[80px] leading-tight">
-                                {room.name}
+                        <div className="absolute left-0 top-0 w-full h-full p-2 pointer-events-none select-none">
+                          {hasInteractiveDesks ? (
+                            <div className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded border border-slate-200/50 dark:border-slate-800/50 text-left flex items-center gap-2 shadow-sm max-w-[90%]">
+                              {host && (
+                                <div className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shrink-0">
+                                  <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
+                                </div>
+                              )}
+                              <div>
+                                <div className="text-[9px] font-black uppercase leading-tight text-slate-800 dark:text-slate-200">{room.name}</div>
+                                <div className="text-[7px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
+                                  {getRoomDimensionsLabel(room.width, room.height)} • Cap: {room.capacity}
+                                </div>
                               </div>
                             </div>
                           ) : (
-                            <>
-                              <div className="text-[10px] font-black uppercase leading-tight text-slate-800 dark:text-slate-200">{room.name}</div>
-                              <div className="text-[7.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
-                                {getRoomDimensionsLabel(room.width, room.height)}
-                              </div>
-                              {room.type !== 'washroom' && room.type !== 'storage' && room.type !== 'server_room' && (
-                                <div className="text-[7px] text-slate-450 dark:text-slate-500 mt-0.5">Cap: {room.capacity}</div>
+                            <div className="absolute left-1/2 top-1/2 max-w-[90%] -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center justify-center">
+                              {host ? (
+                                <div className="relative z-10 flex flex-col items-center justify-center scale-90">
+                                  <div className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white/90 dark:bg-gray-900/90 flex items-center justify-center shrink-0">
+                                    <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
+                                  </div>
+                                  <div className="mt-1 text-center text-[8px] font-black text-purple-700 dark:text-purple-400 truncate max-w-[80px] leading-tight">
+                                    {room.name}
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="text-[10px] font-black uppercase leading-tight text-slate-800 dark:text-slate-200">{room.name}</div>
+                                  <div className="text-[7.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
+                                    {getRoomDimensionsLabel(room.width, room.height)}
+                                  </div>
+                                  {room.type !== 'washroom' && room.type !== 'storage' && room.type !== 'server_room' && (
+                                    <div className="text-[7px] text-slate-450 dark:text-slate-500 mt-0.5">Cap: {room.capacity}</div>
+                                  )}
+                                </>
                               )}
-                            </>
+                            </div>
                           )}
                         </div>
                       )}
@@ -1281,7 +1634,7 @@ export function FloorBuilder() {
                       className={cn(
                         'absolute cursor-grab active:cursor-grabbing transition-all flex flex-col items-center justify-center text-[10px] font-extrabold shadow-sm select-none',
                         isSelected 
-                          ? 'ring-2 ring-brand-500 scale-105 border-brand-500 shadow-md shadow-brand-500/10 z-[10]' 
+                          ? 'ring-2 ring-brand-500 border-brand-500 shadow-md shadow-brand-500/10 z-[10]' 
                           : 'bg-[#e8d2ba] dark:bg-[#5a4632] border-[#cfa376] dark:border-[#423120]',
                         borderClasses
                       )}
@@ -1290,6 +1643,8 @@ export function FloorBuilder() {
                         top: desk.y * cellH + tableTopOffset, 
                         width: Math.max(20, cellW - tableWidthOffset), 
                         height: Math.max(16, cellH - tableHeightOffset),
+                        transform: `rotate(${desk.rotation || 0}deg) ${isSelected ? 'scale(1.05)' : ''}`,
+                        transformOrigin: 'center center',
                       }}
                       onPointerDown={(e) => handlePointerDownDrag(e, 'desk', desk.id, desk.x, desk.y)}
                       onPointerMove={(e) => handlePointerMoveDrag(e, desk.id)}
@@ -1448,26 +1803,34 @@ export function FloorBuilder() {
 
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="text-[10px] font-bold text-gray-505 dark:text-gray-400 uppercase tracking-wider block mb-1">Position X</label>
+                          <label className="text-[10px] font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider block mb-1">Position X</label>
                           <Input 
                             type="number"
                             step="0.1"
                             value={selectedDesk.x} 
                             onChange={(e) => {
                               const val = Number(e.target.value) || 0;
+                              if (checkAssetOverlap(selectedDesk.id, val, selectedDesk.y, 1, 1, 'desk')) {
+                                toast.error('Position X overlap detected.');
+                                return;
+                              }
                               updateDesk(selectedDesk.id, { x: val, zoneId: getZoneAt(val, selectedDesk.y)?.id });
                               setSelectedDesk({ ...selectedDesk, x: val, zoneId: getZoneAt(val, selectedDesk.y)?.id });
                             }}
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] font-bold text-gray-505 dark:text-gray-400 uppercase tracking-wider block mb-1">Position Y</label>
+                          <label className="text-[10px] font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider block mb-1">Position Y</label>
                           <Input 
                             type="number"
                             step="0.1"
                             value={selectedDesk.y} 
                             onChange={(e) => {
                               const val = Number(e.target.value) || 0;
+                              if (checkAssetOverlap(selectedDesk.id, selectedDesk.x, val, 1, 1, 'desk')) {
+                                toast.error('Position Y overlap detected.');
+                                return;
+                              }
                               updateDesk(selectedDesk.id, { y: val, zoneId: getZoneAt(selectedDesk.x, val)?.id });
                               setSelectedDesk({ ...selectedDesk, y: val, zoneId: getZoneAt(selectedDesk.x, val)?.id });
                             }}
@@ -1490,6 +1853,25 @@ export function FloorBuilder() {
                             { value: 'standing', label: 'Standing Desk (Ergonomic)' },
                             { value: 'quiet', label: 'Quiet Desk (Focus)' },
                             { value: 'collaboration', label: 'Collaboration Unit' },
+                          ]}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Rotation</label>
+                        <Select 
+                          value={String(selectedDesk.rotation || 0)} 
+                          onChange={e => {
+                            const val = Number(e.target.value) as 0 | 90 | 180 | 270;
+                            updateDesk(selectedDesk.id, { rotation: val });
+                            setSelectedDesk({ ...selectedDesk, rotation: val });
+                            toast.success(`Rotated desk to ${val}°`);
+                          }}
+                          options={[
+                            { value: '0', label: '0°' },
+                            { value: '90', label: '90°' },
+                            { value: '180', label: '180°' },
+                            { value: '270', label: '270°' },
                           ]}
                         />
                       </div>
@@ -1538,12 +1920,18 @@ export function FloorBuilder() {
                         iconLeft={<Plus className="w-3.5 h-3.5" />} 
                         onClick={() => {
                           if (floor) {
+                            const newX = Math.min(floor.gridWidth - 1, selectedDesk.x + 1);
+                            const newY = Math.min(floor.gridHeight - 1, selectedDesk.y + 1);
+                            if (checkAssetOverlap('', newX, newY, 1, 1, 'desk')) {
+                              toast.error('Cannot duplicate: target position is occupied.');
+                              return;
+                            }
                             const newDesk = {
                               ...selectedDesk,
                               id: `desk-${Date.now()}`,
                               label: `${selectedDesk.label} (Copy)`,
-                              x: Math.min(floor.gridWidth - 1, selectedDesk.x + 1),
-                              y: Math.min(floor.gridHeight - 1, selectedDesk.y + 1),
+                              x: newX,
+                              y: newY,
                             };
                             addDesk(newDesk);
                             setSelectedDesk(newDesk);
@@ -1635,6 +2023,10 @@ export function FloorBuilder() {
                             value={selectedRoom.x} 
                             onChange={(e) => {
                               const val = Number(e.target.value) || 0;
+                              if (checkAssetOverlap(selectedRoom.id, val, selectedRoom.y, selectedRoom.width, selectedRoom.height, 'room')) {
+                                toast.error('Overlap detected: cannot place room here.');
+                                return;
+                              }
                               updateRoom(selectedRoom.id, { x: val });
                               setSelectedRoom({ ...selectedRoom, x: val });
                             }}
@@ -1648,6 +2040,10 @@ export function FloorBuilder() {
                             value={selectedRoom.y} 
                             onChange={(e) => {
                               const val = Number(e.target.value) || 0;
+                              if (checkAssetOverlap(selectedRoom.id, selectedRoom.x, val, selectedRoom.width, selectedRoom.height, 'room')) {
+                                toast.error('Overlap detected: cannot place room here.');
+                                return;
+                              }
                               updateRoom(selectedRoom.id, { y: val });
                               setSelectedRoom({ ...selectedRoom, y: val });
                             }}
@@ -1661,6 +2057,10 @@ export function FloorBuilder() {
                             value={selectedRoom.width} 
                             onChange={(e) => {
                               const val = Math.max(1, Number(e.target.value) || 1);
+                              if (checkAssetOverlap(selectedRoom.id, selectedRoom.x, selectedRoom.y, val, selectedRoom.height, 'room')) {
+                                toast.error('Overlap detected: cannot resize room here.');
+                                return;
+                              }
                               updateRoom(selectedRoom.id, { width: val });
                               setSelectedRoom({ ...selectedRoom, width: val });
                             }}
@@ -1674,6 +2074,10 @@ export function FloorBuilder() {
                             value={selectedRoom.height} 
                             onChange={(e) => {
                               const val = Math.max(1, Number(e.target.value) || 1);
+                              if (checkAssetOverlap(selectedRoom.id, selectedRoom.x, selectedRoom.y, selectedRoom.width, val, 'room')) {
+                                toast.error('Overlap detected: cannot resize room here.');
+                                return;
+                              }
                               updateRoom(selectedRoom.id, { height: val });
                               setSelectedRoom({ ...selectedRoom, height: val });
                             }}
@@ -1733,12 +2137,18 @@ export function FloorBuilder() {
                         iconLeft={<Plus className="w-3.5 h-3.5" />} 
                         onClick={() => {
                           if (floor) {
+                            const newX = Math.min(floor.gridWidth - selectedRoom.width, selectedRoom.x + 1);
+                            const newY = Math.min(floor.gridHeight - selectedRoom.height, selectedRoom.y + 1);
+                            if (checkAssetOverlap('', newX, newY, selectedRoom.width, selectedRoom.height, 'room')) {
+                              toast.error('Cannot duplicate: target position is occupied.');
+                              return;
+                            }
                             const newRoom = {
                               ...selectedRoom,
                               id: `room-${Date.now()}`,
                               name: `${selectedRoom.name} (Copy)`,
-                              x: Math.min(floor.gridWidth - selectedRoom.width, selectedRoom.x + 1),
-                              y: Math.min(floor.gridHeight - selectedRoom.height, selectedRoom.y + 1),
+                              x: newX,
+                              y: newY,
                             };
                             addRoom(newRoom);
                             setSelectedRoom(newRoom);
@@ -1815,6 +2225,10 @@ export function FloorBuilder() {
                             value={selectedFurniture.x} 
                             onChange={(e) => {
                               const val = Number(e.target.value) || 0;
+                              if (checkAssetOverlap(selectedFurniture.id, val, selectedFurniture.y, selectedFurniture.width, selectedFurniture.height, 'furniture')) {
+                                toast.error('Overlap detected: cannot place asset here.');
+                                return;
+                              }
                               updateFurniture(selectedFurniture.id, { x: val });
                               setSelectedFurniture({ ...selectedFurniture, x: val });
                             }}
@@ -1828,6 +2242,10 @@ export function FloorBuilder() {
                             value={selectedFurniture.y} 
                             onChange={(e) => {
                               const val = Number(e.target.value) || 0;
+                              if (checkAssetOverlap(selectedFurniture.id, selectedFurniture.x, val, selectedFurniture.width, selectedFurniture.height, 'furniture')) {
+                                toast.error('Overlap detected: cannot place asset here.');
+                                return;
+                              }
                               updateFurniture(selectedFurniture.id, { y: val });
                               setSelectedFurniture({ ...selectedFurniture, y: val });
                             }}
@@ -1841,6 +2259,10 @@ export function FloorBuilder() {
                             value={selectedFurniture.width} 
                             onChange={(e) => {
                               const val = Math.max(0.5, Number(e.target.value) || 0.5);
+                              if (checkAssetOverlap(selectedFurniture.id, selectedFurniture.x, selectedFurniture.y, val, selectedFurniture.height, 'furniture')) {
+                                toast.error('Overlap detected: cannot resize asset here.');
+                                return;
+                              }
                               updateFurniture(selectedFurniture.id, { width: val });
                               setSelectedFurniture({ ...selectedFurniture, width: val });
                             }}
@@ -1854,6 +2276,10 @@ export function FloorBuilder() {
                             value={selectedFurniture.height} 
                             onChange={(e) => {
                               const val = Math.max(0.5, Number(e.target.value) || 0.5);
+                              if (checkAssetOverlap(selectedFurniture.id, selectedFurniture.x, selectedFurniture.y, selectedFurniture.width, val, 'furniture')) {
+                                toast.error('Overlap detected: cannot resize asset here.');
+                                return;
+                              }
                               updateFurniture(selectedFurniture.id, { height: val });
                               setSelectedFurniture({ ...selectedFurniture, height: val });
                             }}
@@ -1882,11 +2308,17 @@ export function FloorBuilder() {
                         iconLeft={<Plus className="w-3.5 h-3.5" />} 
                         onClick={() => {
                           if (floor) {
+                            const newX = Math.min(floor.gridWidth - selectedFurniture.width, selectedFurniture.x + 1);
+                            const newY = Math.min(floor.gridHeight - selectedFurniture.height, selectedFurniture.y + 1);
+                            if (checkAssetOverlap('', newX, newY, selectedFurniture.width, selectedFurniture.height, 'furniture')) {
+                              toast.error('Cannot duplicate: target position is occupied.');
+                              return;
+                            }
                             const newFurniture = {
                               ...selectedFurniture,
                               id: `furn-${Date.now()}`,
-                              x: Math.min(floor.gridWidth - selectedFurniture.width, selectedFurniture.x + 1),
-                              y: Math.min(floor.gridHeight - selectedFurniture.height, selectedFurniture.y + 1),
+                              x: newX,
+                              y: newY,
                             };
                             addFurniture(newFurniture);
                             setSelectedFurniture(newFurniture);
@@ -1904,6 +2336,10 @@ export function FloorBuilder() {
                         iconLeft={<RotateCcw className="w-3.5 h-3.5" />} 
                         onClick={() => {
                           const nextRotation = ((selectedFurniture.rotation + 90) % 360) as 0 | 90 | 180 | 270;
+                          if (checkAssetOverlap(selectedFurniture.id, selectedFurniture.x, selectedFurniture.y, selectedFurniture.width, selectedFurniture.height, 'furniture')) {
+                            toast.error('Overlap detected: cannot rotate asset here.');
+                            return;
+                          }
                           updateFurniture(selectedFurniture.id, { rotation: nextRotation });
                           setSelectedFurniture({ ...selectedFurniture, rotation: nextRotation });
                           toast.success(`Rotated asset to ${nextRotation}°`);
@@ -2268,6 +2704,17 @@ export function FloorBuilder() {
                 { value: 'available', label: 'Live / Available' },
                 { value: 'maintenance', label: 'Down / Under Maintenance' },
                 { value: 'blocked', label: 'Blocked / Offline' },
+              ]}
+            />
+            <Select 
+              label="Rotation" 
+              value={String(editDesk.rotation || 0)} 
+              onChange={e => setEditDesk({ ...editDesk, rotation: Number(e.target.value) as 0 | 90 | 180 | 270 })}
+              options={[
+                { value: '0', label: '0°' },
+                { value: '90', label: '90°' },
+                { value: '180', label: '180°' },
+                { value: '270', label: '270°' },
               ]}
             />
           </div>

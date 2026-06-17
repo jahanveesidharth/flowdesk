@@ -39,7 +39,6 @@ export function AuthPage() {
 
   const handleDemoLogin = (role: AuthRole = authRole) => {
     enterDemoMode();
-    resetToDemoData();
     setDemoRole(role);
     toast.success(`Demo mode - use ${DEMO_CREDENTIALS.email} / ${DEMO_CREDENTIALS.password}`);
     const search = window.location.search;

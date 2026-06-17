@@ -1,7 +1,7 @@
 import { Calendar, Clock, MapPin, CheckCircle, XCircle, LogIn, LogOut, RotateCcw } from 'lucide-react';
 import type { Booking, Desk, Room } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
-import { cn, formatDate, formatTimeRange, formatTimeAgo } from '../../lib/utils';
+import { cn, formatDate, formatTimeRange, formatTimeAgo, isBookingWithinCheckInWindow } from '../../lib/utils';
 import { StatusBadge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useState } from 'react';
@@ -38,7 +38,7 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
   const user = users.find(u => u.id === booking.userId);
   const resourceLabel = resource ? ('label' in resource ? resource.label : ('name' in resource ? resource.name : '')) : booking.resourceId;
 
-  const canCheckIn = booking.status === 'confirmed';
+  const canCheckIn = booking.status === 'confirmed' && isBookingWithinCheckInWindow(booking.date, booking.startTime, booking.endTime);
   const canCheckOut = booking.status === 'checked_in';
   const canCancel = ['confirmed', 'pending'].includes(booking.status);
 
@@ -123,6 +123,9 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
             )}
             {booking.checkInTime && (
               <div className="text-xs text-blue-600 mt-1">Checked in: {booking.checkInTime}</div>
+            )}
+            {booking.checkOutTime && (
+              <div className="text-xs text-emerald-600 mt-1">Checked out: {booking.checkOutTime}</div>
             )}
             {booking.notes && (
               <p className="text-xs text-gray-400 mt-1 italic">{booking.notes}</p>

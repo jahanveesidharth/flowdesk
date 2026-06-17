@@ -91,6 +91,27 @@ export function timesOverlap(s1: string, e1: string, s2: string, e2: string): bo
   return timeToMinutes(s1) < timeToMinutes(e2) && timeToMinutes(e1) > timeToMinutes(s2);
 }
 
+export function getBookingTimes(bookingDate: string, startTime: string, endTime: string) {
+  const [year, month, day] = bookingDate.split('-').map(Number);
+  const [startHour, startMin] = startTime.split(':').map(Number);
+  const [endHour, endMin] = endTime.split(':').map(Number);
+  
+  const start = new Date(year, month - 1, day, startHour, startMin);
+  const end = new Date(year, month - 1, day, endHour, endMin);
+  
+  const windowStart = new Date(start.getTime() - 30 * 60 * 1000);
+  const windowEnd = new Date(end.getTime() + 30 * 60 * 1000);
+  
+  return { start, end, windowStart, windowEnd };
+}
+
+export function isBookingWithinCheckInWindow(bookingDate: string, startTime: string, endTime: string): boolean {
+  const { windowStart, windowEnd } = getBookingTimes(bookingDate, startTime, endTime);
+  const now = new Date();
+  return now >= windowStart && now <= windowEnd;
+}
+
+
 export function getWeekDays(date: Date): Date[] {
   const day = date.getDay();
   const diff = date.getDate() - day + (day === 0 ? -6 : 1);
