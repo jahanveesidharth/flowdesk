@@ -46,6 +46,7 @@ input[type="date"] {
   font-weight: 600;
   border: 2px solid transparent;
   user-select: none;
+  z-index: 8;
 }
 .desk-cell:hover { transform: scale(1.05); }
 .desk-available { background: #dcfce7; border-color: #86efac; color: #166534; }

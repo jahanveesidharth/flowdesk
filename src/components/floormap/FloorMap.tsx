@@ -289,131 +289,6 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
             </div>
           ))}
 
-          {floorDesks.filter(shouldShowDesk).map((desk, index) => {
-            const status = getDeskDisplayStatus(desk);
-            const booking = bookings.find(b =>
-              b.resourceId === desk.id &&
-              b.date === activeDate &&
-              b.resourceType === 'desk' &&
-              !['cancelled', 'completed', 'no_show'].includes(b.status)
-            );
-            const occupant = booking ? users.find(u => u.id === booking.userId) : null;
-            const isCheckedIn = booking?.status === 'checked_in';
-
-            // Check if there are desks directly above, below, left, right
-            const hasDeskBelow = floorDesks.some(d => d.x === desk.x && d.y === desk.y + 1);
-            const hasDeskAbove = floorDesks.some(d => d.x === desk.x && d.y === desk.y - 1);
-            const hasDeskLeft = floorDesks.some(d => d.y === desk.y && d.x === desk.x - 1);
-            const hasDeskRight = floorDesks.some(d => d.y === desk.y && d.x === desk.x + 1);
-
-            const chairPosition = hasDeskBelow ? 'top' : (hasDeskAbove ? 'bottom' : (desk.y % 2 === 0 ? 'top' : 'bottom'));
-
-            // Horizontal & vertical spacing adjustments
-            const tableLeftOffset = hasDeskLeft ? 0 : 8;
-            const tableWidthOffset = (hasDeskLeft ? 0 : 8) + (hasDeskRight ? 0 : 8);
-
-            const tableTopOffset = hasDeskAbove ? 0 : 12;
-            const tableHeightOffset = (hasDeskAbove ? 0 : 12) + (hasDeskBelow ? 0 : 12);
-
-            const borderClasses = cn(
-              hasDeskAbove ? "border-t-0 rounded-t-none" : "border-t-2 rounded-t-md",
-              hasDeskBelow ? "border-b-0 rounded-b-none" : "border-b-2 rounded-b-md",
-              hasDeskLeft ? "border-l-0 rounded-l-none" : "border-l-2 rounded-l-md",
-              hasDeskRight ? "border-r-0 rounded-r-none" : "border-r-2 rounded-r-md"
-            );
-
-            const typeMarkerColors = {
-              hot: '#ef4444',
-              fixed: '#3b82f6',
-              standing: '#10b981',
-              quiet: '#8b5cf6',
-              collaboration: '#f59e0b'
-            };
-
-            return (
-              <div
-                key={desk.id}
-                className={cn(
-                  'desk-cell absolute transition-all flex items-center justify-center shadow-sm',
-                  status === 'maintenance' && 'cursor-not-allowed opacity-70',
-                  selectedDeskId === desk.id 
-                    ? 'ring-2 ring-blue-500 border-blue-500 shadow-md shadow-blue-500/10 z-[10]' 
-                    : 'bg-[#e8d2ba] dark:bg-[#5a4632] border-[#cfa376] dark:border-[#423120]',
-                  borderClasses
-                )}
-                style={{
-                  left: desk.x * cellW + tableLeftOffset,
-                  top: desk.y * cellH + tableTopOffset,
-                  width: Math.max(20, cellW - tableWidthOffset),
-                  height: Math.max(16, cellH - tableHeightOffset),
-                  transform: `rotate(${desk.rotation || 0}deg) ${selectedDeskId === desk.id ? 'scale(1.05)' : ''}`,
-                  transformOrigin: 'center center',
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (status !== 'maintenance') onDeskClick?.(desk);
-                }}
-                onMouseEnter={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  setHoveredDesk({ desk, x: rect.left, y: rect.top });
-                }}
-                onMouseLeave={() => setHoveredDesk(null)}
-              >
-                {/* Unified wood tone table label */}
-                <div className="flex flex-col items-center justify-center select-none pointer-events-none">
-                  <span className="text-[9px] font-mono font-bold text-amber-950/90 dark:text-amber-100/90 leading-none">
-                    {desk.label.replace('D-', '').padStart(2, '0')}
-                  </span>
-                  {status === 'maintenance' && <span className="text-[6px] text-amber-900 font-bold uppercase tracking-wider scale-75 mt-0.5 leading-none">OFFLINE</span>}
-                </div>
-
-                {/* Desk type small indicator dot */}
-                <span 
-                  className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full shadow-sm"
-                  style={{ backgroundColor: typeMarkerColors[desk.type] }}
-                  title={getDeskTypeLabel(desk.type)}
-                />
-
-                {/* Upgraded proportional sleek chair */}
-                <div
-                  className={cn(
-                    "absolute w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-300 z-20 shadow-sm border",
-                    "bg-[#2d3748] border-[#1e293b] dark:bg-[#1e293b] dark:border-[#0f172a]"
-                  )}
-                  style={{
-                    top: chairPosition === 'top' ? '-20px' : 'auto',
-                    bottom: chairPosition === 'bottom' ? '-20px' : 'auto',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    borderRadius: chairPosition === 'top' ? '6px 6px 3px 3px' : '3px 3px 6px 6px',
-                  }}
-                >
-                  {/* Sleek backrest line representation */}
-                  <div className={cn(
-                    "absolute left-1 right-1 h-0.5 bg-slate-700 dark:bg-slate-800 rounded-full",
-                    chairPosition === 'top' ? "top-0.5" : "bottom-0.5"
-                  )} />
-
-                  {occupant ? (
-                    <div className="relative w-5 h-5 rounded-full flex items-center justify-center overflow-hidden z-10">
-                      <Avatar name={occupant.name} imageUrl={occupant.avatar} className="w-full h-full text-[8px]" />
-                      <span className={cn(
-                        "absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full border border-slate-950",
-                        isCheckedIn ? "bg-emerald-500" : "bg-rose-500"
-                      )} />
-                    </div>
-                  ) : (
-                    /* Vacant/Status dot representation */
-                    <div className={cn(
-                      "w-1.5 h-1.5 rounded-full border border-slate-950/60 shadow-xs",
-                      status === 'available' ? "bg-emerald-500" : (status === 'reserved' ? "bg-amber-400" : (status === 'mine' ? "bg-sky-500" : "bg-slate-400"))
-                    )} />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-
           {floorRooms.map(room => {
             const activeRoomBooking = bookings.find(b =>
               b.resourceId === room.id &&
@@ -547,6 +422,142 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
                   </div>
                 )}
                 <span className={cn('desk-marker', booked ? markerStyles.occupied.dot : markerStyles.available.dot, booked ? markerStyles.occupied.ring : markerStyles.available.ring)} />
+              </div>
+            );
+          })}
+
+          {floorDesks.filter(shouldShowDesk).map((desk, index) => {
+            const status = getDeskDisplayStatus(desk);
+            const booking = bookings.find(b =>
+              b.resourceId === desk.id &&
+              b.date === activeDate &&
+              b.resourceType === 'desk' &&
+              !['cancelled', 'completed', 'no_show'].includes(b.status)
+            );
+            const occupant = booking ? users.find(u => u.id === booking.userId) : null;
+            const isCheckedIn = booking?.status === 'checked_in';
+
+            // Check if there are desks directly above, below, left, right
+            const hasDeskBelow = floorDesks.some(d => d.x === desk.x && d.y === desk.y + 1);
+            const hasDeskAbove = floorDesks.some(d => d.x === desk.x && d.y === desk.y - 1);
+            const hasDeskLeft = floorDesks.some(d => d.y === desk.y && d.x === desk.x - 1);
+            const hasDeskRight = floorDesks.some(d => d.y === desk.y && d.x === desk.x + 1);
+
+            const chairPosition = hasDeskBelow ? 'top' : (hasDeskAbove ? 'bottom' : (desk.y % 2 === 0 ? 'top' : 'bottom'));
+
+            // Horizontal & vertical spacing adjustments
+            const tableLeftOffset = hasDeskLeft ? 0 : 8;
+            const tableWidthOffset = (hasDeskLeft ? 0 : 8) + (hasDeskRight ? 0 : 8);
+
+            const tableTopOffset = hasDeskAbove ? 0 : 12;
+            const tableHeightOffset = (hasDeskAbove ? 0 : 12) + (hasDeskBelow ? 0 : 12);
+
+            const borderClasses = cn(
+              hasDeskAbove ? "border-t-0 rounded-t-none" : "border-t-2 rounded-t-md",
+              hasDeskBelow ? "border-b-0 rounded-b-none" : "border-b-2 rounded-b-md",
+              hasDeskLeft ? "border-l-0 rounded-l-none" : "border-l-2 rounded-l-md",
+              hasDeskRight ? "border-r-0 rounded-r-none" : "border-r-2 rounded-r-md"
+            );
+
+            const typeMarkerColors = {
+              hot: '#ef4444',
+              fixed: '#3b82f6',
+              standing: '#10b981',
+              quiet: '#8b5cf6',
+              collaboration: '#f59e0b'
+            };
+
+            return (
+              <div
+                key={desk.id}
+                className={cn(
+                  'desk-cell absolute transition-all flex items-center justify-center shadow-sm z-[8]',
+                  status === 'maintenance' && 'cursor-not-allowed opacity-70',
+                  selectedDeskId === desk.id 
+                    ? 'ring-2 ring-blue-500 border-blue-500 shadow-md shadow-blue-500/10 z-[10]' 
+                    : 'bg-[#e8d2ba] dark:bg-[#5a4632] border-[#cfa376] dark:border-[#423120]',
+                  borderClasses
+                )}
+                style={{
+                  left: desk.x * cellW + tableLeftOffset,
+                  top: desk.y * cellH + tableTopOffset,
+                  width: Math.max(20, cellW - tableWidthOffset),
+                  height: Math.max(16, cellH - tableHeightOffset),
+                  transform: `rotate(${desk.rotation || 0}deg) ${selectedDeskId === desk.id ? 'scale(1.05)' : ''}`,
+                  transformOrigin: 'center center',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (status !== 'maintenance') onDeskClick?.(desk);
+                }}
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setHoveredDesk({ desk, x: rect.left, y: rect.top });
+                }}
+                onMouseLeave={() => setHoveredDesk(null)}
+              >
+                {/* Unified wood tone table label */}
+                <div className="flex flex-col items-center justify-center select-none pointer-events-none">
+                  <span className="text-[9px] font-mono font-bold text-amber-950/90 dark:text-amber-100/90 leading-none">
+                    {desk.label.replace('D-', '').padStart(2, '0')}
+                  </span>
+                  {status === 'maintenance' && <span className="text-[6px] text-amber-900 font-bold uppercase tracking-wider scale-75 mt-0.5 leading-none">OFFLINE</span>}
+                </div>
+
+                {/* Desk type small indicator dot */}
+                <span 
+                  className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full shadow-sm"
+                  style={{ backgroundColor: typeMarkerColors[desk.type] }}
+                  title={getDeskTypeLabel(desk.type)}
+                />
+
+                {/* Upgraded proportional sleek chair */}
+                <div
+                  className={cn(
+                    "absolute w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-300 z-20 shadow-sm border",
+                    "bg-[#2d3748] border-[#1e293b] dark:bg-[#1e293b] dark:border-[#0f172a]"
+                  )}
+                  style={{
+                    top: chairPosition === 'top' ? '-20px' : 'auto',
+                    bottom: chairPosition === 'bottom' ? '-20px' : 'auto',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    borderRadius: chairPosition === 'top' ? '6px 6px 3px 3px' : '3px 3px 6px 6px',
+                  }}
+                >
+                  {/* Sleek backrest line representation */}
+                  <div className={cn(
+                    "absolute left-1 right-1 h-0.5 bg-slate-700 dark:bg-slate-800 rounded-full",
+                    chairPosition === 'top' ? "top-0.5" : "bottom-0.5"
+                  )} />
+
+                  {occupant ? (
+                    <>
+                      <div className="relative w-5 h-5 rounded-full flex items-center justify-center overflow-hidden z-10">
+                        <Avatar name={occupant.name} imageUrl={occupant.avatar} className="w-full h-full text-[8px]" />
+                        <span className={cn(
+                          "absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full border border-slate-950",
+                          isCheckedIn ? "bg-emerald-500" : "bg-rose-500"
+                        )} />
+                      </div>
+                      <div
+                        className={cn(
+                          "absolute left-1/2 -translate-x-1/2 px-1 py-0.5 rounded bg-slate-900/90 dark:bg-slate-950/90 text-white text-[7px] font-bold tracking-tight whitespace-nowrap shadow-sm border border-slate-700/30 max-w-[54px] truncate leading-none z-30",
+                          chairPosition === 'top' ? "bottom-full mb-1" : "top-full mt-1"
+                        )}
+                        title={occupant.name}
+                      >
+                        {occupant.name.split(' ')[0]}
+                      </div>
+                    </>
+                  ) : (
+                    /* Vacant/Status dot representation */
+                    <div className={cn(
+                      "w-1.5 h-1.5 rounded-full border border-slate-950/60 shadow-xs",
+                      status === 'available' ? "bg-emerald-500" : (status === 'reserved' ? "bg-amber-400" : (status === 'mine' ? "bg-sky-500" : "bg-slate-400"))
+                    )} />
+                  )}
+                </div>
               </div>
             );
           })}

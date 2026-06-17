@@ -1632,7 +1632,7 @@ export function FloorBuilder() {
                     <div
                       key={desk.id}
                       className={cn(
-                        'absolute cursor-grab active:cursor-grabbing transition-all flex flex-col items-center justify-center text-[10px] font-extrabold shadow-sm select-none',
+                        'absolute cursor-grab active:cursor-grabbing transition-all flex flex-col items-center justify-center text-[10px] font-extrabold shadow-sm select-none z-[8]',
                         isSelected 
                           ? 'ring-2 ring-brand-500 border-brand-500 shadow-md shadow-brand-500/10 z-[10]' 
                           : 'bg-[#e8d2ba] dark:bg-[#5a4632] border-[#cfa376] dark:border-[#423120]',
@@ -1703,16 +1703,27 @@ export function FloorBuilder() {
                         )} />
 
                         {occupant ? (
-                          <div 
-                            className="relative w-5 h-5 rounded-full flex items-center justify-center overflow-hidden z-10"
-                            title={`Booked by: ${occupant.name}`}
-                          >
-                            <Avatar name={occupant.name} imageUrl={occupant.avatar} className="w-full h-full text-[8px]" />
-                            <span className={cn(
-                              "absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full border border-slate-950",
-                              isCheckedIn ? "bg-emerald-500" : "bg-rose-500"
-                            )} />
-                          </div>
+                          <>
+                            <div 
+                              className="relative w-5 h-5 rounded-full flex items-center justify-center overflow-hidden z-10"
+                              title={`Booked by: ${occupant.name}`}
+                            >
+                              <Avatar name={occupant.name} imageUrl={occupant.avatar} className="w-full h-full text-[8px]" />
+                              <span className={cn(
+                                "absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full border border-slate-950",
+                                isCheckedIn ? "bg-emerald-500" : "bg-rose-500"
+                              )} />
+                            </div>
+                            <div
+                              className={cn(
+                                "absolute left-1/2 -translate-x-1/2 px-1 py-0.5 rounded bg-slate-900/90 dark:bg-slate-950/90 text-white text-[7px] font-bold tracking-tight whitespace-nowrap shadow-sm border border-slate-700/30 max-w-[54px] truncate leading-none z-30",
+                                chairPosition === 'top' ? "bottom-full mb-1" : "top-full mt-1"
+                              )}
+                              title={occupant.name}
+                            >
+                              {occupant.name.split(' ')[0]}
+                            </div>
+                          </>
                         ) : (
                           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         )}

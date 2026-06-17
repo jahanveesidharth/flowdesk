@@ -169,6 +169,7 @@ export interface Booking {
   createdAt: string;
   updatedAt: string;
   cancelReason?: string;
+  reminderSent?: boolean;
 }
 
 export type AttendanceStatus = 'office' | 'remote' | 'off';

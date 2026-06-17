@@ -118,6 +118,7 @@ const mapBookingFromDb = (b: any): Booking => ({
   createdAt: b.created_at,
   updatedAt: b.updated_at,
   cancelReason: b.cancel_reason || undefined,
+  reminderSent: b.reminder_sent || false,
 });
 
 const mapNotificationFromDb = (n: any): Notification => ({
@@ -448,6 +449,7 @@ export const useAppStore = create<AppState>()(
         const newBooking: Booking = {
           ...booking,
           id: newBookingId,
+          reminderSent: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };

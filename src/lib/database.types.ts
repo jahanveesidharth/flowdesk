@@ -63,8 +63,8 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['lockers']['Row']>;
       };
       bookings: {
-        Row: { id: string; user_id: string; resource_type: ResourceTypeDB; resource_id: string; floor_id: string; building_id: string; date: string; start_time: string; end_time: string; status: BookingStatusDB; title: string | null; notes: string | null; attendee_ids: string[]; check_in_time: string | null; check_out_time: string | null; is_recurring: boolean; recurring_id: string | null; cancel_reason: string | null; created_at: string; updated_at: string };
-        Insert: Omit<Database['public']['Tables']['bookings']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Row: { id: string; user_id: string; resource_type: ResourceTypeDB; resource_id: string; floor_id: string; building_id: string; date: string; start_time: string; end_time: string; status: BookingStatusDB; title: string | null; notes: string | null; attendee_ids: string[]; check_in_time: string | null; check_out_time: string | null; is_recurring: boolean; recurring_id: string | null; cancel_reason: string | null; created_at: string; updated_at: string; reminder_sent: boolean };
+        Insert: Omit<Database['public']['Tables']['bookings']['Row'], 'id' | 'created_at' | 'updated_at' | 'reminder_sent'>;
         Update: Partial<Database['public']['Tables']['bookings']['Row']>;
       };
       notifications: {
