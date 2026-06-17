@@ -6,7 +6,9 @@ import toast from 'react-hot-toast';
 export function BookingStatusWatcher() {
   useEffect(() => {
     const checkStatuses = () => {
-      const { bookings, checkOut, cancelBooking, desks, rooms, parkingSpaces, lockers } = useAppStore.getState();
+      const { currentUser, bookings, checkOut, cancelBooking, desks, rooms, parkingSpaces, lockers } = useAppStore.getState();
+      if (!currentUser || !currentUser.id) return;
+
       const now = new Date();
 
       const getLabel = (b: typeof bookings[0]) => {
@@ -27,7 +29,9 @@ export function BookingStatusWatcher() {
         return label;
       };
 
-      bookings.forEach((booking) => {
+      const userBookings = bookings.filter(booking => booking.userId === currentUser.id);
+
+      userBookings.forEach((booking) => {
         const { end } = getBookingTimes(booking.date, booking.startTime, booking.endTime);
 
         // Auto check-out if checked in and end time has passed

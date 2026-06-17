@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
-import { type ReactNode, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { type ReactNode } from 'react';
 import { useAppStore } from './store/useAppStore';
 import { Layout } from './components/layout/Layout';
 import { AuthGuard } from './components/layout/AuthGuard';
@@ -21,33 +21,6 @@ import { Analytics } from './pages/admin/Analytics';
 import { AdminPolicies } from './pages/admin/AdminPolicies';
 import { AdminSettings } from './pages/admin/AdminSettings';
 import { Toaster } from 'react-hot-toast';
-import toast from 'react-hot-toast';
-import { BookingStatusWatcher } from './components/booking/BookingStatusWatcher';
-
-function CheckInWatcher() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { checkIn } = useAppStore();
-
-  useEffect(() => {
-    const checkinId = searchParams.get('checkin');
-    if (checkinId) {
-      checkIn(checkinId)
-        .then(() => {
-          toast.success('Check-in successful from QR code scan!');
-        })
-        .catch((err: any) => {
-          toast.error(err.message || 'Check-in from QR code scan failed');
-        })
-        .finally(() => {
-          const nextParams = new URLSearchParams(searchParams);
-          nextParams.delete('checkin');
-          setSearchParams(nextParams, { replace: true });
-        });
-    }
-  }, [searchParams, setSearchParams, checkIn]);
-
-  return null;
-}
 
 function RoleRoute({ allow, children }: { allow: Array<'admin' | 'manager' | 'employee'>; children: ReactNode }) {
   const role = useAppStore(s => s.currentUser.role);
@@ -60,8 +33,6 @@ function RoleRoute({ allow, children }: { allow: Array<'admin' | 'manager' | 'em
 export default function App() {
   return (
     <BrowserRouter>
-      <CheckInWatcher />
-      <BookingStatusWatcher />
       <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
