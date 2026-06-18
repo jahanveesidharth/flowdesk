@@ -275,7 +275,7 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
           {furniture.filter(f => f.floorId === floor.id && f.isActive).map(item => (
             <div
               key={item.id}
-              className="absolute z-[2] select-none pointer-events-none"
+              className="absolute z-[6] select-none pointer-events-none"
               style={{
                 left: item.x * cellW,
                 top: item.y * cellH,
@@ -290,23 +290,28 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
           ))}
 
           {floorRooms.map(room => {
-            const activeRoomBooking = bookings.find(b =>
+            const roomBookings = bookings.filter(b =>
               b.resourceId === room.id &&
               b.date === activeDate &&
               b.resourceType === 'room' &&
               !['cancelled', 'completed', 'no_show'].includes(b.status)
             );
-            const host = activeRoomBooking ? users.find(u => u.id === activeRoomBooking.userId) : null;
-            const booked = !!activeRoomBooking;
+            const bookedUsers = roomBookings.map(b => users.find(u => u.id === b.userId)).filter((u): u is typeof users[0] => !!u);
+            const booked = roomBookings.length >= room.capacity;
 
             // Room shape rendering depending on type
             const isBoardroom = room.type === 'boardroom' || room.type === 'training' || room.type === 'meeting';
 
-            const hasInteractiveDesks = floorDesks.some(d =>
+            const hasAssets = floorDesks.some(d =>
               d.x >= room.x &&
               d.x + d.width <= room.x + room.width &&
               d.y >= room.y &&
               d.y + d.height <= room.y + room.height
+            ) || furniture.filter(f => f.floorId === floor.id && f.isActive).some(f =>
+              f.x >= room.x &&
+              f.x + f.width <= room.x + room.width &&
+              f.y >= room.y &&
+              f.y + f.height <= room.y + room.height
             );
 
             return (
@@ -329,19 +334,23 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
                 }}
                 onMouseLeave={() => setHoveredRoom(null)}
               >
-                {isBoardroom && !hasInteractiveDesks ? (
-                  <div className="relative w-full h-full flex items-center justify-center p-4">
-                    {/* Conference Table */}
-                    {room.type === 'meeting' ? (
-                      /* Circular table for meeting room */
-                      <div className="w-16 h-16 bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded-full shadow-sm flex items-center justify-center relative z-10">
-                        {/* Chairs around round table */}
+                {!hasAssets ? (
+                  <div className="relative w-full h-full flex items-center justify-center p-3 select-none pointer-events-none">
+                    {room.type === 'meeting' && (
+                      <div className="w-14 h-14 bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded-full shadow-sm flex items-center justify-center relative z-10">
                         {getCircularChairs(room.capacity)}
-                        
-                        {host ? (
-                          <div className="relative w-10 h-10 rounded-full ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md">
-                            <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
-                            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-slate-950" />
+                        {bookedUsers.length > 0 ? (
+                          <div className="relative flex -space-x-2 overflow-visible">
+                            {bookedUsers.slice(0, 3).map((user) => (
+                              <div key={user.id} className="relative rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md shrink-0 w-7 h-7">
+                                <Avatar name={user.name} imageUrl={user.avatar} size="xs" />
+                              </div>
+                            ))}
+                            {bookedUsers.length > 3 && (
+                              <div className="w-7 h-7 rounded-full ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-950 flex items-center justify-center text-[8px] font-bold text-purple-700 dark:text-purple-300 shrink-0 text-center">
+                                +{bookedUsers.length - 3}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="text-center select-none pointer-events-none p-1 flex flex-col items-center">
@@ -353,16 +362,23 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
                           </div>
                         )}
                       </div>
-                    ) : (
-                      /* Rectangular table for boardroom or training */
-                      <div className="w-[70%] h-[50%] bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded-md shadow-sm flex items-center justify-center relative z-10">
-                        {/* Chairs top and bottom */}
+                    )}
+
+                    {(room.type === 'boardroom' || room.type === 'training') && (
+                      <div className="w-[70%] h-[50%] bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded shadow-sm flex items-center justify-center relative z-10">
                         {getRectangularChairs(room.capacity)}
-                        
-                        {host ? (
-                          <div className="relative w-9 h-9 rounded-full ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md">
-                            <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
-                            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-slate-950" />
+                        {bookedUsers.length > 0 ? (
+                          <div className="relative flex -space-x-2 overflow-visible">
+                            {bookedUsers.slice(0, 3).map((user) => (
+                              <div key={user.id} className="relative rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md shrink-0 w-7 h-7">
+                                <Avatar name={user.name} imageUrl={user.avatar} size="xs" />
+                              </div>
+                            ))}
+                            {bookedUsers.length > 3 && (
+                              <div className="w-7 h-7 rounded-full ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-950 flex items-center justify-center text-[8px] font-bold text-purple-700 dark:text-purple-300 shrink-0 text-center">
+                                +{bookedUsers.length - 3}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="text-center select-none pointer-events-none p-1 flex flex-col items-center">
@@ -372,53 +388,119 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
                             </div>
                             <div className="text-[6.5px] text-amber-900/50 dark:text-amber-250/45 mt-0.5 leading-none">Cap: {room.capacity}</div>
                           </div>
+                        )}
+                      </div>
+                    )}
+
+                    {room.type === 'server_room' && (
+                      <div className="w-[85%] h-[80%] bg-slate-800 dark:bg-slate-900 border-2 border-slate-700 dark:border-slate-800 rounded p-1.5 shadow-inner flex flex-col justify-between gap-1 relative z-10">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <div key={i} className="h-2 bg-slate-750 dark:bg-slate-850 rounded flex items-center justify-between px-1.5 border border-slate-700/50">
+                            <div className="flex gap-0.5">
+                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              <div className="w-1 h-1 rounded-full bg-blue-500" />
+                            </div>
+                            <div className="w-8 h-0.5 bg-slate-600 dark:bg-slate-700 rounded" />
+                          </div>
+                        ))}
+                        <div className="text-[7px] font-black text-slate-400 uppercase tracking-widest text-center mt-0.5 truncate">{room.name}</div>
+                      </div>
+                    )}
+
+                    {room.type === 'printer_room' && (
+                      <div className="w-[70%] h-[70%] bg-slate-100 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 rounded-lg shadow-sm flex flex-col items-center justify-center relative z-10 p-1">
+                        <Printer className="w-6 h-6 text-slate-500" />
+                        <div className="text-[7.5px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider mt-1 truncate">{room.name}</div>
+                      </div>
+                    )}
+
+                    {room.type === 'washroom' && (
+                      <div className="w-[85%] h-[80%] border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 rounded-lg p-1.5 flex justify-around items-center gap-1 relative z-10">
+                        <div className="flex flex-col items-center justify-center shrink-0">
+                          <span className="text-[12px]">🚻</span>
+                          <span className="text-[6px] font-bold text-slate-400 uppercase mt-0.5">RESTROOM</span>
+                        </div>
+                        <div className="h-full w-px bg-slate-200 dark:bg-slate-800" />
+                        <div className="flex flex-col gap-1 items-center justify-center">
+                          <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-700 flex items-center justify-center text-[8px] font-extrabold text-slate-400">W</div>
+                          <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-700 flex items-center justify-center text-[8px] font-extrabold text-slate-400">M</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {room.type === 'pantry' && (
+                      <div className="w-[75%] h-[75%] bg-amber-50/30 dark:bg-amber-950/10 border-2 border-amber-200/60 dark:border-amber-900/40 rounded-lg shadow-sm flex flex-col items-center justify-center relative z-10 p-1">
+                        <Utensils className="w-5 h-5 text-amber-600/80 dark:text-amber-500/70" />
+                        <div className="text-[7.5px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider mt-1 truncate">{room.name}</div>
+                      </div>
+                    )}
+
+                    {/* Default fallback centered text for other types when no assets are present */}
+                    {!['meeting', 'boardroom', 'training', 'server_room', 'printer_room', 'washroom', 'pantry'].includes(room.type) && (
+                      <div className="absolute left-1/2 top-1/2 max-w-[90%] -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center justify-center">
+                        {bookedUsers.length > 0 ? (
+                          <div className="relative z-10 flex flex-col items-center justify-center scale-90">
+                            <div className="flex -space-x-1.5 justify-center overflow-visible">
+                              {bookedUsers.slice(0, 3).map((user) => (
+                                <div key={user.id} className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white/90 dark:bg-gray-900/90 flex items-center justify-center shrink-0 w-6 h-6">
+                                  <Avatar name={user.name} imageUrl={user.avatar} size="xs" />
+                                </div>
+                              ))}
+                              {bookedUsers.length > 3 && (
+                                <div className="w-6 h-6 rounded-full ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-950 flex items-center justify-center text-[8px] font-bold text-purple-700 dark:text-purple-300 shrink-0 text-center">
+                                  +{bookedUsers.length - 3}
+                                </div>
+                              )}
+                            </div>
+                            {showLabels && (
+                              <div className="mt-1 text-center text-[8px] font-black text-purple-700 dark:text-purple-400 truncate max-w-[80px] leading-tight">
+                                {room.name}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <>
+                            {showLabels && (
+                              <div className="relative z-10 mt-1 text-center text-[9px] font-black text-slate-800 dark:text-slate-200 leading-tight">
+                                <div>{room.name}</div>
+                                <div className="text-[7.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
+                                  {getRoomDimensionsLabel(room.width, room.height)}
+                                </div>
+                                {room.type !== 'washroom' && room.type !== 'storage' && room.type !== 'server_room' && (
+                                  <div className="text-[7px] text-slate-450 dark:text-slate-500 mt-0.5">Cap: {room.capacity}</div>
+                                )}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     )}
                   </div>
                 ) : (
-                  /* Standard room/phone booth representation OR boardroom with interactive desks */
+                  /* When hasAssets is true, always render top-left label */
                   <div className="relative w-full h-full flex flex-col items-center justify-center bg-transparent border-0 p-2">
-                    {hasInteractiveDesks ? (
-                      <div className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded border border-slate-200/50 dark:border-slate-800/50 text-left select-none pointer-events-none shadow-sm max-w-[90%] flex items-center gap-2">
-                        {host && (
-                          <div className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shrink-0">
-                            <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
-                          </div>
-                        )}
-                        <div>
-                          <div className="text-[9px] font-black uppercase leading-tight text-slate-800 dark:text-slate-200">{room.name}</div>
-                          <div className="text-[7px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
-                            {getRoomDimensionsLabel(room.width, room.height)} • Cap: {room.capacity}
-                          </div>
-                        </div>
-                      </div>
-                    ) : host ? (
-                      <div className="relative z-10 flex flex-col items-center justify-center scale-90">
-                        <div className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white/90 dark:bg-gray-900/90 flex items-center justify-center shrink-0">
-                          <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
-                        </div>
-                        {showLabels && (
-                          <div className="mt-1 text-center text-[8px] font-black text-purple-700 dark:text-purple-400 truncate max-w-[80px] leading-tight">
-                            {room.name}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <>
-                        {showLabels && (
-                          <div className="relative z-10 mt-1 text-center text-[9px] font-black text-slate-800 dark:text-slate-200 leading-tight">
-                            <div>{room.name}</div>
-                            <div className="text-[7.5px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
-                              {getRoomDimensionsLabel(room.width, room.height)}
+                    <div className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded border border-slate-200/50 dark:border-slate-800/50 text-left select-none pointer-events-none shadow-sm max-w-[90%] flex items-center gap-2">
+                      {bookedUsers.length > 0 && (
+                        <div className="flex -space-x-1.5 overflow-visible shrink-0">
+                          {bookedUsers.slice(0, 3).map((user) => (
+                            <div key={user.id} className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shrink-0 w-5 h-5">
+                              <Avatar name={user.name} imageUrl={user.avatar} size="xs" />
                             </div>
-                            {room.type !== 'washroom' && room.type !== 'storage' && room.type !== 'server_room' && (
-                              <div className="text-[7px] text-slate-450 dark:text-slate-500 mt-0.5">Cap: {room.capacity}</div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    )}
+                          ))}
+                          {bookedUsers.length > 3 && (
+                            <div className="w-5 h-5 rounded-full ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-950 flex items-center justify-center text-[7px] font-bold text-purple-700 dark:text-purple-300 shrink-0 text-center">
+                              +{bookedUsers.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-[9px] font-black uppercase leading-tight text-slate-800 dark:text-slate-200">{room.name}</div>
+                        <div className="text-[7px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
+                          {getRoomDimensionsLabel(room.width, room.height)} • Cap: {room.capacity}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
                 <span className={cn('desk-marker', booked ? markerStyles.occupied.dot : markerStyles.available.dot, booked ? markerStyles.occupied.ring : markerStyles.available.ring)} />

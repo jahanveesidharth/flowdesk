@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, Save, Trash2, Move, Edit3, Grid, Layers, X, Trash, Hammer, Check, ZoomIn, ZoomOut, DoorOpen, RotateCcw } from 'lucide-react';
+import { Plus, Save, Trash2, Move, Edit3, Grid, Layers, X, Trash, Hammer, Check, ZoomIn, ZoomOut, DoorOpen, RotateCcw, Printer, Utensils } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -1268,8 +1268,9 @@ export function FloorBuilder() {
                   <div
                     key={item.id}
                     className={cn(
-                      "absolute z-[2] cursor-grab active:cursor-grabbing transition-all select-none",
-                      selectedFurniture?.id === item.id && "ring-2 ring-brand-500 scale-[1.02]"
+                      "absolute z-[6] cursor-grab active:cursor-grabbing transition-all select-none",
+                      selectedFurniture?.id === item.id && "ring-2 ring-brand-500 scale-[1.02]",
+                      tool !== 'select' && 'pointer-events-none'
                     )}
                     style={{
                       left: item.x * cellW,
@@ -1403,23 +1404,27 @@ export function FloorBuilder() {
                 })}
 
                 {floorRooms.map(room => {
-                  const isBoardroom = room.type === 'boardroom' || room.type === 'training' || room.type === 'meeting';
-                  const activeRoomBooking = bookings.find(b =>
+                  const roomBookings = bookings.filter(b =>
                     b.resourceId === room.id &&
                     b.date === activeDate &&
                     b.resourceType === 'room' &&
                     !['cancelled', 'completed', 'no_show'].includes(b.status)
                   );
-                  const host = activeRoomBooking ? users.find(u => u.id === activeRoomBooking.userId) : null;
-                  const booked = !!activeRoomBooking;
+                  const bookedUsers = roomBookings.map(b => users.find(u => u.id === b.userId)).filter((u): u is typeof users[0] => !!u);
+                  const booked = roomBookings.length >= room.capacity;
 
                   const isSelected = selectedRoom?.id === room.id;
 
-                  const hasInteractiveDesks = floorDesks.some(d =>
+                  const hasAssets = floorDesks.some(d =>
                     d.x >= room.x &&
                     d.x + d.width <= room.x + room.width &&
                     d.y >= room.y &&
                     d.y + d.height <= room.y + room.height
+                  ) || floorFurniture.some(f =>
+                    f.x >= room.x &&
+                    f.x + f.width <= room.x + room.width &&
+                    f.y >= room.y &&
+                    f.y + f.height <= room.y + room.height
                   );
 
                   return (
@@ -1429,7 +1434,8 @@ export function FloorBuilder() {
                         'absolute z-[4] transition-all flex items-center justify-center overflow-visible select-none cursor-pointer',
                         isSelected 
                           ? 'border-2 border-brand-500 bg-brand-500/10 shadow-[0_0_12px_rgba(59,130,246,0.35)] z-[5]' 
-                          : 'border border-transparent hover:bg-black/5 dark:hover:bg-white/5'
+                          : 'border border-transparent hover:bg-black/5 dark:hover:bg-white/5',
+                        tool !== 'select' && 'pointer-events-none'
                       )}
                       style={{
                         left: room.x * cellW,
@@ -1460,33 +1466,23 @@ export function FloorBuilder() {
                         setEditRoom({ ...room });
                       }}
                     >
-                      {isBoardroom && !hasInteractiveDesks ? (
+                      {!hasAssets ? (
                         <div className="relative w-full h-full flex items-center justify-center p-3 select-none pointer-events-none">
-                          {room.type === 'meeting' ? (
+                          {room.type === 'meeting' && (
                             <div className="w-14 h-14 bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded-full shadow-sm flex items-center justify-center relative z-10">
                               {getCircularChairs(room.capacity)}
-                              {host ? (
-                                <div className="relative w-8 h-8 rounded-full ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md">
-                                  <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
-                                  <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-emerald-500 border border-slate-950" />
-                                </div>
-                              ) : (
-                                <div className="text-center flex flex-col items-center">
-                                  <div className="text-[8px] font-black text-amber-950 dark:text-amber-100 leading-none">{room.name}</div>
-                                  <div className="text-[6.5px] font-bold text-amber-900/75 dark:text-amber-200/65 mt-0.5 leading-none">
-                                    {getRoomDimensionsLabel(room.width, room.height)}
-                                  </div>
-                                  <div className="text-[6px] text-amber-900/50 dark:text-amber-250/45 mt-0.5 leading-none">({room.capacity})</div>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="w-[70%] h-[50%] bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded shadow-sm flex items-center justify-center relative z-10">
-                              {getRectangularChairs(room.capacity)}
-                              {host ? (
-                                <div className="relative w-8 h-8 rounded-full ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md">
-                                  <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
-                                  <span className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-emerald-500 border border-slate-950" />
+                              {bookedUsers.length > 0 ? (
+                                <div className="relative flex -space-x-2 overflow-visible">
+                                  {bookedUsers.slice(0, 3).map((user) => (
+                                    <div key={user.id} className="relative rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md shrink-0 w-7 h-7">
+                                      <Avatar name={user.name} imageUrl={user.avatar} size="xs" />
+                                    </div>
+                                  ))}
+                                  {bookedUsers.length > 3 && (
+                                    <div className="w-7 h-7 rounded-full ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-950 flex items-center justify-center text-[8px] font-bold text-purple-700 dark:text-purple-300 shrink-0 text-center">
+                                      +{bookedUsers.length - 3}
+                                    </div>
+                                  )}
                                 </div>
                               ) : (
                                 <div className="text-center flex flex-col items-center">
@@ -1499,29 +1495,94 @@ export function FloorBuilder() {
                               )}
                             </div>
                           )}
-                        </div>
-                      ) : (
-                        <div className="absolute left-0 top-0 w-full h-full p-2 pointer-events-none select-none">
-                          {hasInteractiveDesks ? (
-                            <div className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded border border-slate-200/50 dark:border-slate-800/50 text-left flex items-center gap-2 shadow-sm max-w-[90%]">
-                              {host && (
-                                <div className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shrink-0">
-                                  <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
+
+                          {(room.type === 'boardroom' || room.type === 'training') && (
+                            <div className="w-[70%] h-[50%] bg-[#d6b693] dark:bg-[#9a7e61] border-2 border-[#b89570] dark:border-[#7a5e42] rounded shadow-sm flex items-center justify-center relative z-10">
+                              {getRectangularChairs(room.capacity)}
+                              {bookedUsers.length > 0 ? (
+                                <div className="relative flex -space-x-2 overflow-visible">
+                                  {bookedUsers.slice(0, 3).map((user) => (
+                                    <div key={user.id} className="relative rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shadow-md shrink-0 w-7 h-7">
+                                      <Avatar name={user.name} imageUrl={user.avatar} size="xs" />
+                                    </div>
+                                  ))}
+                                  {bookedUsers.length > 3 && (
+                                    <div className="w-7 h-7 rounded-full ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-950 flex items-center justify-center text-[8px] font-bold text-purple-700 dark:text-purple-300 shrink-0 text-center">
+                                      +{bookedUsers.length - 3}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-center flex flex-col items-center">
+                                  <div className="text-[8px] font-black text-amber-950 dark:text-amber-100 leading-none">{room.name}</div>
+                                  <div className="text-[6.5px] font-bold text-amber-900/75 dark:text-amber-200/65 mt-0.5 leading-none">
+                                    {getRoomDimensionsLabel(room.width, room.height)}
+                                  </div>
+                                  <div className="text-[6px] text-amber-900/50 dark:text-amber-250/45 mt-0.5 leading-none">({room.capacity})</div>
                                 </div>
                               )}
-                              <div>
-                                <div className="text-[9px] font-black uppercase leading-tight text-slate-800 dark:text-slate-200">{room.name}</div>
-                                <div className="text-[7px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
-                                  {getRoomDimensionsLabel(room.width, room.height)} • Cap: {room.capacity}
+                            </div>
+                          )}
+
+                          {room.type === 'server_room' && (
+                            <div className="w-[85%] h-[80%] bg-slate-800 dark:bg-slate-900 border-2 border-slate-700 dark:border-slate-800 rounded p-1.5 shadow-inner flex flex-col justify-between gap-1 relative z-10">
+                              {Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="h-2 bg-slate-750 dark:bg-slate-850 rounded flex items-center justify-between px-1.5 border border-slate-700/50">
+                                  <div className="flex gap-0.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    <div className="w-1 h-1 rounded-full bg-blue-500" />
+                                  </div>
+                                  <div className="w-8 h-0.5 bg-slate-600 dark:bg-slate-700 rounded" />
                                 </div>
+                              ))}
+                              <div className="text-[7px] font-black text-slate-400 uppercase tracking-widest text-center mt-0.5 truncate">{room.name}</div>
+                            </div>
+                          )}
+
+                          {room.type === 'printer_room' && (
+                            <div className="w-[70%] h-[70%] bg-slate-100 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 rounded-lg shadow-sm flex flex-col items-center justify-center relative z-10 p-1">
+                              <Printer className="w-6 h-6 text-slate-500" />
+                              <div className="text-[7.5px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider mt-1 truncate">{room.name}</div>
+                            </div>
+                          )}
+
+                          {room.type === 'washroom' && (
+                            <div className="w-[85%] h-[80%] border-2 border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 rounded-lg p-1.5 flex justify-around items-center gap-1 relative z-10">
+                              <div className="flex flex-col items-center justify-center shrink-0">
+                                <span className="text-[12px]">🚻</span>
+                                <span className="text-[6px] font-bold text-slate-400 uppercase mt-0.5">RESTROOM</span>
+                              </div>
+                              <div className="h-full w-px bg-slate-200 dark:bg-slate-800" />
+                              <div className="flex flex-col gap-1 items-center justify-center">
+                                <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-700 flex items-center justify-center text-[8px] font-extrabold text-slate-400">W</div>
+                                <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-700 flex items-center justify-center text-[8px] font-extrabold text-slate-400">M</div>
                               </div>
                             </div>
-                          ) : (
+                          )}
+
+                          {room.type === 'pantry' && (
+                            <div className="w-[75%] h-[75%] bg-amber-50/30 dark:bg-amber-950/10 border-2 border-amber-200/60 dark:border-amber-900/40 rounded-lg shadow-sm flex flex-col items-center justify-center relative z-10 p-1">
+                              <Utensils className="w-5 h-5 text-amber-600/80 dark:text-amber-500/70" />
+                              <div className="text-[7.5px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider mt-1 truncate">{room.name}</div>
+                            </div>
+                          )}
+
+                          {/* Default fallback centered text for other types when no assets are present */}
+                          {!['meeting', 'boardroom', 'training', 'server_room', 'printer_room', 'washroom', 'pantry'].includes(room.type) && (
                             <div className="absolute left-1/2 top-1/2 max-w-[90%] -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center justify-center">
-                              {host ? (
+                              {bookedUsers.length > 0 ? (
                                 <div className="relative z-10 flex flex-col items-center justify-center scale-90">
-                                  <div className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white/90 dark:bg-gray-900/90 flex items-center justify-center shrink-0">
-                                    <Avatar name={host.name} imageUrl={host.avatar} size="xs" />
+                                  <div className="flex -space-x-1.5 justify-center overflow-visible">
+                                    {bookedUsers.slice(0, 3).map((user) => (
+                                      <div key={user.id} className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white/90 dark:bg-gray-900/90 flex items-center justify-center shrink-0 w-6 h-6">
+                                        <Avatar name={user.name} imageUrl={user.avatar} size="xs" />
+                                      </div>
+                                    ))}
+                                    {bookedUsers.length > 3 && (
+                                      <div className="w-6 h-6 rounded-full ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-950 flex items-center justify-center text-[8px] font-bold text-purple-700 dark:text-purple-305 shrink-0 text-center">
+                                        +{bookedUsers.length - 3}
+                                      </div>
+                                    )}
                                   </div>
                                   <div className="mt-1 text-center text-[8px] font-black text-purple-700 dark:text-purple-400 truncate max-w-[80px] leading-tight">
                                     {room.name}
@@ -1540,6 +1601,32 @@ export function FloorBuilder() {
                               )}
                             </div>
                           )}
+                        </div>
+                      ) : (
+                        /* When hasAssets is true, always render top-left label */
+                        <div className="absolute left-0 top-0 w-full h-full p-2 pointer-events-none select-none">
+                          <div className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded border border-slate-200/50 dark:border-slate-800/50 text-left flex items-center gap-2 shadow-sm max-w-[90%]">
+                            {bookedUsers.length > 0 && (
+                              <div className="flex -space-x-1.5 overflow-visible shrink-0">
+                                {bookedUsers.slice(0, 3).map((user) => (
+                                  <div key={user.id} className="rounded-full p-0.5 ring-2 ring-purple-500 bg-white dark:bg-gray-900 flex items-center justify-center shrink-0 w-5 h-5">
+                                    <Avatar name={user.name} imageUrl={user.avatar} size="xs" />
+                                  </div>
+                                ))}
+                                {bookedUsers.length > 3 && (
+                                  <div className="w-5 h-5 rounded-full ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-950 flex items-center justify-center text-[7px] font-bold text-purple-700 dark:text-purple-300 shrink-0 text-center">
+                                    +{bookedUsers.length - 3}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            <div>
+                              <div className="text-[9px] font-black uppercase leading-tight text-slate-800 dark:text-slate-200">{room.name}</div>
+                              <div className="text-[7px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 leading-none">
+                                {getRoomDimensionsLabel(room.width, room.height)} • Cap: {room.capacity}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )}
                       <span className={cn(
@@ -1636,7 +1723,8 @@ export function FloorBuilder() {
                         isSelected 
                           ? 'ring-2 ring-brand-500 border-brand-500 shadow-md shadow-brand-500/10 z-[10]' 
                           : 'bg-[#e8d2ba] dark:bg-[#5a4632] border-[#cfa376] dark:border-[#423120]',
-                        borderClasses
+                        borderClasses,
+                        tool !== 'select' && 'pointer-events-none'
                       )}
                       style={{ 
                         left: desk.x * cellW + tableLeftOffset, 
@@ -1750,7 +1838,7 @@ export function FloorBuilder() {
                     const desk = floorDesks.find(d => Math.round(d.x) === x && Math.round(d.y) === y);
                     const room = floorRooms.find(r => r.x <= x && r.x + r.width > x && r.y <= y && r.y + r.height > y);
                     const furn = floorFurniture.find(f => x >= f.x && x < f.x + f.width && y >= f.y && y < f.y + f.height);
-                    const isOccupied = !!desk || !!room || !!furn;
+                    const isOccupied = tool === 'add_desk' ? (!!desk || !!furn) : (tool === 'add_room' ? !!room : (!!desk || !!room || !!furn));
                     const isHovered = hoveredCell?.x === x && hoveredCell?.y === y;
 
                     return (

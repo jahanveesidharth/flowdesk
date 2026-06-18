@@ -268,7 +268,6 @@ export function FloorMapPage() {
                     )}
                   </>
                 )}
-
                 {/* Desk Amenity Pills */}
                 {selectedDesk.amenities.length > 0 && (
                   <div>
@@ -286,78 +285,114 @@ export function FloorMapPage() {
             )}
 
             {/* B. Selected Room Specific Content */}
-            {selectedRoom && (
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Room Category</p>
-                    <p className="text-sm font-semibold text-gray-750 dark:text-gray-205 mt-0.5">{getRoomTypeLabel(selectedRoom.type)}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1 font-semibold"><Users className="w-3.5 h-3.5" /> Up to {selectedRoom.capacity} people</p>
-                  </div>
-                  <StatusBadge status={selectedRoom.status} />
-                </div>
+            {selectedRoom && (() => {
+              const activeRoomBookings = bookings.filter(b => 
+                b.resourceId === selectedRoom.id && 
+                b.date === selectedDate && 
+                b.resourceType === 'room' && 
+                !['cancelled', 'completed', 'no_show'].includes(b.status)
+              );
 
-                {/* Room Amenity Pills */}
-                {selectedRoom.amenities.length > 0 && (
+              return (
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Room Category</p>
+                      <p className="text-sm font-semibold text-gray-750 dark:text-gray-205 mt-0.5">{getRoomTypeLabel(selectedRoom.type)}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1 font-semibold"><Users className="w-3.5 h-3.5" /> Up to {selectedRoom.capacity} people</p>
+                    </div>
+                    <StatusBadge status={selectedRoom.status} />
+                  </div>
+
+                  {/* Room Amenity Pills */}
+                  {selectedRoom.amenities.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 dark:text-gray-550 uppercase tracking-wider mb-2">Room Amenities</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedRoom.amenities.map(a => (
+                          <span key={a} className="text-[10px] font-bold bg-gray-50 dark:bg-gray-900/60 border border-gray-150/40 dark:border-gray-800/60 text-gray-655 dark:text-gray-350 rounded-lg px-2.5 py-1">
+                            {getAmenityLabel(a)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Current Reservations list */}
+                  {activeRoomBookings.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Current Reservations ({activeRoomBookings.length})</p>
+                      <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                        {activeRoomBookings.map(b => {
+                          const bookingUser = users.find(u => u.id === b.userId);
+                          return (
+                            <div key={b.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50/50 dark:bg-gray-900/40 border border-gray-150/40 dark:border-gray-800/60">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Avatar name={bookingUser?.name || 'Unknown User'} imageUrl={bookingUser?.avatar} size="sm" />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{bookingUser?.name || 'Unknown User'}</p>
+                                  <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{bookingUser?.department || 'Visitor'}</p>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <span className="text-[10px] font-mono font-bold text-brand-600 dark:text-brand-400 bg-brand-50/50 dark:bg-brand-950/20 px-2 py-0.5 rounded border border-brand-100/50 dark:border-brand-900/30">
+                                  {b.startTime} - {b.endTime}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Today's hourly schedule timeline */}
                   <div>
-                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Room Amenities</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedRoom.amenities.map(a => (
-                        <span key={a} className="text-[10px] font-bold bg-gray-50 dark:bg-gray-900/60 border border-gray-150/40 dark:border-gray-800/60 text-gray-655 dark:text-gray-350 rounded-lg px-2.5 py-1">
-                          {getAmenityLabel(a)}
-                        </span>
-                      ))}
+                    <p className="text-xs font-bold text-gray-400 dark:text-gray-550 uppercase tracking-wider mb-2.5">Schedule Timeline</p>
+                    <div className="border border-gray-150 dark:border-gray-800/80 rounded-xl overflow-hidden divide-y divide-gray-150 dark:divide-gray-850 max-h-64 overflow-y-auto">
+                      {(() => {
+                        const hours = Array.from({ length: 11 }, (_, i) => {
+                          const h = 8 + i;
+                          return `${String(h).padStart(2, '0')}:00`;
+                        });
+                        const roomBookings = bookings.filter(b => 
+                          b.resourceId === selectedRoom.id && 
+                          b.date === selectedDate && 
+                          b.resourceType === 'room' && 
+                          !['cancelled'].includes(b.status)
+                        );
+
+                        return hours.map(hour => {
+                          const nextHour = `${String(parseInt(hour.split(':')[0]) + 1).padStart(2, '0')}:00`;
+                          const activeBooking = roomBookings.find(b => 
+                            b.startTime < nextHour && b.endTime > hour
+                          );
+
+                          return (
+                            <div key={hour} className="flex items-center gap-3 px-3 py-2 text-[10px]">
+                              <span className="font-bold text-gray-400 dark:text-gray-550 w-10 shrink-0">{hour}</span>
+                              {activeBooking ? (
+                                <div className="flex-1 bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-lg px-2 py-1 flex items-center justify-between text-red-750 dark:text-red-400 font-bold">
+                                  <span className="truncate max-w-[80px]">{activeBooking.title || 'Reserved'}</span>
+                                  <span className="text-[9px] opacity-75 shrink-0 tabular-nums">{activeBooking.startTime}–{activeBooking.endTime}</span>
+                                </div>
+                              ) : (
+                                <div className="flex-1 bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/30 rounded-lg px-2 py-1 flex items-center justify-between text-green-700 dark:text-green-450 font-bold">
+                                  <span>Available</span>
+                                  <span className="text-[9px] opacity-75 shrink-0">Free</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
-                )}
-
-                {/* Today's hourly schedule timeline */}
-                <div>
-                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2.5">Schedule Timeline</p>
-                  <div className="border border-gray-150 dark:border-gray-800/80 rounded-xl overflow-hidden divide-y divide-gray-150 dark:divide-gray-850 max-h-64 overflow-y-auto">
-                    {(() => {
-                      const hours = Array.from({ length: 11 }, (_, i) => {
-                        const h = 8 + i;
-                        return `${String(h).padStart(2, '0')}:00`;
-                      });
-                      const roomBookings = bookings.filter(b => 
-                        b.resourceId === selectedRoom.id && 
-                        b.date === selectedDate && 
-                        b.resourceType === 'room' && 
-                        !['cancelled'].includes(b.status)
-                      );
-
-                      return hours.map(hour => {
-                        const nextHour = `${String(parseInt(hour.split(':')[0]) + 1).padStart(2, '0')}:00`;
-                        const activeBooking = roomBookings.find(b => 
-                          b.startTime < nextHour && b.endTime > hour
-                        );
-
-                        return (
-                          <div key={hour} className="flex items-center gap-3 px-3 py-2 text-[10px]">
-                            <span className="font-bold text-gray-400 dark:text-gray-550 w-10 shrink-0">{hour}</span>
-                            {activeBooking ? (
-                              <div className="flex-1 bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-lg px-2 py-1 flex items-center justify-between text-red-750 dark:text-red-400 font-bold">
-                                <span className="truncate max-w-[80px]">{activeBooking.title || 'Reserved'}</span>
-                                <span className="text-[9px] opacity-75 shrink-0 tabular-nums">{activeBooking.startTime}–{activeBooking.endTime}</span>
-                              </div>
-                            ) : (
-                              <div className="flex-1 bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/30 rounded-lg px-2 py-1 flex items-center justify-between text-green-700 dark:text-green-450 font-bold">
-                                <span>Available</span>
-                                <span className="text-[9px] opacity-75 shrink-0">Free</span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      });
-                    })()}
-                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
 
-          {/* Footer Action Buttons */}
           <div className="pt-4 border-t border-gray-100 dark:border-gray-850/80 shrink-0">
             {selectedDesk && (
               isDeskAvailable ? (

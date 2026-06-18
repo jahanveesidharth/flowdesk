@@ -202,14 +202,24 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                       return;
                     }
 
-                    const hasConflict = bookings.some(b =>
-                      b.resourceId === selectedResourceId &&
-                      b.date === date &&
-                      !['cancelled', 'completed', 'no_show'].includes(b.status) &&
-                      b.startTime < endTime && b.endTime > startTime
-                    );
+                    const hasConflict = (() => {
+                      const overlappingBookings = bookings.filter(b =>
+                        b.resourceId === selectedResourceId &&
+                        b.date === date &&
+                        !['cancelled', 'completed', 'no_show'].includes(b.status) &&
+                        b.startTime < endTime && b.endTime > startTime
+                      );
+
+                      if (resourceType === 'room') {
+                        const room = rooms.find(r => r.id === selectedResourceId);
+                        const capacity = room?.capacity || 1;
+                        return overlappingBookings.length >= capacity;
+                      }
+                      return overlappingBookings.length > 0;
+                    })();
+
                     if (hasConflict) {
-                      toast.error('Conflict: This space is already booked during the selected timeframe.');
+                      toast.error('Conflict: This space is already fully booked during the selected timeframe.');
                       return;
                     }
                     setStep('confirm');
