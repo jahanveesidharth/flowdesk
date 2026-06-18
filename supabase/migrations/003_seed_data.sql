@@ -7,7 +7,7 @@
 -- ─── BUILDING ────────────────────────────────────────────────────────────────
 
 insert into buildings (id, name, address, city, country, timezone) values
-('b1000000-0000-0000-0000-000000000001', 'HQ Tower', '100 Innovation Drive', 'San Francisco', 'US', 'America/Los_Angeles');
+('b1000000-0000-0000-0000-000000000001', 'HQ Tower', '100 Innovation Drive', 'San Francisco', 'US', 'Asia/Kolkata');
 
 -- ─── FLOORS ──────────────────────────────────────────────────────────────────
 

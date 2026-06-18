@@ -54,7 +54,7 @@ create table buildings (
   address    text not null default '',
   city       text not null default '',
   country    text not null default 'US',
-  timezone   text not null default 'America/Los_Angeles',
+  timezone   text not null default 'Asia/Kolkata',
   is_active  boolean not null default true,
   created_at timestamptz not null default now()
 );

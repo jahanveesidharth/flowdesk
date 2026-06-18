@@ -31,13 +31,30 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
-BEGIN
   RETURN QUERY
   WITH selected_bookings AS (
-    SELECT b.id
+    SELECT 
+      b.id,
+      b.date,
+      b.start_time,
+      b.end_time,
+      b.title,
+      b.resource_type,
+      b.resource_id,
+      p.name AS user_name,
+      p.email AS user_email,
+      bl.name AS building_name,
+      f.name AS floor_name,
+      CASE b.resource_type
+        WHEN 'desk' THEN (SELECT label FROM desks WHERE id = b.resource_id)
+        WHEN 'room' THEN (SELECT name FROM rooms WHERE id = b.resource_id)
+        WHEN 'parking' THEN (SELECT label FROM parking_spaces WHERE id = b.resource_id)
+        WHEN 'locker' THEN (SELECT label FROM lockers WHERE id = b.resource_id)
+      END AS resource_name
     FROM bookings b
     JOIN profiles p ON b.user_id = p.id
     JOIN buildings bl ON b.building_id = bl.id
+    JOIN floors f ON b.floor_id = f.id
     WHERE b.status = 'confirmed'
       AND b.reminder_sent = false
       AND coalesce((p.preferences->>'emailReminders')::boolean, true) IS TRUE
@@ -50,27 +67,19 @@ BEGIN
   UPDATE bookings b
   SET reminder_sent = true, updated_at = now()
   FROM selected_bookings sb
-  JOIN profiles p ON b.user_id = p.id
-  JOIN buildings bl ON b.building_id = bl.id
-  JOIN floors f ON b.floor_id = f.id
   WHERE b.id = sb.id
   RETURNING 
     sb.id,
-    b.date,
-    b.start_time,
-    b.end_time,
-    b.title,
-    b.resource_type,
-    b.resource_id,
-    p.name,
-    p.email,
-    bl.name,
-    f.name,
-    CASE b.resource_type
-      WHEN 'desk' THEN (SELECT label FROM desks WHERE id = b.resource_id)
-      WHEN 'room' THEN (SELECT name FROM rooms WHERE id = b.resource_id)
-      WHEN 'parking' THEN (SELECT label FROM parking_spaces WHERE id = b.resource_id)
-      WHEN 'locker' THEN (SELECT label FROM lockers WHERE id = b.resource_id)
-    END;
+    sb.date,
+    sb.start_time,
+    sb.end_time,
+    sb.title,
+    sb.resource_type,
+    sb.resource_id,
+    sb.user_name,
+    sb.user_email,
+    sb.building_name,
+    sb.floor_name,
+    sb.resource_name;
 END;
 $$;
