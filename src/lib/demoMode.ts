@@ -1,7 +1,7 @@
-export const DEMO_MODE_STORAGE_KEY = 'flowdesk_demo_mode';
+export const DEMO_MODE_STORAGE_KEY = 'grabdesk_demo_mode';
 
 export const DEMO_CREDENTIALS = {
-  email: 'demo@deskflow.io',
+  email: 'demo@grabdesk.io',
   password: 'demo1234',
 };
 
@@ -15,5 +15,5 @@ export function enterDemoMode() {
 
 export function exitDemoMode() {
   localStorage.removeItem(DEMO_MODE_STORAGE_KEY);
-  localStorage.removeItem('flowdesk_demo_logged_in');
+  localStorage.removeItem('grabdesk_demo_logged_in');
 }

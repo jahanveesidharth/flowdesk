@@ -35,8 +35,8 @@ export function AdminSettings() {
           <Card>
             <CardHeader><CardTitle>Organization</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Input label="Organization Name" defaultValue="DeskFlow Inc." />
-              <Input label="Admin Email" defaultValue="admin@deskflow.io" type="email" />
+              <Input label="Organization Name" defaultValue="GrabDesk Inc." />
+              <Input label="Admin Email" defaultValue="admin@grabdesk.io" type="email" />
               <Select label="Timezone" value={general.timezone} options={[
                 { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
                 { value: 'America/New_York', label: 'Eastern Time (ET)' },

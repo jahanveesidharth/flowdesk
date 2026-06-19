@@ -44,7 +44,7 @@ const MANAGER_NAV = [
 ];
 
 export function Sidebar() {
-  const { currentUser, sidebarOpen, setSidebarOpen, notifications } = useAppStore();
+  const { currentUser, sidebarOpen, setSidebarOpen, notifications, theme } = useAppStore();
   const unreadCount = notifications.filter(n => !n.read && n.userId === currentUser.id).length;
   const isAdmin = currentUser.role === 'admin';
   const isManager = currentUser.role === 'manager';
@@ -58,12 +58,19 @@ export function Sidebar() {
     )}>
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-gray-100 dark:border-gray-850/80 shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8.5 h-8.5 bg-gradient-to-br from-brand-500 to-orange-500 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-brand-500/10">
-            <Building2 className="w-4 h-4 text-white" />
-          </div>
-          {sidebarOpen && <span className="font-extrabold text-gray-900 dark:text-white text-base tracking-tight">DeskFlow</span>}
-        </div>
+        {sidebarOpen ? (
+          <img
+            src={theme === 'dark' ? '/grabdesk light.svg' : '/grabdesk.svg'}
+            alt="GrabDesk"
+            className="h-8 w-auto max-w-full"
+          />
+        ) : (
+          <img
+            src={theme === 'dark' ? '/grabdesk favicon light.svg' : '/grabdesk favicon.svg'}
+            alt="GrabDesk"
+            className="h-8 w-8 mx-auto object-contain"
+          />
+        )}
       </div>
 
       {/* Role badge */}

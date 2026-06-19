@@ -53,7 +53,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3 text-gray-400">
           <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
-          <span className="text-sm">Loading DeskFlow...</span>
+          <span className="text-sm">Loading GrabDesk...</span>
         </div>
       </div>
     );

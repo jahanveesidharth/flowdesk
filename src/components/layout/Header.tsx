@@ -18,7 +18,7 @@ export function Header({ title }: { title?: string }) {
         <div className="min-w-0 mr-auto">
           <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Workspace</p>
           <h1 className="truncate text-base font-extrabold tracking-tight text-gray-950 dark:text-white">
-            {title || 'DeskFlow'}
+            {title || 'GrabDesk'}
           </h1>
         </div>
 

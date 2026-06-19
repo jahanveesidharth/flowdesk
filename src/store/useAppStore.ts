@@ -228,6 +228,7 @@ interface AppState {
   checkOut: (bookingId: string) => Promise<void>;
   updateBooking: (bookingId: string, updates: Partial<Booking>) => Promise<void>;
   deleteCurrentAccount: () => Promise<void>;
+  deleteUser: (userId: string) => Promise<void>;
 
   // Actions - Attendance Planning
   setAttendancePlan: (userId: string, date: string, status: AttendanceStatus) => Promise<void>;
@@ -649,14 +650,13 @@ export const useAppStore = create<AppState>()(
 
         if (canUseSupabase() && isValidUuid(currentUser.id)) {
           try {
-            await db.from('bookings').delete().eq('user_id', currentUser.id);
-            await db.from('notifications').delete().eq('user_id', currentUser.id);
-            await db.from('waitlist').delete().eq('user_id', currentUser.id);
-            await db.from('profiles').delete().eq('id', currentUser.id);
+            const { error } = await (supabase as any).rpc('delete_my_auth_user');
+            if (error) throw error;
             await supabase.auth.signOut();
           } catch (err: any) {
             console.error('Delete account in Supabase failed:', err);
             toast.error(`Delete account error: ${err.message || err}`);
+            return;
           }
         }
 
@@ -673,6 +673,34 @@ export const useAppStore = create<AppState>()(
             attendancePlans: s.attendancePlans.filter(p => p.userId !== currentUser.id),
           };
         });
+      },
+
+      deleteUser: async (userId) => {
+        const { currentUser } = get();
+        if (currentUser.role !== 'admin') {
+          toast.error('Only admins can delete accounts.');
+          return;
+        }
+
+        if (canUseSupabase() && isValidUuid(userId)) {
+          try {
+            const { error } = await (supabase as any).rpc('delete_user_by_admin', { target_user_id: userId });
+            if (error) throw error;
+          } catch (err: any) {
+            console.error('Delete user in Supabase failed:', err);
+            toast.error(`Delete user failed: ${err.message || err}`);
+            return;
+          }
+        }
+
+        set(s => ({
+          users: s.users.filter(u => u.id !== userId),
+          bookings: s.bookings.filter(b => b.userId !== userId),
+          notifications: s.notifications.filter(n => n.userId !== userId),
+          waitlist: s.waitlist.filter(w => w.userId !== userId),
+          attendancePlans: s.attendancePlans.filter(p => p.userId !== userId),
+        }));
+        toast.success('User account deleted.');
       },
 
       setAttendancePlan: async (userId, date, status) => {
@@ -1202,7 +1230,7 @@ export const useAppStore = create<AppState>()(
       },
     }),
     {
-      name: 'deskflow-store',
+      name: 'grabdesk-store',
       partialize: (state) => ({
         bookings: state.bookings,
         notifications: state.notifications,

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Building2, Map, Calendar, Users, BarChart3, CheckCircle, ArrowRight, Zap } from 'lucide-react';
+import { Map, Calendar, Users, BarChart3, CheckCircle, ArrowRight, Zap } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 const FEATURES = [
@@ -12,7 +12,7 @@ const FEATURES = [
 ];
 
 const TESTIMONIALS = [
-  { quote: '"DeskFlow completely eliminated the morning desk scramble. Our team knows exactly where everyone is sitting before they even arrive."', name: 'Sarah Mitchell', role: 'Office manager, Acme Corp', initials: 'SM' },
+  { quote: '"GrabDesk completely eliminated the morning desk scramble. Our team knows exactly where everyone is sitting before they even arrive."', name: 'Sarah Mitchell', role: 'Office manager, Acme Corp', initials: 'SM' },
   { quote: '"The floor map view is a game-changer. I can see who\'s near me, book adjacent desks for my team, and plan our in-office days effortlessly."', name: 'David Park', role: 'Engineering lead, Globex', initials: 'DP' },
   { quote: '"As a facilities director, the analytics dashboard gives me real insight into how our space is used. We\'ve optimized our layout and saved 30% on unused desks."', name: 'Maria Torres', role: 'Facilities director, Initech', initials: 'MT' },
 ];
@@ -26,10 +26,10 @@ const STEPS = [
 const LOGOS = ['Acme Corp', 'Globex', 'Initech', 'Umbrella', 'Wayne Enterprises', 'Stark Industries'];
 
 const FAQS = [
-  { q: 'What is DeskFlow?', a: 'DeskFlow is a workplace management platform that lets hybrid teams book desks, rooms, parking, and lockers from an interactive floor map. It helps teams coordinate office days and helps facilities teams understand how space is being used.' },
-  { q: 'Can I book recurring desks?', a: 'Yes! DeskFlow supports daily, weekly, biweekly, and monthly recurring bookings with configurable duration limits set by your admin.' },
+  { q: 'What is GrabDesk?', a: 'GrabDesk is a workplace management platform that lets hybrid teams book desks, rooms, parking, and lockers from an interactive floor map. It helps teams coordinate office days and helps facilities teams understand how space is being used.' },
+  { q: 'Can I book recurring desks?', a: 'Yes! GrabDesk supports daily, weekly, biweekly, and monthly recurring bookings with configurable duration limits set by your admin.' },
   { q: 'How does check-in work?', a: 'You can check in via the web app or QR code at the desk. If you don\'t check in within the configured window, your booking is auto-released so teammates can use the space.' },
-  { q: 'Is there a mobile app?', a: 'DeskFlow is a fully responsive web app that works great on mobile browsers. Native mobile apps are on our roadmap.' },
+  { q: 'Is there a mobile app?', a: 'GrabDesk is a fully responsive web app that works great on mobile browsers. Native mobile apps are on our roadmap.' },
   { q: 'Can admins see all bookings?', a: 'Admins have a full dashboard with all bookings, occupancy analytics, user management, and policy controls.' },
 ];
 
@@ -48,10 +48,7 @@ export function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center">
-              <Building2 className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-gray-900 text-lg">DESKFLOW</span>
+            <img src="/grabdesk.svg" alt="GrabDesk Logo" className="h-8 w-auto" />
           </div>
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/login')} className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Log in</button>
@@ -67,7 +64,7 @@ export function LandingPage() {
           <span className="text-brand-500 bg-brand-50 px-3 rounded-2xl">organised</span>
         </h1>
         <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-10">
-          DeskFlow makes it effortless to book desks, meeting rooms, and resources. See who's in the office, coordinate with your team, and never fight over a hot desk again.
+          GrabDesk makes it effortless to book desks, meeting rooms, and resources. See who's in the office, coordinate with your team, and never fight over a hot desk again.
         </p>
         <Button size="lg" className="text-base px-8" iconRight={<ArrowRight className="w-5 h-5" />} onClick={() => navigate('/login')}>
           Get started free
@@ -80,10 +77,10 @@ export function LandingPage() {
             <div className="w-3 h-3 rounded-full bg-yellow-400" />
             <div className="w-3 h-3 rounded-full bg-green-400" />
             <div className="ml-4 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-brand-500" />
-              <span className="text-xs font-bold text-brand-600">DESKFLOW</span>
+              <img src="/grabdesk favicon.svg" alt="GrabDesk" className="w-5 h-5 object-contain" />
+              <span className="text-xs font-bold text-brand-600">GRABDESK</span>
             </div>
-            <span className="ml-4 text-xs text-gray-400">DeskFlow — Dashboard</span>
+            <span className="ml-4 text-xs text-gray-400">GrabDesk — Dashboard</span>
           </div>
           <div className="grid grid-cols-4 min-h-[300px]">
             <div className="bg-white border-r border-gray-200 p-4 space-y-2">
@@ -135,7 +132,7 @@ export function LandingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
             <h2 className="text-3xl font-extrabold text-gray-900 mb-4">Everything you need to manage your workspace</h2>
-            <p className="text-gray-500 mb-8">From booking a desk to coordinating with your team, DeskFlow has you covered.</p>
+            <p className="text-gray-500 mb-8">From booking a desk to coordinating with your team, GrabDesk has you covered.</p>
             <div className="space-y-5">
               {FEATURES.slice(0, 3).map(f => (
                 <div key={f.title} className="flex gap-4">
@@ -178,7 +175,7 @@ export function LandingPage() {
       {/* Testimonials */}
       <section className="max-w-6xl mx-auto px-6 py-24">
         <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-4">Loved by teams everywhere</h2>
-        <p className="text-center text-gray-500 mb-16">See what teams are saying about DeskFlow.</p>
+        <p className="text-center text-gray-500 mb-16">See what teams are saying about GrabDesk.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {TESTIMONIALS.map(t => (
             <div key={t.name} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
@@ -199,7 +196,7 @@ export function LandingPage() {
       <section className="bg-gray-50 py-24">
         <div className="max-w-2xl mx-auto px-6">
           <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-4">Frequently asked questions</h2>
-          <p className="text-center text-gray-500 mb-12">Everything you need to know about DeskFlow.</p>
+          <p className="text-center text-gray-500 mb-12">Everything you need to know about GrabDesk.</p>
           <div className="space-y-4">
             {FAQS.map(faq => (
               <details key={faq.q} className="bg-white rounded-xl border border-gray-200 p-5 cursor-pointer group">
@@ -217,7 +214,7 @@ export function LandingPage() {
       {/* CTA */}
       <section className="bg-brand-500 py-20 text-center">
         <h2 className="text-3xl font-extrabold text-white mb-4">Ready to organise your office?</h2>
-        <p className="text-brand-100 mb-8">Join thousands of teams managing their workspace with DeskFlow.</p>
+        <p className="text-brand-100 mb-8">Join thousands of teams managing their workspace with GrabDesk.</p>
         <Button
           size="lg"
           className="bg-white text-brand-600 hover:bg-gray-100 text-base px-8"
@@ -231,11 +228,8 @@ export function LandingPage() {
       {/* Footer */}
       <footer className="bg-gray-950 text-gray-400 py-12">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-brand-400" />
-            <span className="font-bold text-white">DESKFLOW</span>
-          </div>
-          <p className="text-sm">© 2026 DeskFlow. All rights reserved.</p>
+          <img src="/grabdesk light.svg" alt="GrabDesk Logo" className="h-8 w-auto" />
+          <p className="text-sm">© 2026 GrabDesk. All rights reserved.</p>
           <div className="flex gap-6 text-sm">
             <a href="#" className="hover:text-white transition-colors">Privacy</a>
             <a href="#" className="hover:text-white transition-colors">Terms</a>

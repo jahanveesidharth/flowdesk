@@ -15,7 +15,7 @@ import { format } from 'date-fns';
 type BadgeVariant = NonNullable<Parameters<typeof Badge>[0]['variant']>;
 
 export function AdminUsers() {
-  const { users, bookings, floors, currentUser, updateUserRole } = useAppStore();
+  const { users, bookings, floors, currentUser, updateUserRole, deleteUser } = useAppStore();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -173,7 +173,37 @@ export function AdminUsers() {
       </div>
 
       {/* User detail modal */}
-      <Modal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} title={selectedUser?.name || ''} size="md">
+      <Modal
+        isOpen={!!selectedUser}
+        onClose={() => setSelectedUser(null)}
+        title={selectedUser?.name || ''}
+        size="md"
+        footer={
+          selectedUser && (
+            <div className="flex justify-between w-full items-center">
+              {canChangeSelectedRole ? (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={async () => {
+                    if (window.confirm(`Are you sure you want to permanently delete user account "${selectedUser.name}"?`)) {
+                      await deleteUser(selectedUser.id);
+                      setSelectedUser(null);
+                    }
+                  }}
+                >
+                  Delete Account
+                </Button>
+              ) : (
+                <div />
+              )}
+              <Button variant="outline" size="sm" onClick={() => setSelectedUser(null)}>
+                Close
+              </Button>
+            </div>
+          )
+        }
+      >
         {selectedUser && (
           <div className="space-y-4">
             <div className="flex items-center gap-4">

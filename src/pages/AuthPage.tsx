@@ -28,11 +28,13 @@ export function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
   const [authRole, setAuthRole] = useState<AuthRole>('employee');
+  const [adminKey, setAdminKey] = useState('');
   
   const resetToDemoData = useAppStore(s => s.resetToDemoData);
   const setDemoRole = useAppStore(s => s.setDemoRole);
   const setCurrentUserFromProfile = useAppStore(s => s.setCurrentUserFromProfile);
   const integrations = useAppStore(s => s.integrations);
+  const theme = useAppStore(s => s.theme);
   
   const oktaConnected = integrations?.find(i => i.name === 'Okta SSO')?.connected ?? true;
   const notConfigured = !isSupabaseConfigured();
@@ -57,6 +59,14 @@ export function AuthPage() {
     if (mode === 'signup' && !PASSWORD_PATTERN.test(password)) {
       toast.error('Password must be at least 8 characters and include a number.');
       return;
+    }
+
+    if (mode === 'signup' && authRole === 'admin') {
+      const expectedKey = import.meta.env.VITE_ADMIN_REGISTRATION_KEY || 'GrabDeskAdmin2026';
+      if (adminKey.trim() !== expectedKey) {
+        toast.error('Invalid Admin Secret Key.');
+        return;
+      }
     }
 
     if (notConfigured) { handleDemoLogin(); return; }
@@ -177,10 +187,11 @@ export function AuthPage() {
             {/* Logo & Headline */}
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center shadow-sm">
-                  <Building2 className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-bold text-gray-900 dark:text-white">DeskFlow</span>
+                <img
+                  src={theme === 'dark' ? '/grabdesk light.svg' : '/grabdesk.svg'}
+                  alt="GrabDesk Logo"
+                  className="h-9 w-auto"
+                />
               </div>
 
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50/50 dark:bg-brand-950/10 border border-brand-100/40 dark:border-brand-900/10 text-xs font-semibold text-brand-600 dark:text-brand-400">
@@ -217,7 +228,7 @@ export function AuthPage() {
             </div>
 
             {/* Copyright */}
-            <p className="text-gray-400 dark:text-gray-600 text-xs font-semibold">© 2025 DeskFlow. All rights reserved.</p>
+            <p className="text-gray-400 dark:text-gray-600 text-xs font-semibold">© 2026 GrabDesk. All rights reserved.</p>
           </div>
 
           {/* Vertical organic wavy image strip (aligned to absolute right) */}
@@ -240,9 +251,11 @@ export function AuthPage() {
             
             {/* Floating Logo Badge */}
             <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-150 dark:border-[#1e293b] shadow-md flex items-center justify-center">
-              <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center shadow-sm">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
+              <img
+                src={theme === 'dark' ? '/grabdesk favicon light.svg' : '/grabdesk favicon.svg'}
+                alt="GrabDesk Badge"
+                className="w-10 h-10 object-contain"
+              />
             </div>
 
             {/* Title / Header */}
@@ -254,8 +267,8 @@ export function AuthPage() {
                  'Reset password'}
               </h2>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1 font-semibold">
-                {mode === 'login'       ? 'Sign in to your DeskFlow workspace'  :
-                 mode === 'signup'      ? 'Get started with DeskFlow for free'  :
+                {mode === 'login'       ? 'Sign in to your GrabDesk workspace'  :
+                 mode === 'signup'      ? 'Get started with GrabDesk for free'  :
                  mode === 'magic_link'  ? "We'll send you a one-time link"      :
                  'Enter your email and we\'ll send a reset link'}
               </p>
@@ -335,6 +348,20 @@ export function AuthPage() {
                 </div>
               )}
 
+              {mode === 'signup' && authRole === 'admin' && (
+                <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                  <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type="password"
+                    placeholder="Admin Secret Key"
+                    value={adminKey}
+                    onChange={e => setAdminKey(e.target.value)}
+                    className="w-full bg-transparent border-0 outline-none text-sm placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white"
+                    required
+                  />
+                </div>
+              )}
+
               {mode === 'login' && (
                 <div className="flex justify-end">
                   <button type="button" onClick={() => setMode('forgot')} className="text-xs text-brand-500 hover:text-brand-600 font-semibold transition-colors">
@@ -409,7 +436,7 @@ export function AuthPage() {
             <div className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400 font-medium">
               {mode === 'login' ? (
                 <span>
-                  New to DeskFlow?{' '}
+                  New to GrabDesk?{' '}
                   <button onClick={() => setMode('signup')} className="text-brand-500 font-bold hover:underline">
                     Create account
                   </button>
