@@ -1180,37 +1180,37 @@ export function FloorBuilder() {
 
           {/* Designer Controls Toolbar */}
           <div className="flex items-center justify-between gap-4 flex-wrap bg-white dark:bg-gray-950 p-2 rounded-xl border border-gray-250/70 dark:border-gray-800/80 shadow-sm">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {designerTools.map(t => (
                 <button
                   key={t.id}
                   onClick={() => setTool(t.id)}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-all shadow-sm',
+                    'flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-all shadow-sm flex-1 sm:flex-none justify-center',
                     tool === t.id 
                       ? 'bg-brand-500 text-white border-brand-500 shadow-brand-500/10' 
                       : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-850'
                   )}
                 >
                   {t.icon}
-                  <span>{t.label}</span>
+                  <span className="hidden xs:inline sm:inline">{t.label}</span>
                 </button>
               ))}
-              <div className="h-4 w-px bg-gray-200 dark:bg-gray-800 mx-1" />
+              <div className="h-4 w-px bg-gray-200 dark:bg-gray-800 mx-1 hidden sm:block" />
               <button
                 onClick={() => setSnapToGrid(!snapToGrid)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-all shadow-sm',
+                  'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-all shadow-sm flex-1 sm:flex-none justify-center',
                   snapToGrid 
                     ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/30 dark:border-indigo-900/40 dark:text-indigo-400' 
                     : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-850'
                 )}
               >
                 <Grid className="w-4 h-4" />
-                <span>Snap to Grid</span>
+                <span className="hidden xs:inline sm:inline">Snap to Grid</span>
               </button>
             </div>
-            <div className="flex items-center gap-2 flex-wrap justify-end">
+            <div className="flex items-center gap-3 flex-wrap justify-between sm:justify-end w-full sm:w-auto">
               <div className="flex items-center gap-1 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-1">
                 <button
                   type="button"
@@ -1758,7 +1758,7 @@ export function FloorBuilder() {
                     >
                       {/* Unified wood tone table label */}
                       <div className="flex flex-col items-center justify-center select-none pointer-events-none">
-                        <span className="text-[9px] font-mono font-bold text-amber-950/90 dark:text-amber-100/90 leading-none">
+                        <span className="text-[9px] font-mono font-bold text-[#4d2800] dark:text-[#ffe4cc] leading-none">
                           {desk.label.replace('D-', '').padStart(2, '0')}
                         </span>
                       </div>

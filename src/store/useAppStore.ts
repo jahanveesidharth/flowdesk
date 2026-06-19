@@ -209,6 +209,7 @@ interface AppState {
   selectedDate: string;
   bookingFilters: BookingFilters;
   sidebarOpen: boolean;
+  mobileSidebarOpen: boolean;
   theme: 'light' | 'dark';
   integrations: { name: string; desc: string; icon: string; connected: boolean }[];
 
@@ -217,6 +218,7 @@ interface AppState {
   setSelectedDate: (date: string) => void;
   setBookingFilters: (filters: Partial<BookingFilters>) => void;
   setSidebarOpen: (open: boolean) => void;
+  setMobileSidebarOpen: (open: boolean) => void;
   setTheme: (theme: 'light' | 'dark') => void;
   toggleIntegration: (name: string) => void;
 
@@ -293,6 +295,7 @@ export const useAppStore = create<AppState>()(
       selectedDate: format(new Date(), 'yyyy-MM-dd'),
       bookingFilters: {},
       sidebarOpen: true,
+      mobileSidebarOpen: false,
       theme: 'light',
       integrations: [
         { name: 'Google Calendar', desc: 'Sync bookings with Google Calendar', icon: '📅', connected: true },
@@ -402,6 +405,7 @@ export const useAppStore = create<AppState>()(
       setSelectedDate: (date) => set({ selectedDate: date }),
       setBookingFilters: (filters) => set(s => ({ bookingFilters: { ...s.bookingFilters, ...filters } })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
+      setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
       setTheme: (theme) => set({ theme }),
       toggleIntegration: (name) => set(s => {
         const next = s.integrations.map(item =>

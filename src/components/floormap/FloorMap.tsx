@@ -187,6 +187,22 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
     setPan({ x: e.clientX - panStart.current.x, y: e.clientY - panStart.current.y });
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).closest('.desk-cell, .room-cell, button')) return;
+    isPanning.current = true;
+    e.stopPropagation();
+    const touch = e.touches[0];
+    panStart.current = { x: touch.clientX - pan.x, y: touch.clientY - pan.y };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isPanning.current) return;
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+    const touch = e.touches[0];
+    setPan({ x: touch.clientX - panStart.current.x, y: touch.clientY - panStart.current.y });
+  };
+
   const reset = () => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
@@ -199,8 +215,8 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
 
   return (
     <div className="flex h-full flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-800 dark:bg-gray-950">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full">
+        <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-805 dark:bg-gray-950">
           <button title="Zoom in" onClick={() => setZoom(z => Math.min(2.5, z + 0.15))} className="rounded-md p-1.5 hover:bg-gray-100 dark:hover:bg-gray-855">
             <ZoomIn className="h-4 w-4 text-gray-600" />
           </button>
@@ -223,14 +239,14 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
           <Tag className="h-3.5 w-3.5" /> Labels
         </button>
 
-        <div className="ml-auto flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-800 dark:bg-gray-950">
+        <div className="sm:ml-auto flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-808 dark:bg-gray-950 w-full sm:w-auto justify-between sm:justify-start">
           {(['all', 'available', 'mine', 'occupied'] as const).map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
-                'rounded-md px-3 py-1 text-xs font-semibold capitalize transition-all',
-                filter === f ? 'bg-gray-100 text-gray-900 shadow-sm dark:bg-gray-850 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-200'
+                'rounded-md px-2.5 sm:px-3 py-1 text-xs font-semibold capitalize transition-all flex-1 sm:flex-none text-center',
+                filter === f ? 'bg-gray-100 text-gray-900 shadow-sm dark:bg-gray-855 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-250'
               )}
             >
               {f}
@@ -239,21 +255,25 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
         {(['available', 'occupied', 'reserved', 'mine', 'maintenance'] as DisplayStatus[]).map(status => (
-          <div key={status} className="flex items-center gap-1.5">
-            <span className={cn('h-3 w-3 rounded-full ring-4', markerStyles[status].dot, markerStyles[status].ring)} />
+          <div key={status} className="flex items-center gap-1.5 shrink-0">
+            <span className={cn('h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full ring-4', markerStyles[status].dot, markerStyles[status].ring)} />
             {markerStyles[status].label}
           </div>
         ))}
       </div>
 
       <div
-        className="relative min-h-[560px] flex-1 cursor-grab overflow-hidden rounded-xl border border-slate-200 bg-[#eef7f8] p-5 shadow-inner active:cursor-grabbing dark:border-gray-800 dark:bg-slate-950"
+        className="relative min-h-[340px] md:min-h-[560px] flex-1 cursor-grab overflow-hidden rounded-xl border border-slate-200 bg-[#eef7f8] p-5 shadow-inner active:cursor-grabbing dark:border-gray-800 dark:bg-slate-950"
+        style={{ touchAction: 'none' }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={() => { isPanning.current = false; }}
         onMouseLeave={() => { isPanning.current = false; }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={() => { isPanning.current = false; }}
         onWheel={(e) => {
           e.preventDefault();
           setZoom(z => Math.max(0.45, Math.min(2.5, z - e.deltaY * 0.001)));
@@ -580,7 +600,7 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
               >
                 {/* Unified wood tone table label */}
                 <div className="flex flex-col items-center justify-center select-none pointer-events-none">
-                  <span className="text-[9px] font-mono font-bold text-amber-950/90 dark:text-amber-100/90 leading-none">
+                  <span className="text-[9px] font-mono font-bold text-[#4d2800] dark:text-[#ffe4cc] leading-none">
                     {desk.label.replace('D-', '').padStart(2, '0')}
                   </span>
                   {status === 'maintenance' && <span className="text-[6px] text-amber-900 font-bold uppercase tracking-wider scale-75 mt-0.5 leading-none">OFFLINE</span>}
@@ -649,16 +669,16 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
       {hoveredDesk && <DeskTooltip desk={hoveredDesk.desk} x={hoveredDesk.x} y={hoveredDesk.y} date={activeDate} />}
       {hoveredRoom && <RoomTooltip room={hoveredRoom.room} x={hoveredRoom.x} y={hoveredRoom.y} date={activeDate} />}
 
-      <div className="flex gap-4 text-sm">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm">
         <div className="flex items-center gap-2 text-gray-500">
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+          <span className="h-2 w-2 rounded-full bg-emerald-400" />
           {floorDesks.filter(d => getDeskDisplayStatus(d) === 'available').length} available
         </div>
         <div className="flex items-center gap-2 text-gray-500">
-          <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+          <span className="h-2 w-2 rounded-full bg-rose-500" />
           {floorDesks.filter(d => getDeskDisplayStatus(d) === 'occupied').length} occupied
         </div>
-        <div className="ml-auto text-xs text-gray-400">
+        <div className="ml-auto text-[10px] sm:text-xs text-gray-400">
           {floor.name} - {formatDate(activeDate)}
         </div>
       </div>

@@ -486,27 +486,25 @@ function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color
     <div
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col justify-between p-5 min-h-[148px] rounded-2xl border border-gray-200 dark:border-gray-800/80 cursor-pointer shadow-sm",
+        "group relative flex flex-col justify-between p-4 sm:p-5 min-h-[136px] sm:min-h-[148px] rounded-2xl border border-gray-200 dark:border-gray-800/80 cursor-pointer shadow-sm",
         "transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
         scheme.card,
         "bg-white dark:bg-gray-950"
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-lg shrink-0", scheme.iconBg)}>
-            {icon}
-          </div>
-          <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider truncate">{label}</span>
+      <div className="flex items-center justify-between gap-2">
+        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-lg shrink-0", scheme.iconBg)}>
+          {icon}
         </div>
-        <Badge variant={badgeVariant} className="shrink-0">{badgeText}</Badge>
+        <Badge variant={badgeVariant} className="shrink-0 text-[9px] sm:text-xs px-1.5 py-0.5">{badgeText}</Badge>
       </div>
 
-      <div className="mt-3">
-        <h4 className="text-xl md:text-2xl font-extrabold text-gray-855 dark:text-gray-200 tracking-tight leading-none group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors truncate">
+      <div className="mt-2.5 flex-1 flex flex-col justify-end">
+        <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block truncate">{label}</span>
+        <h4 className="text-base sm:text-lg md:text-xl font-extrabold text-gray-855 dark:text-gray-200 tracking-tight leading-tight group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors truncate mt-1">
           {value}
         </h4>
-        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5 truncate">{sublabel}</p>
+        <p className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-550 mt-1.5 truncate leading-none">{sublabel}</p>
       </div>
     </div>
   );

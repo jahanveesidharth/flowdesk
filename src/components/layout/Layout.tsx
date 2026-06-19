@@ -9,7 +9,7 @@ import { BookingStatusWatcher } from '../booking/BookingStatusWatcher';
 import toast from 'react-hot-toast';
 
 export function Layout() {
-  const { sidebarOpen, theme, checkIn } = useAppStore();
+  const { sidebarOpen, mobileSidebarOpen, setMobileSidebarOpen, theme, checkIn } = useAppStore();
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
@@ -40,11 +40,20 @@ export function Layout() {
   }, [searchParams, setSearchParams, checkIn]);
 
   return (
-    <div className="flex h-screen bg-[#f6f7f9] text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+    <div className="flex h-screen bg-[#f6f7f9] text-gray-900 dark:bg-gray-950 dark:text-gray-100 relative overflow-hidden">
       <DatabaseSync />
       <BookingStatusWatcher />
+      
+      {/* Mobile Sidebar Drawer Backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 md:hidden transition-opacity duration-300"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       <Sidebar />
-      <div className={cn('flex flex-col flex-1 min-w-0 transition-all duration-300', sidebarOpen ? 'ml-56' : 'ml-16')}>
+      <div className={cn('flex flex-col flex-1 min-w-0 transition-all duration-300 ml-0', sidebarOpen ? 'md:ml-56' : 'md:ml-16')}>
         <Header />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <Outlet />

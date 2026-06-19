@@ -245,9 +245,8 @@ export function AuthPage() {
 
         {/* Right Side: Authentication Form Card */}
         <div className="flex-1 flex items-center justify-center p-6 md:p-8 relative z-20">
-          
-          {/* Main Auth Form Container Card */}
-          <div className="w-full max-w-sm bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-150 dark:border-[#1e293b] shadow-xl p-8 relative flex flex-col pt-10">
+                  {/* Main Auth Form Container Card */}
+          <div className="w-full max-w-sm bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-150 dark:border-[#1e293b] shadow-xl p-6 sm:p-8 relative flex flex-col pt-10">
             
             {/* Floating Logo Badge */}
             <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-150 dark:border-[#1e293b] shadow-md flex items-center justify-center">
@@ -277,8 +276,8 @@ export function AuthPage() {
             {(mode === 'login' || mode === 'signup') && (
               <div className="grid grid-cols-2 gap-1 bg-gray-100 dark:bg-[#090f1d] rounded-xl p-1 mb-5">
                 {([
-                  { value: 'employee', label: mode === 'signup' ? 'Sign up as Employee' : 'Login as Employee' },
-                  { value: 'admin', label: mode === 'signup' ? 'Sign up as Admin' : 'Login as Admin' },
+                  { value: 'employee', label: 'Employee' },
+                  { value: 'admin', label: 'Admin' },
                 ] as Array<{ value: AuthRole; label: string }>).map(option => (
                   <button
                     key={option.value}

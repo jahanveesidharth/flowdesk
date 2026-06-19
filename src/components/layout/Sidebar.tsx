@@ -44,7 +44,7 @@ const MANAGER_NAV = [
 ];
 
 export function Sidebar() {
-  const { currentUser, sidebarOpen, setSidebarOpen, notifications, theme } = useAppStore();
+  const { currentUser, sidebarOpen, setSidebarOpen, mobileSidebarOpen, setMobileSidebarOpen, notifications, theme } = useAppStore();
   const unreadCount = notifications.filter(n => !n.read && n.userId === currentUser.id).length;
   const isAdmin = currentUser.role === 'admin';
   const isManager = currentUser.role === 'manager';
@@ -54,7 +54,11 @@ export function Sidebar() {
   return (
     <aside className={cn(
       'fixed top-0 left-0 h-screen bg-white/95 dark:bg-gray-950/95 border-r border-gray-200/70 dark:border-gray-850/90 flex flex-col transition-all duration-300 z-40 backdrop-blur-md shadow-sm',
-      sidebarOpen ? 'w-56' : 'w-16',
+      // Desktop widths
+      sidebarOpen ? 'md:w-56' : 'md:w-16',
+      // Mobile positioning / drawer logic
+      'w-56 -translate-x-full md:translate-x-0',
+      mobileSidebarOpen && 'translate-x-0'
     )}>
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-gray-100 dark:border-gray-850/80 shrink-0">
@@ -123,6 +127,7 @@ export function Sidebar() {
           <Tooltip key={to} content={sidebarOpen ? null : label} side="right">
             <NavLink
               to={to}
+              onClick={() => setMobileSidebarOpen(false)}
               className={({ isActive }) => cn(
                 'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group duration-200',
                 isActive
@@ -148,11 +153,11 @@ export function Sidebar() {
       {/* Bottom actions */}
       <div className="border-t border-gray-100 dark:border-gray-850/80 p-2 flex flex-col gap-1">
         <Tooltip content={sidebarOpen ? null : 'Notifications'} side="right">
-          <NavLink to="/notifications" className={({ isActive }) => cn(
+          <NavLink to="/notifications" onClick={() => setMobileSidebarOpen(false)} className={({ isActive }) => cn(
             'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
             isActive
               ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50/60 dark:hover:bg-gray-900/40',
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-55/60 dark:hover:bg-gray-900/40',
             !sidebarOpen && 'justify-center px-2',
           )}>
             {({ isActive }) => (
@@ -175,11 +180,11 @@ export function Sidebar() {
         </Tooltip>
 
         <Tooltip content={sidebarOpen ? null : 'Settings'} side="right">
-          <NavLink to="/settings" className={({ isActive }) => cn(
+          <NavLink to="/settings" onClick={() => setMobileSidebarOpen(false)} className={({ isActive }) => cn(
             'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
             isActive
               ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold'
-              : 'text-gray-650 dark:text-gray-400 hover:bg-gray-50/60 dark:hover:bg-gray-900/40',
+              : 'text-gray-650 dark:text-gray-400 hover:bg-gray-55/60 dark:hover:bg-gray-900/40',
             !sidebarOpen && 'justify-center px-2',
           )}>
             {({ isActive }) => (
@@ -238,7 +243,7 @@ export function Sidebar() {
       {/* Collapse toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-850 rounded-full flex items-center justify-center shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700 transition-all z-50 text-gray-400 hover:text-gray-600"
+        className="absolute -right-3 top-20 w-6 h-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-850 rounded-full items-center justify-center shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700 transition-all z-50 text-gray-400 hover:text-gray-600 hidden md:flex"
       >
         {sidebarOpen ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
       </button>

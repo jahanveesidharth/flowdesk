@@ -84,15 +84,15 @@ export function FloorMapPage() {
           <p className="text-xs text-gray-400 mt-0.5 font-medium">Explore seat layouts and booking schedules in real time</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Coworker Search Bar */}
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <input
               type="text"
               placeholder="Locate colleague..."
               value={searchQuery}
               onChange={e => handleSearchChange(e.target.value)}
-              className="text-xs font-semibold border border-gray-205 dark:border-gray-805 bg-white dark:bg-gray-900 rounded-xl pl-8 pr-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 text-gray-900 dark:text-white transition-all shadow-sm w-40 sm:w-48 md:w-56 placeholder-gray-400"
+              className="text-xs font-semibold border border-gray-205 dark:border-gray-805 bg-white dark:bg-gray-900 rounded-xl pl-8 pr-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 text-gray-900 dark:text-white transition-all shadow-sm w-full sm:w-40 md:w-56 placeholder-gray-400"
             />
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
           </div>
@@ -101,9 +101,9 @@ export function FloorMapPage() {
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            className="text-xs font-semibold border border-gray-200 dark:border-gray-805 bg-white dark:bg-gray-900 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 text-gray-900 dark:text-white transition-all shadow-sm"
+            className="text-xs font-semibold border border-gray-200 dark:border-gray-805 bg-white dark:bg-gray-900 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 text-gray-900 dark:text-white transition-all shadow-sm w-[calc(50%-4px)] sm:w-auto flex-1 sm:flex-none"
           />
-          <div className="flex gap-1 p-1 bg-gray-150/60 dark:bg-gray-900/60 rounded-xl border border-gray-200/40 dark:border-gray-800/40 shadow-sm">
+          <div className="flex gap-1 p-1 bg-gray-150/60 dark:bg-gray-900/60 rounded-xl border border-gray-200/40 dark:border-gray-800/40 shadow-sm w-[calc(50%-4px)] sm:w-auto flex-1 sm:flex-none justify-between sm:justify-start">
             {floors.filter(f => f.isActive).map(floor => (
               <button
                 key={floor.id}
@@ -113,9 +113,9 @@ export function FloorMapPage() {
                   setSelectedRoom(null);
                 }}
                 className={cn(
-                  'px-3.5 py-1 text-xs font-bold rounded-lg transition-all',
+                  'px-3.5 py-1 text-xs font-bold rounded-lg transition-all flex-1 sm:flex-none text-center',
                   selectedFloorId === floor.id 
-                    ? 'bg-white dark:bg-gray-800 shadow-sm border border-gray-200/10 text-gray-950 dark:text-white' 
+                    ? 'bg-white dark:bg-gray-800 shadow-sm border border-gray-200/10 text-gray-955 dark:text-white' 
                     : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-250',
                 )}
               >
@@ -127,7 +127,7 @@ export function FloorMapPage() {
       </div>
 
       {/* 2. Floor metrics / stats cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 shrink-0">
+      <div className="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory scrollbar-none sm:grid sm:grid-cols-3 lg:grid-cols-5 md:gap-4 shrink-0 -mx-4 px-4 sm:mx-0 sm:px-0">
         {(() => {
           const floorDesks = desks.filter(d => d.floorId === selectedFloorId && d.isActive);
           const floorRooms = rooms.filter(r => r.floorId === selectedFloorId && r.isActive);
@@ -166,7 +166,7 @@ export function FloorMapPage() {
 
         {/* Right side: Slide-over seating details panel */}
         <div className={cn(
-          "w-80 md:w-96 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-950 p-5 flex flex-col justify-between shadow-xl shrink-0 transition-all duration-300",
+          "w-full sm:w-80 md:w-96 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-950 p-5 flex flex-col justify-between shadow-xl shrink-0 transition-all duration-300",
           "absolute md:relative right-0 top-0 bottom-0 z-20 md:z-auto",
           (selectedDesk || selectedRoom) ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none hidden"
         )}>
@@ -439,12 +439,16 @@ function MiniStatCard({ label, value, color, icon }: { label: string; value: str
     gray: 'bg-white hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800/80',
   };
   return (
-    <div className={cn("border rounded-xl px-4 py-2.5 flex items-center justify-between shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 dark:bg-gray-950", colorMap[color])}>
+    <div className={cn(
+      "border rounded-xl px-3 py-2 flex items-center justify-between shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 dark:bg-gray-950",
+      "w-[135px] sm:w-auto shrink-0 snap-start",
+      colorMap[color]
+    )}>
       <div className="space-y-0.5 min-w-0">
-        <div className="text-[9px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-500 truncate">{label}</div>
-        <div className="text-base font-extrabold tracking-tight text-gray-950 dark:text-white truncate">{value}</div>
+        <div className="text-[9px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-gray-550 truncate" title={label}>{label}</div>
+        <div className="text-sm sm:text-base font-extrabold tracking-tight text-gray-950 dark:text-white truncate">{value}</div>
       </div>
-      <span className="text-lg filter drop-shadow-sm select-none opacity-90 shrink-0 ml-1">{icon}</span>
+      <span className="text-base sm:text-lg filter drop-shadow-sm select-none opacity-90 shrink-0 ml-1">{icon}</span>
     </div>
   );
 }

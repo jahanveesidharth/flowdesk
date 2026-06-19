@@ -71,7 +71,7 @@ export function TeamPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
         <Card className="text-center bg-blue-50 border-0 dark:bg-blue-950/40">
           <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{usersWithDept.length - 1}</div>
           <div className="text-xs text-blue-500 dark:text-blue-300 mt-0.5">Total Colleagues</div>

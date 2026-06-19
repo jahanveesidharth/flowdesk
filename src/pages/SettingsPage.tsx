@@ -121,7 +121,7 @@ export function SettingsPage() {
                 </Button>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input label="Full Name" value={name} onChange={e => setName(e.target.value)} />
               <Input label="Email" value={email} onChange={e => setEmail(e.target.value)} type="email" />
               <Input label="Department" value={department} onChange={e => setDepartment(e.target.value)} />

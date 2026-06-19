@@ -46,24 +46,35 @@ export function LandingPage() {
     <div className="min-h-screen bg-white font-sans">
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/grabdesk.svg" alt="GrabDesk Logo" className="h-8 w-auto" />
+            <img src="/grabdesk.svg" alt="GrabDesk Logo" className="h-7 sm:h-8 w-auto" />
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/login')} className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Log in</button>
-            <Button size="sm" onClick={() => navigate('/login')}>Get started free</Button>
+          <div className="flex items-center gap-2.5 sm:gap-4">
+            <button 
+              onClick={() => navigate('/login')} 
+              className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
+            >
+              Log in
+            </button>
+            <Button 
+              size="sm" 
+              onClick={() => navigate('/login')} 
+              className="text-xs sm:text-sm px-2.5 sm:px-3 whitespace-nowrap"
+            >
+              Get started free
+            </Button>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-6 pt-24 pb-16 text-center">
-        <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
           Your office{' '}
           <span className="text-brand-500 bg-brand-50 px-3 rounded-2xl">organised</span>
         </h1>
-        <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-10">
+        <p className="text-base md:text-xl text-gray-500 max-w-2xl mx-auto mb-10">
           GrabDesk makes it effortless to book desks, meeting rooms, and resources. See who's in the office, coordinate with your team, and never fight over a hot desk again.
         </p>
         <Button size="lg" className="text-base px-8" iconRight={<ArrowRight className="w-5 h-5" />} onClick={() => navigate('/login')}>
@@ -82,13 +93,13 @@ export function LandingPage() {
             </div>
             <span className="ml-4 text-xs text-gray-400">GrabDesk — Dashboard</span>
           </div>
-          <div className="grid grid-cols-4 min-h-[300px]">
-            <div className="bg-white border-r border-gray-200 p-4 space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 min-h-[300px]">
+            <div className="hidden md:block bg-white border-r border-gray-200 p-4 space-y-2 text-left">
               {['Dashboard', 'Floor map', 'My bookings', 'Parking & lockers', 'Team', 'My week'].map(item => (
                 <div key={item} className={`text-xs py-1.5 px-2 rounded-lg ${item === 'Dashboard' ? 'bg-brand-50 text-brand-600 font-semibold' : 'text-gray-500'}`}>{item}</div>
               ))}
             </div>
-            <div className="col-span-3 p-6">
+            <div className="col-span-1 md:col-span-3 p-6 text-left">
               <h2 className="text-lg font-bold text-gray-900">Good morning, Lisa</h2>
               <p className="text-xs text-gray-400 mb-4">{previewDate}</p>
               <div className="flex gap-4 mb-4 text-xs text-gray-500">
@@ -96,7 +107,7 @@ export function LandingPage() {
                 <span>🚗 8 parking</span>
                 <span>🔒 9 lockers</span>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-gray-50 rounded-xl p-3 border-l-4 border-brand-500">
                   <p className="text-xs font-medium text-gray-500">Today's booking</p>
                   <p className="text-base font-bold text-gray-900 mt-1">D-01</p>
@@ -145,11 +156,12 @@ export function LandingPage() {
               ))}
             </div>
           </div>
-          <div className="bg-gray-100 rounded-2xl aspect-video flex items-center justify-center text-gray-400">
-            <div className="text-center p-8">
-              <Map className="w-16 h-16 mx-auto mb-4 text-brand-300" />
-              <p className="text-sm">Interactive Floor Map</p>
-            </div>
+          <div className="bg-gray-50 rounded-2xl aspect-video overflow-hidden border border-gray-200 shadow-md">
+            <img 
+              src="/floor_map_preview.png" 
+              alt="GrabDesk Interactive Floor Map Preview" 
+              className="w-full h-full object-cover object-center"
+            />
           </div>
         </div>
       </section>

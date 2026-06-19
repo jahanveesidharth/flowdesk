@@ -44,7 +44,7 @@ export function MyWeek() {
   return (
     <div className="space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
       {/* Header section with glass banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-800/80 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md p-6 shadow-sm">
+      <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-800/80 bg-white/60 dark:bg-gray-955/60 backdrop-blur-md p-4 sm:p-6 shadow-sm">
         <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-purple-500/5 dark:from-brand-500/10 dark:to-purple-500/10" />
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -56,35 +56,37 @@ export function MyWeek() {
               Plan your weekly attendance, reserve office workspace, and stay synced with your teammates.
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto bg-gray-100/80 dark:bg-gray-900/80 p-1.5 rounded-xl border border-gray-200/40 dark:border-gray-800/40">
+          <div className="flex items-center justify-between sm:justify-start gap-1 w-full sm:w-auto bg-gray-100/80 dark:bg-gray-900/80 p-1.5 rounded-xl border border-gray-200/40 dark:border-gray-800/40">
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={goToday}
-              className="px-3 py-1.5 h-8 text-xs font-semibold rounded-lg bg-white dark:bg-gray-800 shadow-sm text-gray-900 dark:text-white border border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-55"
+              className="px-2.5 py-1.5 h-8 text-xs font-semibold rounded-lg bg-white dark:bg-gray-800 shadow-sm text-gray-900 dark:text-white border border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-55"
             >
               Today
             </Button>
-            <div className="h-4 w-px bg-gray-200 dark:bg-gray-800 mx-1" />
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={prevWeek}
-              className="h-8 w-8 text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center justify-center p-0"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <span className="text-xs font-bold text-gray-700 dark:text-gray-300 min-w-[170px] text-center tracking-tight">
-              {format(weekStart, 'MMM d')} – {format(addDays(weekStart, 6), 'MMM d, yyyy')}
-            </span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={nextWeek}
-              className="h-8 w-8 text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center justify-center p-0"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+            <div className="h-4 w-px bg-gray-200 dark:bg-gray-800 mx-1 hidden xs:block" />
+            <div className="flex items-center gap-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={prevWeek}
+                className="h-8 w-8 text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center justify-center p-0"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="text-[10px] sm:text-xs font-bold text-gray-700 dark:text-gray-300 min-w-[125px] sm:min-w-[170px] text-center tracking-tight">
+                {format(weekStart, 'MMM d')} – {format(addDays(weekStart, 6), 'MMM d, yyyy')}
+              </span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={nextWeek}
+                className="h-8 w-8 text-gray-500 hover:text-gray-950 dark:hover:text-white flex items-center justify-center p-0"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

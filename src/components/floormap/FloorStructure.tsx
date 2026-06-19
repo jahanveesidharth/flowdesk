@@ -42,15 +42,15 @@ export function FloorStructure({
     }
     if (isDark) {
       switch (type) {
-        case 'boardroom': return '#1e1b4b'; // dark indigo
-        case 'training': return '#1c1917'; // dark stone
-        case 'focus': return '#31102f'; // dark purple
-        case 'meeting': return '#0f172a'; // dark slate
-        case 'pantry': return '#1c1917';
-        case 'storage': return '#1c1917';
-        case 'server_room': return '#020617';
-        case 'printer_room': return '#0f172a';
-        default: return '#111827';
+        case 'boardroom': return '#1c1b3f'; // dark purple-indigo
+        case 'training': return '#251c1c'; // dark warm stone
+        case 'focus': return '#2a1727'; // dark plum
+        case 'meeting': return '#182030'; // dark blue-slate
+        case 'pantry': return '#2d2015'; // dark warm wood/orange
+        case 'storage': return '#1e2025'; // dark gray
+        case 'server_room': return '#121620'; // dark tech blue
+        case 'printer_room': return '#182030';
+        default: return '#161a22'; // default dark gray-blue
       }
     } else {
       switch (type) {
@@ -140,7 +140,7 @@ export function FloorStructure({
       </defs>
 
       {/* Main Floor Base */}
-      <rect width={width} height={height} fill={isDark ? '#090d16' : '#EDE8DC'} />
+      <rect width={width} height={height} fill={isDark ? '#0b0f19' : '#EDE8DC'} />
 
       {/* Grid Alignment lines */}
       {showGrid && renderBackgroundGrid()}
@@ -214,7 +214,7 @@ export function FloorStructure({
               width={rw}
               height={rh}
               fill={getRoomBgColor(room.type, isDark)}
-              opacity="0.65"
+              opacity={isDark ? "0.9" : "0.65"}
             />
             {/* Room Wall borders */}
             <rect
@@ -223,7 +223,7 @@ export function FloorStructure({
               width={rw}
               height={rh}
               fill="none"
-              stroke="#1a1a1a"
+              stroke={isDark ? '#334155' : '#1a1a1a'}
               strokeWidth="8"
             />
           </g>
@@ -290,10 +290,10 @@ export function FloorStructure({
                   y={ry + rh - 4}
                   width={doorWidth}
                   height={8}
-                  fill={isDark ? '#090d16' : '#EDE8DC'}
+                  fill={isDark ? '#0b0f19' : '#EDE8DC'}
                 />
-                <line x1={doorX} y1={ry + rh} x2={doorX} y2={ry + rh + doorWidth} stroke="#555" strokeWidth="2.5" />
-                <path d={`M ${doorX} ${ry + rh + doorWidth} A ${doorWidth} ${doorWidth} 0 0 0 ${doorX + doorWidth} ${ry + rh}`} stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+                <line x1={doorX} y1={ry + rh} x2={doorX} y2={ry + rh + doorWidth} stroke={isDark ? '#64748b' : '#555'} strokeWidth="2.5" />
+                <path d={`M ${doorX} ${ry + rh + doorWidth} A ${doorWidth} ${doorWidth} 0 0 0 ${doorX + doorWidth} ${ry + rh}`} stroke={isDark ? '#475569' : '#64748b'} strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
               </g>
             )}
 
@@ -304,10 +304,10 @@ export function FloorStructure({
                   y={ry - 4}
                   width={doorWidth}
                   height={8}
-                  fill={isDark ? '#090d16' : '#EDE8DC'}
+                  fill={isDark ? '#0b0f19' : '#EDE8DC'}
                 />
-                <line x1={doorX} y1={ry} x2={doorX} y2={ry - doorWidth} stroke="#555" strokeWidth="2.5" />
-                <path d={`M ${doorX} ${ry - doorWidth} A ${doorWidth} ${doorWidth} 0 0 1 ${doorX + doorWidth} ${ry}`} stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+                <line x1={doorX} y1={ry} x2={doorX} y2={ry - doorWidth} stroke={isDark ? '#64748b' : '#555'} strokeWidth="2.5" />
+                <path d={`M ${doorX} ${ry - doorWidth} A ${doorWidth} ${doorWidth} 0 0 1 ${doorX + doorWidth} ${ry}`} stroke={isDark ? '#475569' : '#64748b'} strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
               </g>
             )}
 
@@ -318,10 +318,10 @@ export function FloorStructure({
                   y={doorY}
                   width={8}
                   height={doorWidth}
-                  fill={isDark ? '#090d16' : '#EDE8DC'}
+                  fill={isDark ? '#0b0f19' : '#EDE8DC'}
                 />
-                <line x1={rx} y1={doorY} x2={rx - doorWidth} y2={doorY} stroke="#555" strokeWidth="2.5" />
-                <path d={`M ${rx - doorWidth} ${doorY} A ${doorWidth} ${doorWidth} 0 0 1 ${rx} ${doorY + doorWidth}`} stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+                <line x1={rx} y1={doorY} x2={rx - doorWidth} y2={doorY} stroke={isDark ? '#64748b' : '#555'} strokeWidth="2.5" />
+                <path d={`M ${rx - doorWidth} ${doorY} A ${doorWidth} ${doorWidth} 0 0 1 ${rx} ${doorY + doorWidth}`} stroke={isDark ? '#475569' : '#64748b'} strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
               </g>
             )}
 
@@ -332,10 +332,10 @@ export function FloorStructure({
                   y={doorY}
                   width={8}
                   height={doorWidth}
-                  fill={isDark ? '#090d16' : '#EDE8DC'}
+                  fill={isDark ? '#0b0f19' : '#EDE8DC'}
                 />
-                <line x1={rx + rw} y1={doorY} x2={rx + rw + doorWidth} y2={doorY} stroke="#555" strokeWidth="2.5" />
-                <path d={`M ${rx + rw + doorWidth} ${doorY} A ${doorWidth} ${doorWidth} 0 0 0 ${rx + rw} ${doorY + doorWidth}`} stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+                <line x1={rx + rw} y1={doorY} x2={rx + rw + doorWidth} y2={doorY} stroke={isDark ? '#64748b' : '#555'} strokeWidth="2.5" />
+                <path d={`M ${rx + rw + doorWidth} ${doorY} A ${doorWidth} ${doorWidth} 0 0 0 ${rx + rw} ${doorY + doorWidth}`} stroke={isDark ? '#475569' : '#64748b'} strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
               </g>
             )}
           </g>
