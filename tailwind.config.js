@@ -63,6 +63,15 @@ export default {
         fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
         slideUp: { from: { transform: 'translateY(10px)', opacity: '0' }, to: { transform: 'translateY(0)', opacity: '1' } },
       },
+      borderRadius: {
+        'sm': '0.375rem',      // 6px (was 2px)
+        'DEFAULT': '0.5rem',     // 8px (was 4px)
+        'md': '0.75rem',       // 12px (was 6px)
+        'lg': '1rem',          // 16px (was 8px)
+        'xl': '1.375rem',      // 22px (was 12px)
+        '2xl': '1.75rem',      // 28px (was 16px)
+        '3xl': '2.5rem',       // 40px (was 24px)
+      },
     },
   },
   plugins: [],

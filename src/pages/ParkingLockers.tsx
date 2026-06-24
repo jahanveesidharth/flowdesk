@@ -209,6 +209,7 @@ export function ParkingLockers() {
         isOpen={showBooking}
         onClose={() => setShowBooking(false)}
         prefillDate={selectedDate}
+        prefillResourceType={bookingType}
       />
     </div>
   );

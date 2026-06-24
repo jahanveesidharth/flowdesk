@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Building2, Mail, Lock, User, Eye, EyeOff, ArrowRight,
@@ -11,7 +11,7 @@ import { useAppStore } from '../store/useAppStore';
 import { Button } from '../components/ui/Button';
 import toast from 'react-hot-toast';
 
-type AuthMode = 'login' | 'signup' | 'magic_link' | 'forgot';
+type AuthMode = 'login' | 'signup' | 'magic_link' | 'forgot' | 'reset';
 type AuthRole = 'employee' | 'admin';
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 
@@ -20,7 +20,8 @@ const PASSWORD_PATTERN = /^(?=.*\d).{8,}$/;
 
 export function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<AuthMode>('login');
+  const isResetPath = window.location.pathname === '/reset-password';
+  const [mode, setMode] = useState<AuthMode>(isResetPath ? 'reset' : 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -39,6 +40,52 @@ export function AuthPage() {
   const oktaConnected = integrations?.find(i => i.name === 'Okta SSO')?.connected ?? true;
   const notConfigured = !isSupabaseConfigured();
 
+  useEffect(() => {
+    if (notConfigured) return;
+
+    // If already authed and not in reset mode, redirect to dashboard
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && mode !== 'reset') {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: profile }: any) => {
+            if (profile) {
+              setCurrentUserFromProfile(profile as ProfileRow);
+              const nextRole = profile.role || 'employee';
+              navigate(nextRole === 'admin' || nextRole === 'manager' ? '/admin/dashboard' : '/dashboard');
+            }
+          });
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        if (event === 'PASSWORD_RECOVERY') {
+          setMode('reset');
+          navigate('/reset-password');
+          return;
+        }
+        if (mode !== 'reset' && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single() as any;
+          if (profile) {
+            setCurrentUserFromProfile(profile as ProfileRow);
+            const nextRole = profile.role || 'employee';
+            navigate(nextRole === 'admin' || nextRole === 'manager' ? '/admin/dashboard' : '/dashboard');
+          }
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, setCurrentUserFromProfile, mode, notConfigured]);
+
   const handleDemoLogin = (role: AuthRole = authRole) => {
     enterDemoMode();
     setDemoRole(role);
@@ -51,12 +98,12 @@ export function AuthPage() {
     e.preventDefault();
     const trimmedEmail = email.trim();
 
-    if (!EMAIL_PATTERN.test(trimmedEmail)) {
+    if (mode !== 'reset' && !EMAIL_PATTERN.test(trimmedEmail)) {
       toast.error('Please enter a valid email address.');
       return;
     }
 
-    if (mode === 'signup' && !PASSWORD_PATTERN.test(password)) {
+    if ((mode === 'signup' || mode === 'reset') && !PASSWORD_PATTERN.test(password)) {
       toast.error('Password must be at least 8 characters and include a number.');
       return;
     }
@@ -113,6 +160,26 @@ export function AuthPage() {
         if (error) throw error;
         toast.success('Password reset email sent!');
         setMode('login');
+      } else if (mode === 'reset') {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
+        toast.success('Password updated successfully!');
+        
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single() as { data: ProfileRow | null };
+          if (profile) {
+            setCurrentUserFromProfile(profile);
+            const nextRole = profile.role || 'employee';
+            navigate(nextRole === 'admin' || nextRole === 'manager' ? '/admin/dashboard' : '/dashboard');
+            return;
+          }
+        }
+        navigate('/dashboard');
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong';
@@ -177,7 +244,7 @@ export function AuthPage() {
       </svg>
 
       {/* Main card box */}
-      <div className="w-full max-w-6xl bg-white dark:bg-[#090f1d] rounded-[24px] border border-gray-150 dark:border-[#1e293b] shadow-2xl overflow-hidden flex min-h-[680px]">
+      <div className="w-full max-w-6xl bg-white dark:bg-[#090f1d] rounded-[36px] border border-gray-150 dark:border-[#1e293b] shadow-2xl overflow-hidden flex min-h-[680px]">
         
         {/* Left Side: Branding & Features (Width: 55%-58%) */}
         <div className="w-[55%] lg:w-[58%] shrink-0 hidden md:flex p-8 lg:p-12 relative z-10 bg-gray-50/50 dark:bg-[#070b14]/50 border-r border-gray-150 dark:border-[#1e293b]">
@@ -263,13 +330,15 @@ export function AuthPage() {
                 {mode === 'login'       ? 'Welcome back'        :
                  mode === 'signup'      ? 'Create account'      :
                  mode === 'magic_link'  ? 'Sign in with email'  :
-                 'Reset password'}
+                 mode === 'forgot'      ? 'Reset password'      :
+                 'Update password'}
               </h2>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1 font-semibold">
                 {mode === 'login'       ? 'Sign in to your GrabDesk workspace'  :
                  mode === 'signup'      ? 'Get started with GrabDesk for free'  :
                  mode === 'magic_link'  ? "We'll send you a one-time link"      :
-                 'Enter your email and we\'ll send a reset link'}
+                 mode === 'forgot'      ? 'Enter your email and we\'ll send a reset link' :
+                 'Enter your new password below'}
               </p>
             </div>
 
@@ -311,31 +380,33 @@ export function AuthPage() {
                 </div>
               )}
 
-              <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
-                <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                <input
-                  type="email"
-                  placeholder="name@company.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-transparent border-0 outline-none text-sm placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white"
-                  required
-                />
-              </div>
+              {mode !== 'reset' && (
+                <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type="email"
+                    placeholder="name@company.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full bg-transparent border-0 outline-none text-sm placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white"
+                    required
+                  />
+                </div>
+              )}
 
-              {(mode === 'login' || mode === 'signup') && (
+              {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
                 <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
                   <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder={mode === 'reset' ? 'New Password' : '••••••••'}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     className="w-full bg-transparent border-0 outline-none text-sm placeholder-gray-400 dark:placeholder-gray-600 text-gray-900 dark:text-white"
                     required
-                    minLength={mode === 'signup' ? 8 : 6}
-                    pattern={mode === 'signup' ? PASSWORD_PATTERN.source : undefined}
-                    title={mode === 'signup' ? 'Password must be at least 8 characters and include a number.' : undefined}
+                    minLength={mode === 'signup' || mode === 'reset' ? 8 : 6}
+                    pattern={mode === 'signup' || mode === 'reset' ? PASSWORD_PATTERN.source : undefined}
+                    title={mode === 'signup' || mode === 'reset' ? 'Password must be at least 8 characters and include a number.' : undefined}
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="focus:outline-none">
                     {showPassword ? (
@@ -374,7 +445,8 @@ export function AuthPage() {
                   {mode === 'login'       ? 'Sign in'            :
                    mode === 'signup'      ? 'Create account'     :
                    mode === 'magic_link'  ? 'Send magic link'    :
-                   'Send reset email'}
+                   mode === 'forgot'      ? 'Send reset email'   :
+                   'Update password'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -436,14 +508,14 @@ export function AuthPage() {
               {mode === 'login' ? (
                 <span>
                   New to GrabDesk?{' '}
-                  <button onClick={() => setMode('signup')} className="text-brand-500 font-bold hover:underline">
+                  <button type="button" onClick={() => setMode('signup')} className="text-brand-500 font-bold hover:underline">
                     Create account
                   </button>
                 </span>
               ) : (
                 <span>
                   Already have an account?{' '}
-                  <button onClick={() => setMode('login')} className="text-brand-500 font-bold hover:underline">
+                  <button type="button" onClick={() => { setMode('login'); navigate('/login'); }} className="text-brand-500 font-bold hover:underline">
                     Sign in
                   </button>
                 </span>

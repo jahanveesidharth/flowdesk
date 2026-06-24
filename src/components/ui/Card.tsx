@@ -13,7 +13,7 @@ export function Card({ children, className, hover, onClick, padding = 'md' }: Ca
   return (
     <div
       className={cn(
-        'bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm',
+        'bg-white dark:bg-gray-950 rounded-[48px] border border-gray-200 dark:border-gray-800 shadow-sm',
         hover && 'hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700 transition-all cursor-pointer',
         padMap[padding],
         className

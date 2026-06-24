@@ -8,16 +8,115 @@ import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/ui/Badge';
 import { Avatar } from '../components/ui/Avatar';
 import { getDeskTypeLabel, getRoomTypeLabel, getAmenityLabel } from '../lib/utils';
-import { Users, Monitor, CheckCircle, X, Cpu, Landmark, Search } from 'lucide-react';
+import { 
+  Users, Monitor, CheckCircle, X, Cpu, Landmark, Search, 
+  MapPin, Eye, Sun, VolumeX, Laptop, Lock, Phone, FileText, 
+  Sparkles, Coffee, Wrench, Video, HelpCircle, Compass, Play, Pause, RefreshCw 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const RESOURCE_IMAGES: Record<string, string> = {
+  'desk-hot': 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=800&q=80',
+  'desk-fixed': 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80',
+  'desk-standing': 'https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&w=800&q=80',
+  'desk-quiet': 'https://images.unsplash.com/photo-1507537297725-24a1c029d3ca?auto=format&fit=crop&w=800&q=80',
+  'desk-collaboration': 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
+  
+  'room-meeting': 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80',
+  'room-boardroom': 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
+  'room-focus': 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80',
+  'room-phone_booth': 'https://images.unsplash.com/photo-1543269608-fa395047d1b1?auto=format&fit=crop&w=800&q=80',
+  'room-training': 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
+  'room-washroom': 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80',
+  'room-pantry': 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80',
+  'room-storage': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80',
+  'room-server_room': 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80',
+  'room-printer_room': 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=800&q=80',
+  
+  'default-desk': 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=800&q=80',
+  'default-room': 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80'
+};
+
+function getResourceImage(desk: Desk | null, room: Room | null): string {
+  if (desk) {
+    if (desk.imageUrl) return desk.imageUrl;
+    return RESOURCE_IMAGES[`desk-${desk.type}`] || RESOURCE_IMAGES['default-desk'];
+  }
+  if (room) {
+    if (room.imageUrl) return room.imageUrl;
+    return RESOURCE_IMAGES[`room-${room.type}`] || RESOURCE_IMAGES['default-room'];
+  }
+  return RESOURCE_IMAGES['default-desk'];
+}
+
+function getAmenityIcon(amenity: string) {
+  const iconClass = "w-3.5 h-3.5 text-gray-500 dark:text-gray-400";
+  switch (amenity) {
+    case 'monitor':
+    case 'tv':
+      return <Monitor className={iconClass} />;
+    case 'docking_station':
+      return <Laptop className={iconClass} />;
+    case 'standing_desk':
+    case 'standing_table':
+      return <Compass className={iconClass} />;
+    case 'locker':
+    case 'storage':
+      return <Lock className={iconClass} />;
+    case 'window':
+      return <Sun className={iconClass} />;
+    case 'quiet_zone':
+      return <VolumeX className={iconClass} />;
+    case 'phone':
+      return <Phone className={iconClass} />;
+    case 'whiteboard':
+      return <FileText className={iconClass} />;
+    case 'video_conf':
+      return <Video className={iconClass} />;
+    case 'catering':
+      return <Coffee className={iconClass} />;
+    default:
+      return <HelpCircle className={iconClass} />;
+  }
+}
+
+function getLightingValue(desk: Desk | null, room: Room | null): string {
+  if (desk) {
+    if (desk.amenities.includes('window')) {
+      return 'Natural Light';
+    }
+    if (desk.type === 'quiet') {
+      return 'Soft Ambient';
+    }
+    if (desk.type === 'standing' || desk.type === 'fixed') {
+      return 'Adjustable LED';
+    }
+    return 'Balanced LED';
+  }
+  if (room) {
+    if (room.type === 'washroom' || room.type === 'storage' || room.type === 'server_room') {
+      return 'Bright utility lights';
+    }
+    if (room.type === 'pantry' || room.type === 'focus' || room.type === 'phone_booth') {
+      return 'Warm Ambient';
+    }
+    return 'Dimmable smart lighting';
+  }
+  return 'Standard LED';
+}
+
 export function FloorMapPage() {
-  const { floors, selectedFloorId, setSelectedFloor, selectedDate, setSelectedDate, bookings, currentUser, desks, rooms, users } = useAppStore();
+  const { floors, selectedFloorId, setSelectedFloor, selectedDate, setSelectedDate, bookings, currentUser, desks, rooms, users, addNotification } = useAppStore();
   const [showBooking, setShowBooking] = useState(false);
   const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [prefillDeskId, setPrefillDeskId] = useState<string>('');
+  const [prefillResourceType, setPrefillResourceType] = useState<'desk' | 'room' | 'parking' | 'locker'>('desk');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const [showPanorama, setShowPanorama] = useState(false);
+  const [isPanningAuto, setIsPanningAuto] = useState(true);
+  const [manualPanX, setManualPanX] = useState(50);
 
   const selectedFloor = floors.find(f => f.id === selectedFloorId) || floors[0];
 
@@ -34,6 +133,7 @@ export function FloorMapPage() {
   const handleBookDesk = () => {
     if (!selectedDesk) return;
     setPrefillDeskId(selectedDesk.id);
+    setPrefillResourceType('desk');
     setSelectedDesk(null);
     setShowBooking(true);
   };
@@ -187,6 +287,73 @@ export function FloorMapPage() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+            
+            {/* Real Picture of the Place */}
+            <div className="relative group rounded-3xl overflow-hidden aspect-[4/3] shadow-md border border-gray-100 dark:border-gray-800/80">
+              <img 
+                src={getResourceImage(selectedDesk, selectedRoom)} 
+                alt="Real place visualization"
+                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+              />
+              
+              {/* Location Pin overlay */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="bg-white/95 dark:bg-gray-900/95 p-2 rounded-full shadow-lg border border-brand-500/25 flex items-center justify-center animate-bounce">
+                  <MapPin className="w-5 h-5 text-brand-500 fill-brand-100 dark:fill-brand-950" />
+                </div>
+              </div>
+
+              {/* Panorama View Badge/Pill */}
+              <button 
+                onClick={() => {
+                  setManualPanX(50);
+                  setIsPanningAuto(true);
+                  setShowPanorama(true);
+                }}
+                className="absolute bottom-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-855 text-gray-800 dark:text-white text-[10px] font-bold py-1.5 px-3 rounded-full flex items-center gap-1.5 shadow-md border border-gray-200/50 dark:border-gray-800/50 transition-all pointer-events-auto hover:scale-105"
+              >
+                <Compass className="w-3.5 h-3.5 text-brand-500 animate-spin-slow" />
+                <span>Panorama View</span>
+              </button>
+            </div>
+
+            {/* Quick Specs Capsules (Amenities & Lighting) */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-gray-50/60 dark:bg-gray-900/40 border border-gray-150/40 dark:border-gray-800/60 rounded-2xl p-3 flex flex-col justify-between">
+                <span className="text-[9px] font-bold text-gray-400 dark:text-gray-550 uppercase tracking-wider block">Amenities</span>
+                <div className="flex gap-1.5 mt-1.5 items-center flex-wrap">
+                  {selectedDesk ? (
+                    selectedDesk.amenities.length > 0 ? (
+                      selectedDesk.amenities.slice(0, 3).map((a) => (
+                        <div key={a} className="p-1 bg-white dark:bg-gray-950 rounded-lg border border-gray-150 dark:border-gray-850 shadow-sm" title={a}>
+                          {getAmenityIcon(a)}
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-[10px] font-semibold text-gray-450 dark:text-gray-550">Standard Desk</span>
+                    )
+                  ) : selectedRoom ? (
+                    selectedRoom.amenities.length > 0 ? (
+                      selectedRoom.amenities.slice(0, 3).map((a) => (
+                        <div key={a} className="p-1 bg-white dark:bg-gray-950 rounded-lg border border-gray-150 dark:border-gray-850 shadow-sm" title={a}>
+                          {getAmenityIcon(a)}
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-[10px] font-semibold text-gray-450 dark:text-gray-550">Standard Room</span>
+                    )
+                  ) : null}
+                </div>
+              </div>
+              
+              <div className="bg-gray-50/60 dark:bg-gray-900/40 border border-gray-150/40 dark:border-gray-800/60 rounded-2xl p-3 flex flex-col justify-between">
+                <span className="text-[9px] font-bold text-gray-400 dark:text-gray-550 uppercase tracking-wider block">Lighting</span>
+                <div className="flex items-center gap-1.5 mt-1.5 text-xs font-semibold text-gray-700 dark:text-gray-350">
+                  <Sun className="w-3.5 h-3.5 text-amber-500 fill-amber-100 dark:fill-amber-950/20" />
+                  <span>{getLightingValue(selectedDesk, selectedRoom)}</span>
+                </div>
+              </div>
+            </div>
 
             {/* A. Selected Desk Specific Content */}
             {selectedDesk && (
@@ -223,11 +390,47 @@ export function FloorMapPage() {
                       </div>
                     </div>
                     <div className="flex gap-2 w-full pt-1">
-                      <a href={`mailto:${bookedByUser.email}`} className="flex-1 bg-white hover:bg-gray-50 dark:bg-gray-950 dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-750 text-gray-700 dark:text-gray-250 text-xs py-2 rounded-xl font-bold transition-all text-center shadow-sm">
+                      <a 
+                        href={`mailto:${bookedByUser.email}`} 
+                        onClick={() => {
+                          toast.success(`Email drafted and logged to history! ✉️`);
+                          addNotification({
+                            userId: currentUser.id,
+                            type: 'booking_confirmed',
+                            title: 'Email Sent to ' + bookedByUser.name,
+                            message: `Sent email regarding Desk ${selectedDesk.label} reservation to ${bookedByUser.email}.`,
+                            read: false,
+                          });
+                          addNotification({
+                            userId: bookedByUser.id,
+                            type: 'admin_message',
+                            title: 'Email from ' + currentUser.name,
+                            message: `${currentUser.name} sent you an email regarding your reservation of Desk ${selectedDesk.label}.`,
+                            read: false,
+                          });
+                        }}
+                        className="flex-1 bg-white hover:bg-gray-50 dark:bg-gray-950 dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-750 text-gray-700 dark:text-gray-250 text-xs py-2 rounded-xl font-bold transition-all text-center shadow-sm"
+                      >
                         Send Email
                       </a>
                       <button 
-                        onClick={() => toast.success(`Slack notification pinged to ${bookedByUser.name}`)} 
+                        onClick={() => {
+                          toast.success(`Slack notification pinged to ${bookedByUser.name}! 💬`);
+                          addNotification({
+                            userId: currentUser.id,
+                            type: 'booking_confirmed',
+                            title: 'Slack Ping Sent to ' + bookedByUser.name,
+                            message: `Pinged ${bookedByUser.name} on Slack regarding Desk ${selectedDesk.label} reservation.`,
+                            read: false,
+                          });
+                          addNotification({
+                            userId: bookedByUser.id,
+                            type: 'admin_message',
+                            title: 'Slack Ping from ' + currentUser.name,
+                            message: `${currentUser.name} pinged you on Slack regarding your reservation of Desk ${selectedDesk.label} today.`,
+                            read: false,
+                          });
+                        }}
                         className="flex-1 bg-brand-500 hover:bg-brand-600 text-white text-xs py-2 rounded-xl font-bold transition-all shadow-sm shadow-brand-500/10"
                       >
                         Ping Slack
@@ -409,6 +612,7 @@ export function FloorMapPage() {
                 <Button variant="outline" className="flex-1 rounded-xl font-bold" onClick={() => setSelectedRoom(null)}>Cancel</Button>
                 <Button className="flex-1 rounded-xl font-bold" onClick={() => {
                   setPrefillDeskId(''); // Prefill room booking workflow correctly
+                  setPrefillResourceType('room');
                   setSelectedRoom(null);
                   setShowBooking(true);
                 }}>Book Room</Button>
@@ -424,7 +628,109 @@ export function FloorMapPage() {
         prefillDeskId={prefillDeskId}
         prefillFloorId={selectedFloorId}
         prefillDate={selectedDate}
+        prefillResourceType={prefillResourceType}
       />
+
+      {/* Virtual Panorama Modal */}
+      {showPanorama && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-4xl bg-white dark:bg-gray-950 rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-2xl flex flex-col animate-slide-up">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-105 dark:border-gray-850/80">
+              <div>
+                <h4 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Compass className="w-5 h-5 text-brand-500 animate-spin-slow" />
+                  <span>Virtual 360° Panorama - {selectedDesk ? `Desk ${selectedDesk.label}` : selectedRoom?.name}</span>
+                </h4>
+                <p className="text-[11px] text-gray-400 font-semibold mt-0.5">Simulated interactive view of this office space</p>
+              </div>
+              <button 
+                onClick={() => setShowPanorama(false)}
+                className="p-2 rounded-full bg-gray-500/10 hover:bg-gray-500/20 dark:bg-gray-800 dark:hover:bg-gray-750 text-gray-500 dark:text-gray-300 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Panorama viewport */}
+            <div className="relative aspect-[21/9] w-full overflow-hidden bg-slate-950 group">
+              {/* Animated Panning Image */}
+              <div 
+                className={cn(
+                  "absolute inset-0 bg-center w-full h-full",
+                  isPanningAuto ? "panorama-panning" : ""
+                )}
+                style={{
+                  backgroundImage: `url(${getResourceImage(selectedDesk, selectedRoom)})`,
+                  backgroundSize: '200% 100%',
+                  backgroundPosition: isPanningAuto ? undefined : `${manualPanX}% 50%`,
+                  transition: isPanningAuto ? 'none' : 'background-position 0.2s ease-out',
+                }}
+              />
+
+              {/* Grid overlay for high-tech look */}
+              <div className="absolute inset-0 bg-slate-900/10 pointer-events-none mix-blend-overlay" />
+
+              {/* Scanline overlay */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,rgba(0,0,0,0.6))] pointer-events-none" />
+
+              {/* Interaction Overlay indicator */}
+              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+                </span>
+                <span>{isPanningAuto ? "AUTO ROTATING 360°" : "MANUAL PAN ACTIVE"}</span>
+              </div>
+
+              {/* Slider for manual pan when auto-pan is disabled */}
+              {!isPanningAuto && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/75 backdrop-blur-md px-4 py-2.5 rounded-2xl flex items-center gap-3 w-72 shadow-xl border border-white/10">
+                  <span className="text-[10px] font-bold text-white uppercase tracking-wider shrink-0">Pan View</span>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={manualPanX}
+                    onChange={(e) => setManualPanX(Number(e.target.value))}
+                    className="w-full accent-brand-500 bg-gray-800 rounded-lg appearance-none h-1.5 cursor-pointer"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Control Panel */}
+            <div className="flex items-center justify-between px-6 py-4 bg-gray-50/50 dark:bg-gray-900/20 border-t border-gray-105 dark:border-gray-850/80">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsPanningAuto(!isPanningAuto)}
+                  className="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all shadow-md shadow-brand-500/10"
+                >
+                  {isPanningAuto ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  <span>{isPanningAuto ? "Pause Tour" : "Auto Rotate"}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setManualPanX(50);
+                    setIsPanningAuto(true);
+                  }}
+                  className="bg-white hover:bg-gray-50 dark:bg-gray-950 dark:hover:bg-gray-855 text-gray-700 dark:text-gray-250 border border-gray-200 dark:border-gray-800 font-bold text-xs py-2 px-3 rounded-xl flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Reset View</span>
+                </button>
+              </div>
+
+              <div className="text-[10px] text-gray-400 dark:text-gray-550 font-bold uppercase tracking-wider hidden sm:block">
+                Location: {selectedFloor?.name} • Zone: {selectedDesk ? (selectedFloor?.zones.find(z => z.id === selectedDesk.zoneId)?.name || 'General') : 'Meeting'}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

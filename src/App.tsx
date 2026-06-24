@@ -37,6 +37,7 @@ export default function App() {
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<AuthPage />} />
+        <Route path="/reset-password" element={<AuthPage />} />
 
         {/* Protected — wrapped in AuthGuard */}
         <Route element={<AuthGuard><Layout /></AuthGuard>}>
@@ -64,7 +65,7 @@ export default function App() {
         position="top-right"
         toastOptions={{
           duration: 3000,
-          style: { borderRadius: '10px', fontSize: '14px', fontFamily: 'Inter, sans-serif' },
+          style: { borderRadius: '18px', fontSize: '14px', fontFamily: 'Inter, sans-serif' },
           success: { iconTheme: { primary: '#f04a16', secondary: 'white' } },
         }}
       />

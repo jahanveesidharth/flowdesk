@@ -64,7 +64,7 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
   if (compact) {
     return (
       <div className={cn(
-        'flex items-center gap-3 p-3 rounded-xl border bg-white transition-all hover:shadow-sm',
+        'flex items-center gap-3 p-3 rounded-2xl border bg-white transition-all hover:shadow-sm',
         booking.status === 'checked_in' && 'border-blue-200 bg-blue-50',
         booking.status === 'cancelled' && 'opacity-60',
       )}>
@@ -87,14 +87,14 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
   return (
     <>
       <div className={cn(
-        'bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all',
+        'bg-white rounded-[48px] border border-gray-200 p-4 hover:shadow-md transition-all',
         booking.status === 'checked_in' && 'border-blue-300 ring-1 ring-blue-200',
         booking.status === 'cancelled' && 'opacity-60',
         booking.status === 'completed' && 'border-gray-100',
       )}>
         <div className="flex items-start gap-3">
           <div className={cn(
-            'w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0',
+            'w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0',
             booking.resourceType === 'desk' ? 'bg-blue-50' :
             booking.resourceType === 'room' ? 'bg-green-50' :
             booking.resourceType === 'parking' ? 'bg-yellow-50' : 'bg-purple-50',

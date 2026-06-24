@@ -129,10 +129,10 @@ export function Sidebar() {
               to={to}
               onClick={() => setMobileSidebarOpen(false)}
               className={({ isActive }) => cn(
-                'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group duration-200',
+                'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group duration-200 w-full',
                 isActive
                   ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300 font-semibold shadow-sm ring-1 ring-brand-100 dark:ring-brand-900/30'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/70 hover:text-gray-950 dark:hover:text-white',
+                  : 'text-gray-655 dark:text-gray-400 hover:bg-gray-50/60 dark:hover:bg-gray-900/70 hover:text-gray-950 dark:hover:text-white',
                 !sidebarOpen && 'justify-center px-2',
               )}
             >
@@ -141,7 +141,7 @@ export function Sidebar() {
                   <Icon className={cn("w-4.5 h-4.5 shrink-0 transition-colors", isActive ? "text-brand-500" : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300")} />
                   {sidebarOpen && <span className="truncate">{label}</span>}
                   {isActive && (
-                    <span className="absolute left-0 top-1/4 bottom-1/4 w-0.75 bg-brand-500 rounded-r-md" />
+                    <span className="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 rounded-r-[4px]" />
                   )}
                 </>
               )}
@@ -154,10 +154,10 @@ export function Sidebar() {
       <div className="border-t border-gray-100 dark:border-gray-850/80 p-2 flex flex-col gap-1">
         <Tooltip content={sidebarOpen ? null : 'Notifications'} side="right">
           <NavLink to="/notifications" onClick={() => setMobileSidebarOpen(false)} className={({ isActive }) => cn(
-            'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+            'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full',
             isActive
               ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-55/60 dark:hover:bg-gray-900/40',
+              : 'text-gray-650 dark:text-gray-400 hover:bg-gray-55/60 dark:hover:bg-gray-900/40',
             !sidebarOpen && 'justify-center px-2',
           )}>
             {({ isActive }) => (
@@ -172,7 +172,7 @@ export function Sidebar() {
                 </div>
                 {sidebarOpen && <span>Notifications</span>}
                 {isActive && (
-                  <span className="absolute left-0 top-1/4 bottom-1/4 w-0.75 bg-brand-500 rounded-r-md" />
+                  <span className="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 rounded-r-[4px]" />
                 )}
               </>
             )}
@@ -181,7 +181,7 @@ export function Sidebar() {
 
         <Tooltip content={sidebarOpen ? null : 'Settings'} side="right">
           <NavLink to="/settings" onClick={() => setMobileSidebarOpen(false)} className={({ isActive }) => cn(
-            'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+            'relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full',
             isActive
               ? 'bg-brand-50/80 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 font-semibold'
               : 'text-gray-650 dark:text-gray-400 hover:bg-gray-55/60 dark:hover:bg-gray-900/40',
@@ -192,7 +192,7 @@ export function Sidebar() {
                 <Settings className={cn("w-4.5 h-4.5 transition-colors", isActive ? "text-brand-500" : "text-gray-400")} />
                 {sidebarOpen && <span>Settings</span>}
                 {isActive && (
-                  <span className="absolute left-0 top-1/4 bottom-1/4 w-0.75 bg-brand-500 rounded-r-md" />
+                  <span className="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 rounded-r-[4px]" />
                 )}
               </>
             )}

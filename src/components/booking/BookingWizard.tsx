@@ -24,9 +24,10 @@ interface BookingWizardProps {
   prefillDeskId?: string;
   prefillDate?: string;
   prefillFloorId?: string;
+  prefillResourceType?: ResourceTab;
 }
 
-export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, prefillFloorId }: BookingWizardProps) {
+export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, prefillFloorId, prefillResourceType }: BookingWizardProps) {
   const { floors, desks, rooms, parkingSpaces, lockers, addBooking, currentUser, selectedDate, getDeskAvailability, bookings, selectedFloorId: storeFloorId } = useAppStore();
   const navigate = useNavigate();
 
@@ -49,11 +50,63 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
     if (!isOpen) return;
 
     setDate(prefillDate || selectedDate);
-    setSelectedFloorId(prefillFloorId || storeFloorId || (floors[0]?.id) || 'f1');
+    const type = prefillResourceType || 'desk';
+    setResourceType(type);
     setSelectedResourceId(prefillDeskId || '');
+
+    // Automatically select a floor that is valid for the prefilled or initial resource type
+    const available = floors.filter(f => {
+      if (!f.isActive) return false;
+      if (type === 'desk') return desks.some(d => d.floorId === f.id && d.isActive);
+      if (type === 'room') return rooms.some(r => r.floorId === f.id && r.isActive);
+      if (type === 'parking') return parkingSpaces.some(p => p.floorId === f.id && p.isActive);
+      if (type === 'locker') return lockers.some(l => l.floorId === f.id && l.isActive);
+      return false;
+    });
+
+    const preferredFloorId = prefillFloorId || storeFloorId || (floors[0]?.id) || 'f1';
+    if (available.some(f => f.id === preferredFloorId)) {
+      setSelectedFloorId(preferredFloorId);
+    } else if (available.length > 0) {
+      setSelectedFloorId(available[0].id);
+    } else {
+      setSelectedFloorId(preferredFloorId);
+    }
+
     setStep('type');
     setComplete(false);
-  }, [isOpen, prefillDate, prefillDeskId, prefillFloorId, selectedDate, storeFloorId, floors]);
+  }, [isOpen, prefillDate, prefillDeskId, prefillFloorId, prefillResourceType, selectedDate, storeFloorId, floors, desks, rooms, parkingSpaces, lockers]);
+
+  // Adjust selected floor when category (resourceType) changes
+  useEffect(() => {
+    if (!isOpen) return;
+    const available = floors.filter(f => {
+      if (!f.isActive) return false;
+      if (resourceType === 'desk') return desks.some(d => d.floorId === f.id && d.isActive);
+      if (resourceType === 'room') return rooms.some(r => r.floorId === f.id && r.isActive);
+      if (resourceType === 'parking') return parkingSpaces.some(p => p.floorId === f.id && p.isActive);
+      if (resourceType === 'locker') return lockers.some(l => l.floorId === f.id && l.isActive);
+      return false;
+    });
+
+    if (available.length > 0 && !available.some(f => f.id === selectedFloorId)) {
+      setSelectedFloorId(available[0].id);
+    }
+  }, [resourceType, isOpen, floors, desks, rooms, parkingSpaces, lockers, selectedFloorId]);
+
+  const getAvailableFloors = (type: ResourceTab) => {
+    return floors.filter(f => {
+      if (!f.isActive) return false;
+      if (type === 'desk') return desks.some(d => d.floorId === f.id && d.isActive);
+      if (type === 'room') return rooms.some(r => r.floorId === f.id && r.isActive);
+      if (type === 'parking') return parkingSpaces.some(p => p.floorId === f.id && p.isActive);
+      if (type === 'locker') return lockers.some(l => l.floorId === f.id && l.isActive);
+      return false;
+    });
+  };
+
+  const availableFloors = getAvailableFloors(resourceType);
+  const floorsToDisplay = availableFloors.length > 0 ? availableFloors : floors.filter(f => f.isActive);
 
   const selectedFloor = floors.find(f => f.id === selectedFloorId) || floors[0];
 
@@ -274,64 +327,125 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
         </div>
 
         {/* Step 1: Category */}
-        {step === 'type' && (
-          <div className="space-y-5">
-            <div>
-              <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Choose Category</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Select the type of workspace resource you need for the day.</p>
-            </div>
+        {step === 'type' && (() => {
+          // Generate 14 days starting from today (2 weeks)
+          const datesList = Array.from({ length: 14 }, (_, i) => addDays(new Date(), i));
+          const dateStrings = datesList.map(d => format(d, 'yyyy-MM-dd'));
+          if (date && !dateStrings.includes(date)) {
+            try {
+              const parsedDate = new Date(date);
+              if (!isNaN(parsedDate.getTime())) {
+                datesList.push(parsedDate);
+                datesList.sort((a, b) => a.getTime() - b.getTime());
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }
 
-            <div className="grid grid-cols-2 gap-3.5">
-              {[
-                { type: 'desk' as ResourceTab, icon: <Laptop className="w-5 h-5" />, label: 'Hot Desk', desc: 'Workstations & standing desks' },
-                { type: 'room' as ResourceTab, icon: <Users className="w-5 h-5" />, label: 'Meeting Room', desc: 'Conference rooms & boxes' },
-                { type: 'parking' as ResourceTab, icon: <Car className="w-5 h-5" />, label: 'Parking Space', desc: 'EV or standard parking bays' },
-                { type: 'locker' as ResourceTab, icon: <Lock className="w-5 h-5" />, label: 'Storage Locker', desc: 'Secure local lock-boxes' },
-              ].map(({ type, icon, label, desc }) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => { setResourceType(type); setSelectedResourceId(''); }}
-                  className={cn(
-                    'flex flex-col items-start gap-3 p-4 rounded-2xl border transition-all text-left group',
-                    resourceType === type 
-                      ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-750 dark:text-brand-400' 
-                      : 'border-gray-200 dark:border-gray-800/80 hover:border-gray-300 dark:hover:border-gray-700 text-gray-650 dark:text-gray-200 hover:bg-gray-50/20 dark:hover:bg-gray-900/60',
-                  )}
+          return (
+            <div className="space-y-5">
+              {/* Custom Horizontal Date Picker and Floor Selector Card */}
+              <div className="flex border border-gray-200 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-950 p-2 min-h-[96px] items-center">
+                {/* Horizontal date scroller */}
+                <div 
+                  className="flex-1 flex gap-2 overflow-x-auto pr-2 scrollbar-none"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
-                  <div className={cn('p-2.5 rounded-xl border transition-colors shrink-0', 
-                    resourceType === type 
-                      ? 'bg-white dark:bg-gray-900 border-brand-200 dark:border-brand-900/40 text-brand-500 dark:text-brand-400' 
-                      : 'bg-gray-50 dark:bg-gray-900/70 border-gray-150/40 dark:border-gray-700/70 text-gray-450 dark:text-gray-300 group-hover:text-gray-600 dark:group-hover:text-gray-100'
-                  )}>
-                    {icon}
-                  </div>
-                  <div>
-                    <div className="font-bold text-xs">{label}</div>
-                    <div className="text-[10px] text-gray-400 dark:text-gray-400 mt-1">{desc}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
+                  {datesList.map((d) => {
+                    const dateStr = format(d, 'yyyy-MM-dd');
+                    const isSelected = dateStr === date;
+                    return (
+                      <button
+                        key={dateStr}
+                        type="button"
+                        onClick={() => setDate(dateStr)}
+                        className={cn(
+                          "flex-1 min-w-[56px] flex flex-col items-center justify-center py-2 px-1.5 rounded-xl transition-all cursor-pointer",
+                          isSelected 
+                            ? "bg-brand-500 text-white shadow-sm font-bold scale-[1.02]" 
+                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900/60"
+                        )}
+                      >
+                        <span className={cn("text-[9px] uppercase tracking-wider font-extrabold", isSelected ? "text-brand-100" : "text-gray-400 dark:text-gray-500")}>
+                          {format(d, 'EEE')}
+                        </span>
+                        <span className="text-sm font-extrabold my-0.5 leading-none">
+                          {format(d, 'd')}
+                        </span>
+                        <span className={cn("text-[9px] uppercase tracking-wider font-extrabold", isSelected ? "text-brand-100" : "text-gray-400 dark:text-gray-500")}>
+                          {format(d, 'MMM')}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
 
-            <div className="grid grid-cols-2 gap-4.5 pt-3 border-t border-gray-100 dark:border-gray-900">
-              <Input 
-                label="Date" 
-                type="date" 
-                value={date} 
-                onChange={e => setDate(e.target.value)}
-                min={format(new Date(), 'yyyy-MM-dd')}
-                max={format(addDays(new Date(), 30), 'yyyy-MM-dd')}
-              />
-              <Select 
-                label="Floor" 
-                value={selectedFloorId} 
-                onChange={e => setSelectedFloorId(e.target.value)}
-                options={floors.filter(f => f.isActive).map(f => ({ value: f.id, label: f.name }))}
-              />
+                {/* Vertical divider */}
+                <div className="w-[1px] h-12 bg-gray-200 dark:bg-gray-800 mx-2 shrink-0" />
+
+                {/* Floor dropdown selector on the right */}
+                <div className="w-[42%] shrink-0 pl-2">
+                  <div className="relative border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50/30 dark:bg-gray-900/30 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
+                    <select
+                      value={selectedFloorId}
+                      onChange={e => setSelectedFloorId(e.target.value)}
+                      className="w-full bg-transparent border-0 py-3 pl-3.5 pr-9 text-xs font-bold text-gray-850 dark:text-gray-200 focus:outline-none focus:ring-0 appearance-none cursor-pointer"
+                    >
+                      {floorsToDisplay.map(f => (
+                        <option key={f.id} value={f.id} className="bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-200">
+                          {f.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                      <ChevronRight className="w-4 h-4 transform rotate-90" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Heading and Category Buttons */}
+              <div className="pt-1.5">
+                <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Choose Category</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Select the type of workspace resource you need for the day.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3.5">
+                {[
+                  { type: 'desk' as ResourceTab, icon: <Laptop className="w-5 h-5" />, label: 'Hot Desk', desc: 'Workstations & standing desks' },
+                  { type: 'room' as ResourceTab, icon: <Users className="w-5 h-5" />, label: 'Meeting Room', desc: 'Conference rooms & boxes' },
+                  { type: 'parking' as ResourceTab, icon: <Car className="w-5 h-5" />, label: 'Parking Space', desc: 'EV or standard parking bays' },
+                  { type: 'locker' as ResourceTab, icon: <Lock className="w-5 h-5" />, label: 'Storage Locker', desc: 'Secure local lock-boxes' },
+                ].map(({ type, icon, label, desc }) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => { setResourceType(type); setSelectedResourceId(''); }}
+                    className={cn(
+                      'flex flex-col items-start gap-3 p-4 rounded-2xl border transition-all text-left group cursor-pointer',
+                      resourceType === type 
+                        ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-750 dark:text-brand-400' 
+                        : 'border-gray-200 dark:border-gray-800/80 hover:border-gray-300 dark:hover:border-gray-700 text-gray-650 dark:text-gray-200 hover:bg-gray-50/20 dark:hover:bg-gray-900/60',
+                    )}
+                  >
+                    <div className={cn('p-2.5 rounded-xl border transition-colors shrink-0', 
+                      resourceType === type 
+                        ? 'bg-white dark:bg-gray-900 border-brand-200 dark:border-brand-900/40 text-brand-500 dark:text-brand-400' 
+                        : 'bg-gray-50 dark:bg-gray-900/70 border-gray-150/40 dark:border-gray-700/70 text-gray-450 dark:text-gray-300 group-hover:text-gray-600 dark:group-hover:text-gray-100'
+                    )}>
+                      {icon}
+                    </div>
+                    <div>
+                      <div className="font-bold text-xs">{label}</div>
+                      <div className="text-[10px] text-gray-400 dark:text-gray-400 mt-1">{desc}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Step 2: Resource Selection */}
         {step === 'resource' && (

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { 
   Calendar, ArrowRight, Plus, 
-  Bell, CloudSun, Compass, Sparkles,
+  Bell, CloudSun, Compass, MapPin,
   ChevronRight, Laptop, UserCheck, AlertCircle
 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
@@ -12,6 +12,7 @@ import { Badge } from '../components/ui/Badge';
 import { Avatar } from '../components/ui/Avatar';
 import { BookingCard } from '../components/booking/BookingCard';
 import { BookingWizard } from '../components/booking/BookingWizard';
+import { FloorMap } from '../components/floormap/FloorMap';
 import { formatTimeRange, formatTimeAgo } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
@@ -34,6 +35,13 @@ export function Dashboard() {
       : { label: 'Weather unavailable', loading: false }
   ));
   const demoMode = isDemoMode();
+  const [previewFloorId, setPreviewFloorId] = useState('');
+
+  useEffect(() => {
+    if (floors.length > 0 && !previewFloorId) {
+      setPreviewFloorId(floors.find(f => f.isActive)?.id || floors[0]?.id);
+    }
+  }, [floors, previewFloorId]);
 
   // Real-time Clock
   useEffect(() => {
@@ -133,55 +141,37 @@ export function Dashboard() {
   return (
     <div className="space-y-8 animate-fade-in">
       
-      {/* 1. Premium Greeting Hero Banner */}
-      <div className={cn(
-        "relative overflow-hidden rounded-2xl border p-6 md:p-8 shadow-xl transition-all duration-500",
-        "bg-gradient-to-br from-brand-600 via-brand-500 to-orange-500 text-white border-transparent",
-        "dark:from-gray-900 dark:via-gray-950 dark:to-orange-950/20 dark:border-orange-500/20 dark:shadow-orange-950/10"
-      )}>
-        {/* Background glowing decorations */}
-        <div className="absolute top-0 right-0 -mt-6 -mr-6 w-56 h-56 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 -mb-10 w-44 h-44 rounded-full bg-orange-400/20 blur-2xl pointer-events-none" />
+      {/* 1. Welcome Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 py-2">
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+          {getGreeting()}, {currentUser.name.split(' ')[0]} 👋
+        </h1>
 
-        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6 z-10">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-white/90 border border-white/10">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-              <span>Workspace Hub</span>
-            </div>
-            
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-              {getGreeting()}, {currentUser.name.split(' ')[0]} 👋
-            </h1>
-            
-            <p className="text-white/80 dark:text-gray-400 text-sm md:text-base font-medium max-w-xl">
-              {todayDesk 
-                ? `You sit at desk ${desks.find(d => d.id === todayDesk.resourceId)?.label || '—'} on ${floors.find(f => f.id === todayDesk.floorId)?.name || 'the office floor'} today.`
-                : "Coordinate with teammates and book a workstation or meeting room in seconds."
-              }
-            </p>
-          </div>
-
-          {/* Interactive Date & Clock Panel */}
-          <div className="flex flex-col items-start md:items-end justify-center bg-black/10 dark:bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4 shrink-0 min-w-[200px]">
-            <span className="text-xs font-semibold tracking-wider uppercase opacity-75">{format(time, 'EEEE, d MMMM')}</span>
-            <span className="text-2xl md:text-3xl font-extrabold tracking-tight tabular-nums mt-0.5">{format(time, 'hh:mm:ss')} <span className="text-sm font-normal uppercase">{format(time, 'a')}</span></span>
-            <div className="flex items-center gap-1.5 mt-2 text-xs text-white/90">
-              <CloudSun className="w-4 h-4 text-amber-300" />
-              <span>
-                {weather.loading
-                  ? 'Detecting weather...'
-                  : weather.tempC !== undefined
-                    ? `${weather.label} · ${weather.tempC}°C`
-                    : weather.label}
-              </span>
-            </div>
+        {/* Interactive Date & Clock Card */}
+        <div className={cn(
+          "flex flex-col items-center justify-center p-4 px-6 rounded-[48px] shrink-0 min-w-[220px] transition-all duration-300 shadow-sm",
+          "bg-[#D1D5DB] text-white",
+          "dark:bg-zinc-800/80 dark:text-white"
+        )}>
+          <span className="text-[10px] font-bold tracking-wider uppercase text-white/90">{format(time, 'EEEE, d MMMM')}</span>
+          <span className="text-2xl md:text-3xl font-extrabold tracking-tight tabular-nums mt-0.5">
+            {format(time, 'hh:mm:ss')}<span className="text-sm font-normal uppercase ml-1 text-white/90">{format(time, 'a')}</span>
+          </span>
+          <div className="flex items-center gap-1.5 mt-1 text-[10px] font-semibold text-white/90">
+            <CloudSun className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+            <span>
+              {weather.loading
+                ? 'Detecting weather...'
+                : weather.tempC !== undefined
+                  ? `${weather.label} · ${weather.tempC}°C`
+                  : weather.label}
+            </span>
           </div>
         </div>
       </div>
 
       {demoMode && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-bold">Demo mode is active</p>
@@ -257,13 +247,13 @@ export function Dashboard() {
           </div>
 
           {todayBookings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm">
+            <div className="flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-[48px] shadow-sm">
               <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4 text-gray-400">
                 <Calendar className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-gray-850 dark:text-gray-200 text-sm">No reservations for today</h3>
               <p className="text-gray-400 text-xs mt-1 max-w-xs">Need to sit near teammates or hold a meeting? Book a space now.</p>
-              <Button className="mt-4" size="sm" onClick={() => setShowBooking(true)} iconLeft={<Plus className="w-4 h-4" />}>
+              <Button className="mt-4 rounded-full" size="sm" onClick={() => setShowBooking(true)} iconLeft={<Plus className="w-4 h-4" />}>
                 Book a space
               </Button>
             </div>
@@ -291,6 +281,55 @@ export function Dashboard() {
               </div>
             </div>
           )}
+
+          {/* Live Floor Map Card */}
+          <Card className="overflow-hidden mt-6">
+            <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-3 mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-brand-500" />
+                <CardTitle>Live Floor Map</CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                {floors.length > 0 && (
+                  <select
+                    value={previewFloorId}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      setPreviewFloorId(e.target.value);
+                    }}
+                    className="text-xs font-bold border-0 bg-gray-105 dark:bg-gray-900 rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-400 text-gray-850 dark:text-gray-250 cursor-pointer"
+                  >
+                    {floors.filter(f => f.isActive).map(f => (
+                      <option key={f.id} value={f.id}>{f.name}</option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  onClick={() => navigate('/floor-map')}
+                  className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  title="Expand Map"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div
+                onClick={() => navigate('/floor-map')}
+                className="cursor-pointer hover:opacity-95 transition-opacity duration-200 h-[340px] rounded-2xl overflow-hidden relative border border-gray-100 dark:border-gray-800 bg-[#eef7f8] dark:bg-slate-950 shadow-inner flex items-center justify-center"
+              >
+                {floors.find(f => f.id === previewFloorId) ? (
+                  <FloorMap
+                    floor={floors.find(f => f.id === previewFloorId)!}
+                    date={today}
+                    previewMode
+                  />
+                ) : (
+                  <div className="text-xs text-gray-400">Loading floor map...</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Column: Widgets */}
@@ -316,11 +355,11 @@ export function Dashboard() {
                   key={idx}
                   onClick={a.onClick}
                   className={cn(
-                    "w-full flex items-center gap-3.5 p-2.5 rounded-xl text-left border border-transparent",
+                    "w-full flex items-center gap-3.5 p-2.5 rounded-2xl text-left border border-transparent",
                     "hover:border-gray-200 dark:hover:border-gray-800 hover:bg-gray-50/60 dark:hover:bg-gray-900/60 transition-all group"
                   )}
                 >
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0", a.color)}>
+                  <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0", a.color)}>
                     {a.icon}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -378,7 +417,7 @@ export function Dashboard() {
                     );
                     const floor = userBooking ? floors.find(f => f.id === userBooking.floorId) : null;
                     return (
-                      <div key={user.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800/60 hover:bg-gray-100/50 transition-colors">
+                      <div key={user.id} className="flex items-center justify-between p-2 rounded-2xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800/60 hover:bg-gray-100/50 transition-colors">
                         <div className="flex items-center gap-3">
                           <Avatar name={user.name} size="sm" className="ring-2 ring-brand-500/10" />
                           <div className="min-w-0">
@@ -486,14 +525,14 @@ function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color
     <div
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col justify-between p-4 sm:p-5 min-h-[136px] sm:min-h-[148px] rounded-2xl border border-gray-200 dark:border-gray-800/80 cursor-pointer shadow-sm",
+        "group relative flex flex-col justify-between p-4 sm:p-5 min-h-[136px] sm:min-h-[148px] rounded-[48px] border border-gray-200 dark:border-gray-800/80 cursor-pointer shadow-sm",
         "transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
         scheme.card,
         "bg-white dark:bg-gray-950"
       )}
     >
       <div className="flex items-center justify-between gap-2">
-        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-lg shrink-0", scheme.iconBg)}>
+        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-lg shrink-0", scheme.iconBg)}>
           {icon}
         </div>
         <Badge variant={badgeVariant} className="shrink-0 text-[9px] sm:text-xs px-1.5 py-0.5">{badgeText}</Badge>
@@ -519,7 +558,7 @@ function FloorCircularGauge({ name, free, rate }: { name: string; free: number; 
   const strokeColor = rate > 80 ? 'stroke-red-500 dark:stroke-red-600' : rate > 60 ? 'stroke-amber-500 dark:stroke-amber-600' : 'stroke-emerald-500 dark:stroke-emerald-600';
 
   return (
-    <div className="flex items-center gap-3.5 p-3 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800/60 hover:bg-gray-100/50 transition-colors">
+    <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800/60 hover:bg-gray-100/50 transition-colors">
       <div className="relative flex items-center justify-center shrink-0 w-12 h-12">
         <svg className="w-full h-full transform -rotate-90">
           <circle
