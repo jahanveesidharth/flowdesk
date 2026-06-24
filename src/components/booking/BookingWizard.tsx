@@ -595,13 +595,28 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                       }
                     }}
                     className={cn(
-                      'py-2 px-2.5 border text-xs font-semibold rounded-xl text-center transition-all shadow-sm',
+                      'py-3 px-2 border rounded-xl text-center transition-all shadow-sm flex flex-col items-center justify-center gap-0.5 min-h-[68px] cursor-pointer',
                       bookingDurationType === opt.id
                         ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-400 font-bold'
                         : 'border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/60 text-gray-650 dark:text-gray-300'
                     )}
                   >
-                    {opt.label}
+                    <span className="text-[11px] uppercase tracking-wider font-extrabold">{opt.label}</span>
+                    {opt.id !== 'custom' ? (
+                      <span className={cn(
+                        "text-[10px] font-bold mt-0.5",
+                        bookingDurationType === opt.id ? "text-brand-600 dark:text-brand-400" : "text-gray-400 dark:text-gray-500"
+                      )}>
+                        {opt.start} – {opt.end}
+                      </span>
+                    ) : (
+                      <span className={cn(
+                        "text-[10px] font-bold mt-0.5",
+                        bookingDurationType === opt.id ? "text-brand-600 dark:text-brand-400" : "text-gray-450 dark:text-gray-500"
+                      )}>
+                        {bookingDurationType === 'custom' ? `${startTime} – ${endTime}` : 'Select range'}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -621,12 +636,6 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                   onChange={e => setEndTime(e.target.value)}
                   options={MOCK_TIME_SLOTS.filter(t => t > startTime).map(t => ({ value: t, label: t }))}
                 />
-              </div>
-            )}
-
-            {bookingDurationType !== 'custom' && (
-              <div className="p-3 bg-gray-50 dark:bg-gray-900 border border-gray-150/40 dark:border-gray-800/60 rounded-xl text-xs text-gray-500 dark:text-gray-400 font-medium">
-                Applied Time Window: <span className="font-bold text-gray-850 dark:text-gray-200">{startTime} – {endTime}</span>
               </div>
             )}
 
