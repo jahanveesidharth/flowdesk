@@ -602,20 +602,16 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                     )}
                   >
                     <span className="text-[11px] uppercase tracking-wider font-extrabold">{opt.label}</span>
-                    {opt.id !== 'custom' ? (
-                      <span className={cn(
-                        "text-[10px] font-bold mt-0.5",
-                        bookingDurationType === opt.id ? "text-brand-600 dark:text-brand-400" : "text-gray-400 dark:text-gray-500"
-                      )}>
-                        {opt.start} – {opt.end}
-                      </span>
-                    ) : (
-                      <span className={cn(
-                        "text-[10px] font-bold mt-0.5",
-                        bookingDurationType === opt.id ? "text-brand-600 dark:text-brand-400" : "text-gray-450 dark:text-gray-500"
-                      )}>
-                        {bookingDurationType === 'custom' ? `${startTime} – ${endTime}` : 'Select range'}
-                      </span>
+                    {bookingDurationType === opt.id && (
+                      opt.id !== 'custom' ? (
+                        <span className="text-[10px] font-bold mt-0.5 text-brand-600 dark:text-brand-400">
+                          {opt.start} – {opt.end}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold mt-0.5 text-brand-600 dark:text-brand-400">
+                          {startTime} – {endTime}
+                        </span>
+                      )
                     )}
                   </button>
                 ))}
