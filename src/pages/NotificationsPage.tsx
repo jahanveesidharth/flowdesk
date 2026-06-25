@@ -96,10 +96,10 @@ export function NotificationsPage() {
                 key={n.id}
                 onClick={() => !n.read && markNotificationRead(n.id)}
                 className={cn(
-                  'flex items-start gap-4 p-5 rounded-2xl border bg-white dark:bg-gray-950 shadow-sm cursor-pointer transition-all hover:scale-[1.005] duration-300',
+                  'flex items-start gap-4 p-5 rounded-2xl border cursor-pointer transition-all hover:scale-[1.005] duration-300 shadow-sm',
                   n.read 
-                    ? 'border-gray-100 dark:border-gray-900 opacity-85' 
-                    : 'border-gray-150 dark:border-gray-850 border-2',
+                    ? 'bg-gray-50/50 dark:bg-gray-900/30 border-gray-100 dark:border-gray-900 opacity-85' 
+                    : 'bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-800 border-2',
                 )}
               >
                 {/* Left side checkbox/cancellation square matching design */}
@@ -122,11 +122,26 @@ export function NotificationsPage() {
                 {/* Right side content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white leading-none">{n.title}</p>
+                    <p className={cn(
+                      'text-sm leading-none transition-all',
+                      n.read ? 'font-normal text-gray-500 dark:text-gray-400' : 'font-extrabold text-gray-955 dark:text-white'
+                    )}>
+                      {n.title}
+                    </p>
                     {!n.read && <span className="w-2 h-2 bg-brand-500 rounded-full shrink-0" />}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{n.message}</p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{formatTimeAgo(n.createdAt)}</p>
+                  <p className={cn(
+                    'text-xs mt-1 leading-relaxed transition-all',
+                    n.read ? 'font-normal text-gray-400 dark:text-gray-500' : 'font-bold text-gray-800 dark:text-gray-200'
+                  )}>
+                    {n.message}
+                  </p>
+                  <p className={cn(
+                    'text-[10px] mt-1 transition-all',
+                    n.read ? 'font-normal text-gray-400 dark:text-gray-500' : 'font-semibold text-brand-600 dark:text-brand-400'
+                  )}>
+                    {formatTimeAgo(n.createdAt)}
+                  </p>
                 </div>
               </div>
             );
