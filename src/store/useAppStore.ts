@@ -523,6 +523,8 @@ export const useAppStore = create<AppState>()(
       },
 
       cancelBooking: async (bookingId, reason) => {
+        const booking = get().bookings.find(b => b.id === bookingId);
+
         if (canUseSupabase() && isValidUuid(bookingId)) {
           try {
             const { error } = await db.from('bookings')
@@ -542,6 +544,17 @@ export const useAppStore = create<AppState>()(
               : b
           ),
         }));
+
+        if (booking) {
+          await get().addNotification({
+            userId: booking.userId,
+            type: 'booking_cancelled',
+            title: 'Booking Cancelled',
+            message: `Your booking for ${booking.resourceType} ${booking.resourceId.toUpperCase()} on ${booking.date} has been cancelled.`,
+            read: false,
+            bookingId: bookingId
+          });
+        }
       },
 
       deleteAllBookingsForCurrentUser: async () => {
