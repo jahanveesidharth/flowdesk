@@ -502,20 +502,20 @@ function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color
 }) {
   const colorMap = {
     blue: {
-      card: 'bg-white hover:border-brand-200 dark:hover:border-brand-900/40 hover:shadow-brand-500/5',
-      iconBg: 'bg-brand-50 dark:bg-brand-950/40 text-brand-700'
+      card: 'bg-[#fcf8fa] hover:bg-[#faeff4] dark:bg-[#20181e] dark:hover:bg-[#2c1d29] border-[#724b68]/15 hover:border-[#724b68]/45 dark:border-[#724b68]/30 dark:hover:border-[#724b68]/55 hover:shadow-brand-500/5',
+      iconBg: 'bg-[#724b68]/10 dark:bg-[#724b68]/20 text-[#724b68] dark:text-[#d3a7c8]'
     },
     green: {
-      card: 'bg-white hover:border-emerald-200 dark:hover:border-emerald-900/40 hover:shadow-emerald-500/5',
-      iconBg: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500'
+      card: 'bg-[#f8f7fd] hover:bg-[#f1eefb] dark:bg-[#191824] dark:hover:bg-[#242137] border-[#6366f1]/15 hover:border-[#6366f1]/45 dark:border-[#6366f1]/30 dark:hover:border-[#6366f1]/55 hover:shadow-indigo-500/5',
+      iconBg: 'bg-[#6366f1]/10 dark:bg-[#6366f1]/20 text-[#6366f1] dark:text-[#a5b4fc]'
     },
     purple: {
-      card: 'bg-white hover:border-purple-200 dark:hover:border-purple-900/40 hover:shadow-purple-500/5',
-      iconBg: 'bg-purple-50 dark:bg-purple-950/40 text-purple-500'
+      card: 'bg-[#f6f8fa] hover:bg-[#eff3f8] dark:bg-[#181d26] dark:hover:bg-[#212836] border-[#0284c7]/15 hover:border-[#0284c7]/45 dark:border-[#0284c7]/30 dark:hover:border-[#0284c7]/55 hover:shadow-sky-500/5',
+      iconBg: 'bg-[#0284c7]/10 dark:bg-[#0284c7]/20 text-[#0284c7] dark:text-[#7dd3fc]'
     },
     orange: {
-      card: 'bg-white hover:border-orange-200 dark:hover:border-orange-900/40 hover:shadow-orange-500/5',
-      iconBg: 'bg-orange-50 dark:bg-orange-950/40 text-orange-500'
+      card: 'bg-[#fdfbf7] hover:bg-[#fbf4ea] dark:bg-[#24211a] dark:hover:bg-[#302b1f] border-[#d1a153]/20 hover:border-[#d1a153]/50 dark:border-[#d1a153]/35 dark:hover:border-[#d1a153]/60 hover:shadow-amber-500/5',
+      iconBg: 'bg-[#d1a153]/10 dark:bg-[#d1a153]/20 text-[#d1a153] dark:text-[#f3d79f]'
     },
   };
 
@@ -525,10 +525,9 @@ function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color
     <div
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col justify-between p-4 sm:p-5 min-h-[136px] sm:min-h-[148px] rounded-[32px] border border-gray-200 dark:border-gray-800/80 cursor-pointer shadow-sm",
+        "group relative flex flex-col justify-between p-4 sm:p-5 min-h-[136px] sm:min-h-[148px] rounded-[32px] border cursor-pointer shadow-sm",
         "transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
-        scheme.card,
-        "bg-white dark:bg-gray-950"
+        scheme.card
       )}
     >
       <div className="flex items-center justify-between gap-2">
