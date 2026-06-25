@@ -138,20 +138,20 @@ export function MyBookings() {
 function SummaryCard({ label, count, variant }: { label: string; count: number; variant: 'today' | 'upcoming' | 'past' | 'total' }) {
   const styles = {
     today: {
-      className: "border-[#734B69]/20 hover:border-[#734B69]/50 dark:border-[#734B69]/30 bg-[#734B69]/[0.03] dark:bg-[#734B69]/10",
-      textColor: "text-[#734B69] dark:text-[#a87d9f]"
+      className: "border-[#734B69]/25 hover:border-[#734B69]/60 dark:border-[#734B69]/40 bg-[#F5E6F0] dark:bg-[#734B69]/20",
+      textColor: "text-[#734B69] dark:text-[#e8c0de]"
     },
     upcoming: {
-      className: "border-[#D1A153]/20 hover:border-[#D1A153]/50 dark:border-[#D1A153]/30 bg-[#D1A153]/[0.03] dark:bg-[#D1A153]/10",
-      textColor: "text-[#D1A153] dark:text-[#e4be7d]"
+      className: "border-[#b54687]/25 hover:border-[#b54687]/60 dark:border-[#b54687]/40 bg-[#FFF0F5] dark:bg-[#b54687]/20",
+      textColor: "text-[#b54687] dark:text-[#fdaada]"
     },
     past: {
-      className: "border-[#6C7A89]/20 hover:border-[#6C7A89]/50 dark:border-[#6C7A89]/30 bg-[#6C7A89]/[0.03] dark:bg-[#6C7A89]/10",
-      textColor: "text-[#6C7A89] dark:text-[#9bb3cc]"
+      className: "border-[#5c5c94]/25 hover:border-[#5c5c94]/60 dark:border-[#5c5c94]/40 bg-[#E6E6FA] dark:bg-[#5c5c94]/20",
+      textColor: "text-[#5c5c94] dark:text-[#b4b4e8]"
     },
     total: {
-      className: "border-[#2A2228]/15 hover:border-[#2A2228]/40 dark:border-[#FDFBF7]/10 bg-[#FDFBF7] dark:bg-[#2A2228]/30",
-      textColor: "text-[#2A2228] dark:text-[#FDFBF7]"
+      className: "border-[#334e68]/25 hover:border-[#334e68]/60 dark:border-[#334e68]/40 bg-[#F0F4F8] dark:bg-[#334e68]/20",
+      textColor: "text-[#334e68] dark:text-[#a0c2e6]"
     }
   };
 
