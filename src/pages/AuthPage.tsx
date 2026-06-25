@@ -259,8 +259,8 @@ export function AuthPage() {
           className="w-[58%] shrink-0 hidden md:block relative h-full bg-cover bg-left"
           style={{
             backgroundImage: theme === 'dark'
-              ? "url('/src/assets/BackgroundDark.png'), url('/src/assets/Background.png')"
-              : "url('/src/assets/Background.png')"
+              ? "url('/BackgroundDark.png'), url('/Background.png')"
+              : "url('/Background.png')"
           }}
         >
           {/* Dark overlay for dark mode to match theme and make white logo readable */}
