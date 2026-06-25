@@ -77,49 +77,7 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* Role badge */}
-      {sidebarOpen && (
-        <div className="px-3.5 pt-3.5 pb-1">
-          <div
-            className={cn(
-              'w-full text-[11px] py-2 px-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-between shadow-sm border',
-              isAdmin
-                ? 'bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/10 text-orange-700 dark:text-orange-400 border-orange-200/50 dark:border-orange-900/30'
-                : isManager
-                ? 'bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-950/20 dark:to-sky-950/10 text-blue-700 dark:text-blue-400 border-blue-200/50 dark:border-blue-900/30'
-                : 'bg-gradient-to-r from-gray-50 to-white dark:from-gray-900/60 dark:to-gray-950/60 text-gray-650 dark:text-gray-300 border-gray-200/40 dark:border-gray-800/60',
-            )}
-          >
-            <span className="truncate">{roleLabel}</span>
-            <span className={cn(
-              "px-1.5 py-0.5 rounded-md text-[9px] uppercase tracking-wider shrink-0 font-bold ml-2",
-              isAdmin
-                ? "bg-orange-200/60 dark:bg-orange-900/50 text-orange-850 dark:text-orange-300"
-                : isManager
-                ? "bg-blue-200/60 dark:bg-blue-900/50 text-blue-850 dark:text-blue-300"
-                : "bg-gray-200/60 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-            )}>
-              {currentUser.role}
-            </span>
-          </div>
-        </div>
-      )}
-      {!sidebarOpen && (
-        <div className="px-2 pt-2 flex justify-center">
-          <Tooltip content={roleLabel} side="right">
-            <div className={cn(
-              'w-9 h-7 rounded-lg text-[10px] font-extrabold shadow-sm transition-all border flex items-center justify-center',
-              isAdmin
-                ? 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-orange-200/30'
-                : isManager
-                ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200/30'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200/30'
-            )}>
-              {isAdmin ? 'A' : isManager ? 'M' : 'E'}
-            </div>
-          </Tooltip>
-        </div>
-      )}
+
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-1.5">

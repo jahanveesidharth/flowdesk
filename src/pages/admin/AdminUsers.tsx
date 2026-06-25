@@ -87,19 +87,19 @@ export function AdminUsers() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="text-center bg-brand-50 border-0">
-          <div className="text-2xl font-bold text-brand-700">{users.length}</div>
-          <div className="text-xs text-brand-500">Total Users</div>
+        <Card className="text-center bg-[#FFF0F5] border-[#b54687]/25 border dark:bg-[#b54687]/20 dark:border-[#b54687]/40 shadow-sm">
+          <div className="text-2xl font-bold text-[#b54687] dark:text-[#fdaada]">{users.length}</div>
+          <div className="text-xs font-bold text-[#b54687]/80 dark:text-[#fdaada]/80">Total Users</div>
         </Card>
-        <Card className="text-center bg-brand-800 dark:bg-brand-900/60 border-0 text-white shadow-sm shadow-brand-950/15">
-          <div className="text-2xl font-bold text-white">
+        <Card className="text-center bg-[#ecf4f6] border-[#46909e]/25 border dark:bg-[#46909e]/20 dark:border-[#46909e]/40 shadow-sm">
+          <div className="text-2xl font-bold text-[#286f7c] dark:text-[#8ccce4]">
             {users.filter(u => bookings.some(b => b.userId === u.id && b.date === today && !['cancelled', 'completed'].includes(b.status))).length}
           </div>
-          <div className="text-xs text-brand-100/95 dark:text-brand-200/90">In Office Today</div>
+          <div className="text-xs font-bold text-[#286f7c]/80 dark:text-[#8ccce4]/80">In Office Today</div>
         </Card>
-        <Card className="text-center bg-purple-50 border-0">
-          <div className="text-2xl font-bold text-purple-700">{users.filter(u => u.role === 'manager').length}</div>
-          <div className="text-xs text-purple-500">Managers</div>
+        <Card className="text-center bg-[#E6E6FA] border-[#5c5c94]/25 border dark:bg-[#5c5c94]/20 dark:border-[#5c5c94]/40 shadow-sm">
+          <div className="text-2xl font-bold text-[#5c5c94] dark:text-[#b4b4e8]">{users.filter(u => u.role === 'manager').length}</div>
+          <div className="text-xs font-bold text-[#5c5c94]/80 dark:text-[#b4b4e8]/80">Managers</div>
         </Card>
       </div>
 

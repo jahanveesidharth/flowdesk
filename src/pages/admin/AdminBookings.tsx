@@ -10,7 +10,7 @@ import { Avatar } from '../../components/ui/Avatar';
 import { Modal } from '../../components/ui/Modal';
 import { BookingCard } from '../../components/booking/BookingCard';
 import { Tabs } from '../../components/ui/Tabs';
-import { formatDate, formatTimeRange } from '../../lib/utils';
+import { cn, formatDate, formatTimeRange } from '../../lib/utils';
 import { downloadCsv } from '../../lib/exportCsv';
 import type { Booking } from '../../types';
 
@@ -83,17 +83,44 @@ export function AdminBookings() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Today', value: todayBookings.length, sub: 'bookings' },
-          { label: 'Active', value: activeBookings.length, sub: 'confirmed/in progress' },
-          { label: 'Check-ins', value: bookings.filter(b => b.date === today && b.status === 'checked_in').length, sub: 'today' },
-          { label: 'Cancellations', value: bookings.filter(b => b.status === 'cancelled').length, sub: 'total' },
-        ].map(({ label, value, sub }) => (
-          <Card key={label} className="text-center">
-            <div className="text-2xl font-bold text-gray-900">{value}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{label}</div>
-            <div className="text-xs text-gray-400">{sub}</div>
-          </Card>
-        ))}
+          { label: 'Today', value: todayBookings.length, sub: 'bookings', key: 'Today' },
+          { label: 'Active', value: activeBookings.length, sub: 'confirmed/in progress', key: 'Active' },
+          { label: 'Check-ins', value: bookings.filter(b => b.date === today && b.status === 'checked_in').length, sub: 'today', key: 'Check-ins' },
+          { label: 'Cancellations', value: bookings.filter(b => b.status === 'cancelled').length, sub: 'total', key: 'Cancellations' },
+        ].map(({ label, value, sub, key }) => {
+          const cardStyles = {
+            'Today': {
+              className: "border-[#734B69]/25 hover:border-[#734B69]/60 dark:border-[#734B69]/40 bg-[#F5E6F0] dark:bg-[#734B69]/20",
+              textColor: "text-[#734B69] dark:text-[#e8c0de]"
+            },
+            'Active': {
+              className: "border-[#b54687]/25 hover:border-[#b54687]/60 dark:border-[#b54687]/40 bg-[#FFF0F5] dark:bg-[#b54687]/20",
+              textColor: "text-[#b54687] dark:text-[#fdaada]"
+            },
+            'Check-ins': {
+              className: "border-[#46909e]/25 hover:border-[#46909e]/60 dark:border-[#46909e]/40 bg-[#ecf4f6] dark:bg-[#46909e]/20",
+              textColor: "text-[#286f7c] dark:text-[#8ccce4]"
+            },
+            'Cancellations': {
+              className: "border-[#5c5c94]/25 hover:border-[#5c5c94]/60 dark:border-[#5c5c94]/40 bg-[#E6E6FA] dark:bg-[#5c5c94]/20",
+              textColor: "text-[#5c5c94] dark:text-[#b4b4e8]"
+            }
+          };
+          const style = cardStyles[key as keyof typeof cardStyles];
+          return (
+            <div
+              key={label}
+              className={cn(
+                "border rounded-xl p-4 flex flex-col items-center justify-center text-center shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300",
+                style.className
+              )}
+            >
+              <div className={cn("text-2xl font-extrabold tracking-tight", style.textColor)}>{value}</div>
+              <div className="text-xs font-bold text-gray-800 dark:text-gray-250 mt-1">{label}</div>
+              <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">{sub}</div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Filters */}

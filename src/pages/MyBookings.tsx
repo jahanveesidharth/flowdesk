@@ -49,7 +49,7 @@ export function MyBookings() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      
+
       {/* Header section */}
       <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-100 dark:border-gray-850/80 pb-4">
         <div>
@@ -146,18 +146,18 @@ function SummaryCard({ label, count, variant }: { label: string; count: number; 
       textColor: "text-[#b54687] dark:text-[#fdaada]"
     },
     past: {
-      className: "border-[#5c5c94]/25 hover:border-[#5c5c94]/60 dark:border-[#5c5c94]/40 bg-[#E6E6FA] dark:bg-[#5c5c94]/20",
-      textColor: "text-[#5c5c94] dark:text-[#b4b4e8]"
+      className: "border-[#46909e]/25 hover:border-[#46909e]/60 dark:border-[#46909e]/40 bg-[#ecf4f6] dark:bg-[#46909e]/20",
+      textColor: "text-[#286f7c] dark:text-[#8ccce4]"
     },
     total: {
-      className: "border-[#334e68]/25 hover:border-[#334e68]/60 dark:border-[#334e68]/40 bg-[#F0F4F8] dark:bg-[#334e68]/20",
-      textColor: "text-[#334e68] dark:text-[#a0c2e6]"
+      className: "border-[#5c5c94]/25 hover:border-[#5c5c94]/60 dark:border-[#5c5c94]/40 bg-[#E6E6FA] dark:bg-[#5c5c94]/20",
+      textColor: "text-[#5c5c94] dark:text-[#b4b4e8]"
     }
   };
 
   return (
     <div className={cn(
-      "border rounded-xl p-4 flex items-center justify-between shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300", 
+      "border rounded-xl p-4 flex items-center justify-between shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300",
       styles[variant].className
     )}>
       <div className="space-y-0.5">

@@ -502,20 +502,24 @@ function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color
 }) {
   const colorMap = {
     blue: {
-      card: 'bg-[#fcf8fa] hover:bg-[#faeff4] dark:bg-[#20181e] dark:hover:bg-[#2c1d29] border-[#724b68]/15 hover:border-[#724b68]/45 dark:border-[#724b68]/30 dark:hover:border-[#724b68]/55 hover:shadow-brand-500/5',
-      iconBg: 'bg-[#724b68]/10 dark:bg-[#724b68]/20 text-[#724b68] dark:text-[#d3a7c8]'
+      card: 'bg-[#F5E6F0] hover:bg-[#ebdbe4] dark:bg-[#734B69]/20 border-[#734B69]/25 hover:border-[#734B69]/60 dark:border-[#734B69]/40',
+      iconBg: 'bg-[#734B69]/10 text-[#734B69] dark:text-[#e8c0de]',
+      textColor: 'text-[#734B69] dark:text-[#e8c0de]'
     },
     green: {
-      card: 'bg-[#f8f7fd] hover:bg-[#f1eefb] dark:bg-[#191824] dark:hover:bg-[#242137] border-[#6366f1]/15 hover:border-[#6366f1]/45 dark:border-[#6366f1]/30 dark:hover:border-[#6366f1]/55 hover:shadow-indigo-500/5',
-      iconBg: 'bg-[#6366f1]/10 dark:bg-[#6366f1]/20 text-[#6366f1] dark:text-[#a5b4fc]'
+      card: 'bg-[#FFF0F5] hover:bg-[#fae3ed] dark:bg-[#b54687]/20 border-[#b54687]/25 hover:border-[#b54687]/60 dark:border-[#b54687]/40',
+      iconBg: 'bg-[#b54687]/10 text-[#b54687] dark:text-[#fdaada]',
+      textColor: 'text-[#b54687] dark:text-[#fdaada]'
     },
     purple: {
-      card: 'bg-[#f6f8fa] hover:bg-[#eff3f8] dark:bg-[#181d26] dark:hover:bg-[#212836] border-[#0284c7]/15 hover:border-[#0284c7]/45 dark:border-[#0284c7]/30 dark:hover:border-[#0284c7]/55 hover:shadow-sky-500/5',
-      iconBg: 'bg-[#0284c7]/10 dark:bg-[#0284c7]/20 text-[#0284c7] dark:text-[#7dd3fc]'
+      card: 'bg-[#ecf4f6] hover:bg-[#dbebf0] dark:bg-[#46909e]/20 border-[#46909e]/25 hover:border-[#46909e]/60 dark:border-[#46909e]/40',
+      iconBg: 'bg-[#46909e]/10 text-[#286f7c] dark:text-[#8ccce4]',
+      textColor: 'text-[#286f7c] dark:text-[#8ccce4]'
     },
     orange: {
-      card: 'bg-[#fdfbf7] hover:bg-[#fbf4ea] dark:bg-[#24211a] dark:hover:bg-[#302b1f] border-[#d1a153]/20 hover:border-[#d1a153]/50 dark:border-[#d1a153]/35 dark:hover:border-[#d1a153]/60 hover:shadow-amber-500/5',
-      iconBg: 'bg-[#d1a153]/10 dark:bg-[#d1a153]/20 text-[#d1a153] dark:text-[#f3d79f]'
+      card: 'bg-[#E6E6FA] hover:bg-[#dcdcf7] dark:bg-[#5c5c94]/20 border-[#5c5c94]/25 hover:border-[#5c5c94]/60 dark:border-[#5c5c94]/40',
+      iconBg: 'bg-[#5c5c94]/10 text-[#5c5c94] dark:text-[#b4b4e8]',
+      textColor: 'text-[#5c5c94] dark:text-[#b4b4e8]'
     },
   };
 
@@ -538,8 +542,8 @@ function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color
       </div>
 
       <div className="mt-2.5 flex-1 flex flex-col justify-end">
-        <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block truncate">{label}</span>
-        <h4 className="text-base sm:text-lg md:text-xl font-extrabold text-gray-855 dark:text-gray-200 tracking-tight leading-tight group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors truncate mt-1">
+        <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 dark:text-gray-550 uppercase tracking-wider block truncate">{label}</span>
+        <h4 className={cn("text-base sm:text-lg md:text-xl font-extrabold tracking-tight leading-tight transition-colors truncate mt-1", scheme.textColor)}>
           {value}
         </h4>
         <p className="text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-550 mt-1.5 truncate leading-none">{sublabel}</p>

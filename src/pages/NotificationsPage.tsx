@@ -30,7 +30,7 @@ export function NotificationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
-      
+
       {/* Header section matching screenshot */}
       <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-900/60 pb-4">
         <div className="flex items-center gap-3">
@@ -47,8 +47,8 @@ export function NotificationsPage() {
               Mark all read
             </Button>
           )}
-          <button 
-            onClick={() => navigate(-1)} 
+          <button
+            onClick={() => navigate(-1)}
             className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <X className="w-5 h-5" />
@@ -97,8 +97,8 @@ export function NotificationsPage() {
                 onClick={() => !n.read && markNotificationRead(n.id)}
                 className={cn(
                   'flex items-start gap-4 p-5 rounded-2xl border cursor-pointer transition-all hover:scale-[1.005] duration-300 shadow-sm',
-                  n.read 
-                    ? 'bg-gray-50/50 dark:bg-gray-900/30 border-gray-100 dark:border-gray-900 opacity-85' 
+                  n.read
+                    ? 'bg-gray-50/50 dark:bg-gray-900/30 border-gray-100 dark:border-gray-900 opacity-85'
                     : 'bg-white dark:bg-gray-950 border-gray-200 dark:border-gray-800 border-2',
                 )}
               >

@@ -10,7 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { cn } from '../../lib/utils';
 
 export function AdminDashboard() {
-  const { bookings, users, desks, waitlist, floors, theme } = useAppStore();
+  const { bookings, users, desks, waitlist, floors, theme, currentUser } = useAppStore();
   const today = format(new Date(), 'yyyy-MM-dd');
 
   const todayBookings = bookings.filter(b => b.date === today && b.status !== 'cancelled');
@@ -36,8 +36,8 @@ export function AdminDashboard() {
 
   const pieData = [
     { name: 'Desks', value: todayBookings.filter(b => b.resourceType === 'desk').length, color: '#724b68' }, // Brand Plum
-    { name: 'Rooms', value: todayBookings.filter(b => b.resourceType === 'room').length, color: '#8b5cf6' }, // Purple
-    { name: 'Parking', value: todayBookings.filter(b => b.resourceType === 'parking').length, color: '#aa7ca3' }, // Brand Plum (Light)
+    { name: 'Rooms', value: todayBookings.filter(b => b.resourceType === 'room').length, color: '#b88fae' }, // Lighter Plum
+    { name: 'Parking', value: todayBookings.filter(b => b.resourceType === 'parking').length, color: '#ebdbe4' }, // Very Light Plum
     { name: 'Lockers', value: todayBookings.filter(b => b.resourceType === 'locker').length, color: '#10b981' }, // Emerald
   ].filter(d => d.value > 0);
 
@@ -57,10 +57,12 @@ export function AdminDashboard() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
               <BarChart3 className="w-6 h-6 text-brand-500" />
-              Admin Portal
+              {currentUser.role === 'manager' ? 'Manager Dashboard' : 'Admin Portal'}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Manage workplace occupancy limits, monitor resource consumption, and process queue check-ins.
+              {currentUser.role === 'manager'
+                ? 'Monitor team occupancy, view space distribution, and review workstation check-ins.'
+                : 'Manage workplace occupancy limits, monitor resource consumption, and process queue check-ins.'}
             </p>
           </div>
           <div className="text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-150/50 dark:bg-gray-900/60 px-3 py-1.5 rounded-xl border border-gray-200/20 dark:border-gray-800/30">
@@ -72,33 +74,33 @@ export function AdminDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { 
-            label: 'Today\'s Bookings', 
-            value: todayBookings.length, 
-            sub: `of ${totalDesks} seat capacity`, 
-            icon: <Calendar className="w-5 h-5 text-brand-600 dark:text-brand-400" />, 
-            color: 'bg-brand-50 dark:bg-brand-950/30 border-brand-100/50 dark:border-brand-900/30' 
+          {
+            label: 'Today\'s Bookings',
+            value: todayBookings.length,
+            sub: `of ${totalDesks} seat capacity`,
+            icon: <Calendar className="w-5 h-5 text-[#734B69] dark:text-[#e8c0de]" />,
+            color: 'bg-[#F5E6F0] dark:bg-[#734B69]/20 border-[#734B69]/25 dark:border-[#734B69]/40'
           },
-          { 
-            label: 'Active Users', 
-            value: activeUsers, 
-            sub: `${users.length} registered members`, 
-            icon: <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />, 
-            color: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100/50 dark:border-emerald-900/30' 
+          {
+            label: 'Active Users',
+            value: activeUsers,
+            sub: `${users.length} registered members`,
+            icon: <Users className="w-5 h-5 text-[#b54687] dark:text-[#fdaada]" />,
+            color: 'bg-[#FFF0F5] dark:bg-[#b54687]/20 border-[#b54687]/25 dark:border-[#b54687]/40'
           },
-          { 
-            label: 'Occupancy Rate', 
-            value: `${occupancyRate}%`, 
-            sub: `${occupiedDesks} of ${totalDesks} desks occupied`, 
-            icon: <TrendingUp className="w-5 h-5 text-brand-500 dark:text-brand-400" />, 
-            color: 'bg-brand-50 dark:bg-brand-950/30 border-brand-100/50 dark:border-brand-900/30 shadow-[0_0_15px_rgba(114,75,104,0.02)]' 
+          {
+            label: 'Occupancy Rate',
+            value: `${occupancyRate}%`,
+            sub: `${occupiedDesks} of ${totalDesks} desks occupied`,
+            icon: <TrendingUp className="w-5 h-5 text-[#286f7c] dark:text-[#8ccce4]" />,
+            color: 'bg-[#ecf4f6] dark:bg-[#46909e]/20 border-[#46909e]/25 dark:border-[#46909e]/40'
           },
-          { 
-            label: 'Check-ins Today', 
-            value: checkedIn, 
-            sub: `${noShows} marked no-shows`, 
-            icon: <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />, 
-            color: 'bg-purple-50 dark:bg-purple-950/30 border-purple-100/50 dark:border-purple-900/30' 
+          {
+            label: 'Check-ins Today',
+            value: checkedIn,
+            sub: `${noShows} marked no-shows`,
+            icon: <CheckCircle className="w-5 h-5 text-[#5c5c94] dark:text-[#b4b4e8]" />,
+            color: 'bg-[#E6E6FA] dark:bg-[#5c5c94]/20 border-[#5c5c94]/25 dark:border-[#5c5c94]/40'
           },
         ].map(({ label, value, sub, icon, color }) => (
           <Card key={label} className={cn('bg-white dark:bg-gray-950 border-gray-200/60 dark:border-gray-800/80 shadow-sm hover:shadow-md transition-all hover:scale-[1.01] duration-300', color)}>
@@ -124,8 +126,8 @@ export function AdminDashboard() {
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Distribution of spaces booked over the last 7 days</p>
             </div>
             <div className="flex gap-3 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/40 p-1.5 rounded-lg border border-gray-200/10 dark:border-gray-700/10">
-              <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-brand-500" /> Desks</span>
-              <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-purple-500" /> Rooms</span>
+              <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#724b68' }} /> Desks</span>
+              <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#b88fae' }} /> Rooms</span>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
@@ -134,17 +136,17 @@ export function AdminDashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
                 <XAxis dataKey="day" stroke={labelColor} tick={{ fontSize: 11, fontWeight: 500 }} />
                 <YAxis stroke={labelColor} tick={{ fontSize: 11, fontWeight: 500 }} />
-                <Tooltip 
-                  contentStyle={{ 
+                <Tooltip
+                  contentStyle={{
                     backgroundColor: tooltipBg,
                     border: `1px solid ${tooltipBorder}`,
                     borderRadius: '12px',
                     fontSize: '12px',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
-                  }} 
+                  }}
                 />
                 <Bar dataKey="desks" fill="#724b68" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="rooms" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="rooms" fill="#b88fae" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -162,12 +164,12 @@ export function AdminDashboard() {
                 <div className="relative w-full h-[140px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie 
-                        data={pieData} 
-                        cx="50%" 
-                        cy="50%" 
-                        innerRadius={45} 
-                        outerRadius={60} 
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={60}
                         paddingAngle={3}
                         dataKey="value"
                       >
@@ -175,13 +177,13 @@ export function AdminDashboard() {
                           <Cell key={i} fill={entry.color} className="stroke-white dark:stroke-gray-950 stroke-2" />
                         ))}
                       </Pie>
-                      <Tooltip 
-                        contentStyle={{ 
+                      <Tooltip
+                        contentStyle={{
                           backgroundColor: tooltipBg,
                           border: `1px solid ${tooltipBorder}`,
                           borderRadius: '8px',
                           fontSize: '11px'
-                        }} 
+                        }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -240,11 +242,11 @@ export function AdminDashboard() {
                   <div className="relative h-2 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden">
                     <div
                       className={cn(
-                        'h-full rounded-full transition-all duration-500', 
-                        f.occupancyRate > 80 
-                          ? 'bg-gradient-to-r from-red-500 to-rose-600' 
-                          : f.occupancyRate > 60 
-                            ? 'bg-gradient-to-r from-amber-400 to-amber-500' 
+                        'h-full rounded-full transition-all duration-500',
+                        f.occupancyRate > 80
+                          ? 'bg-gradient-to-r from-red-500 to-rose-600'
+                          : f.occupancyRate > 60
+                            ? 'bg-gradient-to-r from-amber-400 to-amber-500'
                             : 'bg-gradient-to-r from-emerald-400 to-emerald-500'
                       )}
                       style={{ width: `${f.occupancyRate}%` }}
