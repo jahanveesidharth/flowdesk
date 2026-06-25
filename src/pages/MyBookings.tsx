@@ -63,10 +63,10 @@ export function MyBookings() {
 
       {/* Summary grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <SummaryCard label="Today" count={counts.today} color="blue" icon="🟢" />
-        <SummaryCard label="Upcoming" count={counts.upcoming} color="green" icon="📅" />
-        <SummaryCard label="Completed / Past" count={counts.past} color="gray" icon="✓" />
-        <SummaryCard label="Total Bookings" count={counts.all} color="purple" icon="📚" />
+        <SummaryCard label="Today" count={counts.today} variant="today" />
+        <SummaryCard label="Upcoming" count={counts.upcoming} variant="upcoming" />
+        <SummaryCard label="Completed / Past" count={counts.past} variant="past" />
+        <SummaryCard label="Total Bookings" count={counts.all} variant="total" />
       </div>
 
       {/* Filter toolbar */}
@@ -135,18 +135,34 @@ export function MyBookings() {
 }
 
 // Visual mini status card matching layouts
-function SummaryCard({ label, count, color }: { label: string; count: number; color: 'blue' | 'green' | 'gray' | 'purple'; icon?: string }) {
-  const colorMap = {
-    blue: 'bg-white hover:border-blue-200 dark:hover:border-blue-900/40 text-blue-700 dark:text-blue-400 border-gray-200 dark:border-gray-850',
-    green: 'bg-white hover:border-emerald-200 dark:hover:border-emerald-900/40 text-green-700 dark:text-green-400 border-gray-200 dark:border-gray-850',
-    gray: 'bg-white hover:border-gray-300 dark:hover:border-gray-700 text-gray-655 dark:text-gray-300 border-gray-200 dark:border-gray-850',
-    purple: 'bg-white hover:border-purple-200 dark:hover:border-purple-900/40 text-purple-700 dark:text-purple-400 border-gray-200 dark:border-gray-855',
+function SummaryCard({ label, count, variant }: { label: string; count: number; variant: 'today' | 'upcoming' | 'past' | 'total' }) {
+  const styles = {
+    today: {
+      className: "border-[#734B69]/20 hover:border-[#734B69]/50 dark:border-[#734B69]/30 bg-[#734B69]/[0.03] dark:bg-[#734B69]/10",
+      textColor: "text-[#734B69] dark:text-[#a87d9f]"
+    },
+    upcoming: {
+      className: "border-[#D1A153]/20 hover:border-[#D1A153]/50 dark:border-[#D1A153]/30 bg-[#D1A153]/[0.03] dark:bg-[#D1A153]/10",
+      textColor: "text-[#D1A153] dark:text-[#e4be7d]"
+    },
+    past: {
+      className: "border-[#6C7A89]/20 hover:border-[#6C7A89]/50 dark:border-[#6C7A89]/30 bg-[#6C7A89]/[0.03] dark:bg-[#6C7A89]/10",
+      textColor: "text-[#6C7A89] dark:text-[#9bb3cc]"
+    },
+    total: {
+      className: "border-[#2A2228]/15 hover:border-[#2A2228]/40 dark:border-[#FDFBF7]/10 bg-[#FDFBF7] dark:bg-[#2A2228]/30",
+      textColor: "text-[#2A2228] dark:text-[#FDFBF7]"
+    }
   };
+
   return (
-    <div className={cn("border rounded-xl p-4 flex items-center justify-between shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 dark:bg-gray-950", colorMap[color])}>
+    <div className={cn(
+      "border rounded-xl p-4 flex items-center justify-between shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300", 
+      styles[variant].className
+    )}>
       <div className="space-y-0.5">
         <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">{label}</div>
-        <div className="text-xl font-extrabold tracking-tight text-gray-950 dark:text-white">{count}</div>
+        <div className={cn("text-xl font-extrabold tracking-tight", styles[variant].textColor)}>{count}</div>
       </div>
     </div>
   );
