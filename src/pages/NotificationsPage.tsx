@@ -1,66 +1,132 @@
-import { Bell, BellOff, CheckCheck, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCheck, X, Check, Info } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 import { cn, formatTimeAgo } from '../lib/utils';
-
-const typeConfig: Record<string, { icon: string; color: string }> = {
-  booking_confirmed: { icon: '✅', color: 'bg-brand-50 border-brand-100 dark:bg-brand-950/30 dark:border-brand-900/60' },
-  booking_cancelled: { icon: '❌', color: 'bg-red-50 border-red-100 dark:bg-red-950/30 dark:border-red-900/60' },
-  checkin_reminder: { icon: '⏰', color: 'bg-yellow-50 border-yellow-100 dark:bg-yellow-950/30 dark:border-yellow-900/60' },
-  waitlist_available: { icon: '🎉', color: 'bg-blue-50 border-blue-100 dark:bg-blue-950/30 dark:border-blue-900/60' },
-  desk_released: { icon: '🆓', color: 'bg-brand-50 border-brand-100 dark:bg-brand-950/30 dark:border-brand-900/60' },
-  policy_update: { icon: '📋', color: 'bg-purple-50 border-purple-100 dark:bg-purple-950/30 dark:border-purple-900/60' },
-  admin_message: { icon: '📣', color: 'bg-orange-50 border-orange-100 dark:bg-orange-950/30 dark:border-orange-900/60' },
-};
+import { format } from 'date-fns';
 
 export function NotificationsPage() {
+  const navigate = useNavigate();
   const { notifications, currentUser, markNotificationRead, markAllNotificationsRead } = useAppStore();
+  const [activeTab, setActiveTab] = useState<'all' | 'today' | 'booking' | 'cancelled'>('all');
+
   const userNotifs = notifications.filter(n => n.userId === currentUser.id);
   const unread = userNotifs.filter(n => !n.read);
 
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const filteredNotifs = userNotifs.filter(n => {
+    if (activeTab === 'today') {
+      return n.createdAt.startsWith(todayStr);
+    }
+    if (activeTab === 'booking') {
+      return n.type === 'booking_confirmed';
+    }
+    if (activeTab === 'cancelled') {
+      return n.type === 'booking_cancelled';
+    }
+    return true;
+  });
+
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Notifications</h1>
-          {unread.length > 0 && <p className="text-sm text-gray-500 dark:text-gray-400">{unread.length} unread</p>}
+      
+      {/* Header section matching screenshot */}
+      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-900/60 pb-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">Notifications</h1>
+          {unread.length > 0 && (
+            <span className="bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-400 border border-brand-100 dark:border-brand-900/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              {unread.length} new
+            </span>
+          )}
         </div>
-        {unread.length > 0 && (
-          <Button variant="outline" size="sm" iconLeft={<CheckCheck className="w-4 h-4" />} onClick={markAllNotificationsRead}>
-            Mark all read
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {unread.length > 0 && (
+            <Button variant="outline" size="sm" className="rounded-xl text-xs font-bold" iconLeft={<CheckCheck className="w-4 h-4" />} onClick={markAllNotificationsRead}>
+              Mark all read
+            </Button>
+          )}
+          <button 
+            onClick={() => navigate(-1)} 
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      {userNotifs.length === 0 ? (
+      {/* Pill Filters Tabs matching screenshot */}
+      <div className="flex gap-2 pb-2 overflow-x-auto scrollbar-none">
+        {(['all', 'today', 'booking', 'cancelled'] as const).map((tabId) => {
+          const labels: Record<string, string> = {
+            all: 'All',
+            today: 'TODAY',
+            booking: 'BOOKING',
+            cancelled: 'CANCLLED' // following the spelling from the screenshot
+          };
+          const isActive = activeTab === tabId;
+          return (
+            <button
+              key={tabId}
+              onClick={() => setActiveTab(tabId)}
+              className={cn(
+                "px-5 py-1.5 rounded-full text-xs font-bold border transition-all shrink-0 tracking-wider",
+                isActive
+                  ? "bg-[#e0e3eb] text-gray-700 border-transparent dark:bg-brand-950/40 dark:text-brand-400 dark:border-brand-900/30 shadow-none"
+                  : "bg-white text-gray-400 border-gray-250/30 dark:bg-gray-950 dark:text-gray-500 dark:border-gray-850 hover:text-gray-600 dark:hover:text-gray-400"
+              )}
+            >
+              {labels[tabId]}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Notifications list matching screenshot style */}
+      {filteredNotifs.length === 0 ? (
         <div className="text-center py-20 text-gray-400 dark:text-gray-500">
-          <BellOff className="w-12 h-12 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
-          <p className="font-medium">No notifications yet</p>
+          <p className="font-medium text-sm">No notifications found</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {userNotifs.map(n => {
-            const cfg = typeConfig[n.type] || { icon: '🔔', color: 'bg-white dark:bg-gray-950 border-gray-100 dark:border-gray-800' };
+        <div className="space-y-4">
+          {filteredNotifs.map(n => {
             return (
               <div
                 key={n.id}
                 onClick={() => !n.read && markNotificationRead(n.id)}
                 className={cn(
-                  'flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all hover:shadow-sm',
+                  'flex items-start gap-4 p-5 rounded-2xl border bg-white dark:bg-gray-950 shadow-sm cursor-pointer transition-all hover:scale-[1.005] duration-300',
                   n.read 
-                    ? 'bg-gray-50/50 dark:bg-gray-900/30 border-gray-150 dark:border-gray-805/80' 
-                    : `${cfg.color} border-2 shadow-sm`,
+                    ? 'border-gray-100 dark:border-gray-900 opacity-85' 
+                    : 'border-gray-150 dark:border-gray-850 border-2',
                 )}
               >
-                <span className="text-xl shrink-0">{cfg.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className={cn('text-sm transition-all', n.read ? 'font-normal text-gray-550 dark:text-gray-400' : 'font-extrabold text-gray-950 dark:text-white')}>{n.title}</p>
-                    {!n.read && <div className="w-2 h-2 rounded-full bg-brand-500 shrink-0 animate-pulse" />}
+                {/* Left side checkbox/cancellation square matching design */}
+                {n.type === 'booking_confirmed' && (
+                  <div className="w-6 h-6 bg-[#00c853] rounded-md flex items-center justify-center text-white shrink-0 shadow-sm">
+                    <Check className="w-4 h-4 stroke-[3.5]" />
                   </div>
-                  <p className={cn('text-sm transition-all', n.read ? 'font-normal text-gray-400 dark:text-gray-500' : 'font-bold text-gray-800 dark:text-gray-250')}>{n.message}</p>
-                  <p className={cn('text-xs mt-1 transition-all', n.read ? 'font-normal text-gray-405 dark:text-gray-550' : 'font-semibold text-brand-650 dark:text-brand-400')}>{formatTimeAgo(n.createdAt)}</p>
+                )}
+                {n.type === 'booking_cancelled' && (
+                  <div className="w-6 h-6 bg-[#ff1744] rounded-md flex items-center justify-center text-white shrink-0 shadow-sm">
+                    <X className="w-4 h-4 stroke-[3.5]" />
+                  </div>
+                )}
+                {n.type !== 'booking_confirmed' && n.type !== 'booking_cancelled' && (
+                  <div className="w-6 h-6 bg-[#2979ff] rounded-md flex items-center justify-center text-white shrink-0 shadow-sm">
+                    <Info className="w-4 h-4 stroke-[3.5]" />
+                  </div>
+                )}
+
+                {/* Right side content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white leading-none">{n.title}</p>
+                    {!n.read && <span className="w-2 h-2 bg-brand-500 rounded-full shrink-0" />}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{n.message}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{formatTimeAgo(n.createdAt)}</p>
                 </div>
               </div>
             );

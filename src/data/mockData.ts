@@ -426,28 +426,18 @@ export const MOCK_TEAMS: Team[] = [
 export const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: 'n1', userId: 'u1', type: 'booking_confirmed',
-    title: 'Booking Confirmed', message: `Desk D-01 booked for today, 09:00–17:00`,
-    read: false, bookingId: 'bk1', createdAt: new Date(Date.now() - 3600000).toISOString(),
+    title: 'Booking Confirmed', message: 'Your desk has been booked for 2026-06-24 09:00–17:00',
+    read: false, createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
-    id: 'n2', userId: 'u1', type: 'checkin_reminder',
-    title: 'Check-in Reminder', message: 'Your booking for D-01 starts in 30 minutes',
-    read: false, bookingId: 'bk1', createdAt: new Date(Date.now() - 1800000).toISOString(),
+    id: 'n2', userId: 'u1', type: 'booking_confirmed',
+    title: 'Booking Confirmed', message: 'Your desk has been booked for 2026-06-23 09:00–17:00',
+    read: false, createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'n3', userId: 'u1', type: 'booking_confirmed',
-    title: 'Room Booked', message: 'Room Maple reserved for today 14:00–15:00',
-    read: true, bookingId: 'bk2', createdAt: new Date(Date.now() - 7200000).toISOString(),
-  },
-  {
-    id: 'n4', userId: 'u1', type: 'waitlist_available',
-    title: 'Desk Available!', message: 'A desk in Engineering zone is now available for tomorrow',
-    read: false, createdAt: new Date(Date.now() - 900000).toISOString(),
-  },
-  {
-    id: 'n5', userId: 'u1', type: 'policy_update',
-    title: 'Policy Update', message: 'Booking advance window extended to 30 days',
-    read: true, createdAt: new Date(Date.now() - 86400000).toISOString(),
+    title: 'Booking Confirmed', message: 'Your desk has been booked for 2026-06-21 09:00–17:00',
+    read: false, createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
 
