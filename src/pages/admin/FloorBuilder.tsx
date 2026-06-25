@@ -1774,7 +1774,7 @@ export function FloorBuilder() {
                       <div
                         className={cn(
                           "absolute w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-300 z-20 shadow-sm border",
-                          "bg-[#2d3748] border-[#1e293b] dark:bg-[#1e293b] dark:border-[#0f172a]"
+                          "bg-gray-800 border-gray-900 dark:bg-gray-900 dark:border-gray-950"
                         )}
                         style={{
                           top: chairPosition === 'top' ? '-20px' : 'auto',

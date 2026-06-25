@@ -12,8 +12,8 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f9fafb;
-  color: #111827;
+  background: #ffffff;
+  color: #0a0a0a;
 }
 
 input[type="date"] {
@@ -387,14 +387,14 @@ input[type="date"] {
 
 /* Dark Mode Core Theme */
 .dark body {
-  background: #030712;
-  color: #f3f4f6;
+  background: #000000;
+  color: #fafafa;
 }
 
 /* Dark Mode Scrollbars */
-.dark ::-webkit-scrollbar-track { background: #0b0f19; }
-.dark ::-webkit-scrollbar-thumb { background: #1f2937; }
-.dark ::-webkit-scrollbar-thumb:hover { background: #374151; }
+.dark ::-webkit-scrollbar-track { background: #000000; }
+.dark ::-webkit-scrollbar-thumb { background: #262626; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #404040; }
 
 /* Dark Mode Floor Map elements */
 .dark .desk-available { background: #022c22; border-color: #065f46; color: #6ee7b7; }
@@ -426,31 +426,31 @@ input[type="date"] {
    Several older screens use light-mode utility classes without a matching dark
    variant, and some helper text used very dim grays on near-black surfaces. */
 .dark .bg-white:not(.rounded-full) {
-  background-color: #0f172a;
+  background-color: #0d0d0d;
 }
 
 .dark .bg-gray-50,
 .dark .bg-gray-100 {
-  background-color: #111827;
+  background-color: #0a0a0a;
 }
 
 .dark .hover\:bg-gray-50:hover,
 .dark .hover\:bg-gray-50\/50:hover,
 .dark .hover\:bg-gray-50\/60:hover,
 .dark .hover\:bg-gray-100:hover {
-  background-color: #1e293b !important;
+  background-color: #1e1e1e !important;
 }
 
 .dark .bg-gray-150\/50,
 .dark .bg-gray-150\/60 {
-  background-color: rgba(31, 41, 55, 0.7);
+  background-color: rgba(38, 38, 38, 0.7);
 }
 
 .dark .border-gray-100,
 .dark .border-gray-150,
 .dark .border-gray-200,
 .dark .border-gray-300 {
-  border-color: #374151;
+  border-color: #262626;
 }
 
 .dark .text-gray-950,
@@ -502,8 +502,8 @@ input[type="date"] {
 }
 
 .dark option {
-  background-color: #0f172a;
-  color: #f9fafb;
+  background-color: #0d0d0d;
+  color: #fafafa;
 }
 
 /* Panorama simulation animation */

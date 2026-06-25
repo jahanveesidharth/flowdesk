@@ -3,7 +3,6 @@ import { type ReactNode } from 'react';
 import { useAppStore } from './store/useAppStore';
 import { Layout } from './components/layout/Layout';
 import { AuthGuard } from './components/layout/AuthGuard';
-import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
 import { Dashboard } from './pages/Dashboard';
 import { FloorMapPage } from './pages/FloorMapPage';
@@ -34,8 +33,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public */}
-        <Route path="/" element={<LandingPage />} />
+        {/* Redirect public root to dashboard (which is auth guarded) */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/login" element={<AuthPage />} />
         <Route path="/reset-password" element={<AuthPage />} />
 

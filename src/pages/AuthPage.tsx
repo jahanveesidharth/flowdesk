@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
+import {
   Building2, Mail, Lock, User, Eye, EyeOff, ArrowRight,
-  Map, Zap, Users, BarChart3, Sparkles
+  Map, Zap, Users, BarChart3, Sparkles,
+  Armchair, Car, Layers, MapPin
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { Database } from '../lib/database.types';
@@ -30,15 +31,23 @@ export function AuthPage() {
   const [magicSent, setMagicSent] = useState(false);
   const [authRole, setAuthRole] = useState<AuthRole>('employee');
   const [adminKey, setAdminKey] = useState('');
-  
+
   const resetToDemoData = useAppStore(s => s.resetToDemoData);
   const setDemoRole = useAppStore(s => s.setDemoRole);
   const setCurrentUserFromProfile = useAppStore(s => s.setCurrentUserFromProfile);
   const integrations = useAppStore(s => s.integrations);
   const theme = useAppStore(s => s.theme);
-  
+
   const oktaConnected = integrations?.find(i => i.name === 'Okta SSO')?.connected ?? true;
   const notConfigured = !isSupabaseConfigured();
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     if (notConfigured) return;
@@ -164,7 +173,7 @@ export function AuthPage() {
         const { error } = await supabase.auth.updateUser({ password });
         if (error) throw error;
         toast.success('Password updated successfully!');
-        
+
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data: profile } = await supabase
@@ -191,8 +200,8 @@ export function AuthPage() {
 
   if (magicSent) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#030712] flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-[#0f172a] rounded-2xl shadow-xl border border-gray-100 dark:border-[#1e293b] p-8 max-w-sm w-full text-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 max-w-sm w-full text-center">
           <div className="w-16 h-16 bg-brand-100 dark:bg-brand-950/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mail className="w-8 h-8 text-brand-500" />
           </div>
@@ -210,30 +219,30 @@ export function AuthPage() {
   }
 
   const features = [
-    { 
-      icon: <Map className="w-4.5 h-4.5 text-brand-500" />, 
-      title: 'Interactive floor maps', 
-      desc: 'Find and book the perfect spot.' 
+    {
+      icon: <Map className="w-4.5 h-4.5 text-brand-500" />,
+      title: 'Interactive floor maps',
+      desc: 'Find and book the perfect spot.'
     },
-    { 
-      icon: <Zap className="w-4.5 h-4.5 text-brand-500" />, 
-      title: 'One-click booking', 
-      desc: 'Book desks, rooms, and parking instantly.' 
+    {
+      icon: <Zap className="w-4.5 h-4.5 text-brand-500" />,
+      title: 'One-click booking',
+      desc: 'Book desks, rooms, and parking instantly.'
     },
-    { 
-      icon: <Users className="w-4.5 h-4.5 text-brand-500" />, 
-      title: 'Team coordination', 
-      desc: "See who's in and where your team sits." 
+    {
+      icon: <Users className="w-4.5 h-4.5 text-brand-500" />,
+      title: 'Team coordination',
+      desc: "See who's in and where your team sits."
     },
-    { 
-      icon: <BarChart3 className="w-4.5 h-4.5 text-brand-500" />, 
-      title: 'Usage analytics', 
-      desc: 'Understand space usage and optimise.' 
+    {
+      icon: <BarChart3 className="w-4.5 h-4.5 text-brand-500" />,
+      title: 'Usage analytics',
+      desc: 'Understand space usage and optimise.'
     }
   ];
 
   return (
-    <div className="h-screen w-screen bg-gray-50 dark:bg-[#030712] flex overflow-hidden">
+    <div className="h-screen w-screen bg-gray-50 dark:bg-gray-950 flex overflow-hidden">
       {/* Responsive SVG Clip-Path Definition for Organic Wave Curve */}
       <svg className="absolute w-0 h-0">
         <defs>
@@ -244,79 +253,36 @@ export function AuthPage() {
       </svg>
 
       {/* Main split-screen container */}
-      <div className="w-full h-full flex overflow-hidden bg-white dark:bg-[#090f1d]">
-        
-        {/* Left Side: Branding & Features (Width: 50%, full height) */}
-        <div className="w-1/2 shrink-0 hidden md:flex p-8 lg:p-12 relative z-10 bg-gray-50/50 dark:bg-[#070b14]/50 border-r border-gray-150 dark:border-[#1e293b] h-full">
-          
-          {/* Content column: constrained to leave space for the wavy image */}
-          <div className="w-[54%] lg:w-[52%] flex flex-col justify-between h-full relative z-20">
-            {/* Logo & Headline */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <img
-                  src={theme === 'dark' ? '/grabdesk light.svg' : '/grabdesk.svg'}
-                  alt="GrabDesk Logo"
-                  className="h-9 w-auto"
-                />
-              </div>
+      <div className="w-full h-full flex overflow-hidden bg-white dark:bg-gray-950">
+        {/* Left Side: Custom background image (Illustration, Badges, and Copyright are baked into Background.png) */}
+        <div
+          className="w-[58%] shrink-0 hidden md:block relative h-full bg-cover bg-left"
+          style={{
+            backgroundImage: theme === 'dark'
+              ? "url('/src/assets/BackgroundDark.png'), url('/src/assets/Background.png')"
+              : "url('/src/assets/Background.png')"
+          }}
+        >
+          {/* Dark overlay for dark mode to match theme and make white logo readable */}
+          <div className="absolute inset-0 bg-black/0 dark:bg-black/55 transition-colors pointer-events-none z-10" />
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50/50 dark:bg-brand-950/10 border border-brand-100/40 dark:border-brand-900/10 text-xs font-semibold text-brand-600 dark:text-brand-400">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>All-in-one workspace management</span>
-              </div>
-              
-              <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight tracking-tight">
-                Your office,<br />
-                <span className="text-brand-500">perfectly organised.</span>
-              </h1>
-              
-              <p className="text-gray-550 dark:text-gray-400 text-xs font-semibold leading-relaxed">
-                Book desks, rooms, and parking in seconds. See where your team sits. Never fight over a hot desk again.
-              </p>
-            </div>
-
-            {/* Features cards list */}
-            <div className="space-y-3">
-              {features.map((f, i) => (
-                <div 
-                  key={i} 
-                  className="flex items-start gap-4 p-3.5 rounded-2xl bg-white dark:bg-[#131f30]/20 border border-gray-200/50 dark:border-[#202e43]/30 shadow-xs hover:translate-x-1 transition-transform"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/20 flex items-center justify-center shrink-0">
-                    {f.icon}
-                  </div>
-                  <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-gray-900 dark:text-white">{f.title}</h4>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-normal">{f.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Copyright */}
-            <p className="text-gray-400 dark:text-gray-600 text-xs font-semibold">© 2026 GrabDesk. All rights reserved.</p>
-          </div>
-
-          {/* Vertical organic wavy image strip (aligned to absolute right) */}
-          <div className="w-[42%] lg:w-[44%] absolute top-0 bottom-0 right-0 overflow-hidden select-none pointer-events-none z-10">
-            <div 
-              className="w-full h-full bg-cover bg-center"
-              style={{ 
-                clipPath: 'url(#organic-curve)',
-                backgroundImage: `url('https://images.unsplash.com/photo-1606857521015-7f9fcf423740?auto=format&fit=crop&w=800&q=80')`
-              }}
+          {/* Transparent high-res original SVG logo overlay in the top-left blank area */}
+          <div className="absolute top-8 left-8 lg:top-12 lg:left-12 z-20">
+            <img
+              src={theme === 'dark' ? '/grabdesk light.svg' : '/grabdesk.svg'}
+              alt="GrabDesk Logo"
+              className="h-10 w-auto"
             />
           </div>
         </div>
 
         {/* Right Side: Authentication Form Card */}
-        <div className="flex-1 h-full flex items-center justify-center p-6 md:p-8 relative z-20 bg-gray-50/20 dark:bg-[#070b14]/10">
-                  {/* Main Auth Form Container Card */}
-          <div className="w-full max-w-sm bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-150 dark:border-[#1e293b] shadow-xl p-6 sm:p-8 relative flex flex-col pt-10">
-            
+        <div className="flex-1 h-full flex items-center justify-center p-6 md:p-8 relative z-20 bg-gray-50/20 dark:bg-black/10">
+          {/* Main Auth Form Container Card */}
+          <div className="w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-xl p-6 sm:p-8 relative flex flex-col pt-10">
+
             {/* Floating Logo Badge */}
-            <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-150 dark:border-[#1e293b] shadow-md flex items-center justify-center">
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-white dark:bg-gray-900 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-md flex items-center justify-center">
               <img
                 src={theme === 'dark' ? '/grabdesk favicon light.svg' : '/grabdesk favicon.svg'}
                 alt="GrabDesk Badge"
@@ -327,23 +293,23 @@ export function AuthPage() {
             {/* Title / Header */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {mode === 'login'       ? 'Welcome back'        :
-                 mode === 'signup'      ? 'Create account'      :
-                 mode === 'magic_link'  ? 'Sign in with email'  :
-                 mode === 'forgot'      ? 'Reset password'      :
-                 'Update password'}
+                {mode === 'login' ? 'Welcome back' :
+                  mode === 'signup' ? 'Create account' :
+                    mode === 'magic_link' ? 'Sign in with email' :
+                      mode === 'forgot' ? 'Reset password' :
+                        'Update password'}
               </h2>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1 font-semibold">
-                {mode === 'login'       ? 'Sign in to your GrabDesk workspace'  :
-                 mode === 'signup'      ? 'Get started with GrabDesk for free'  :
-                 mode === 'magic_link'  ? "We'll send you a one-time link"      :
-                 mode === 'forgot'      ? 'Enter your email and we\'ll send a reset link' :
-                 'Enter your new password below'}
+                {mode === 'login' ? 'Sign in to your GrabDesk workspace' :
+                  mode === 'signup' ? 'Get started with GrabDesk for free' :
+                    mode === 'magic_link' ? "We'll send you a one-time link" :
+                      mode === 'forgot' ? 'Enter your email and we\'ll send a reset link' :
+                        'Enter your new password below'}
               </p>
             </div>
 
             {(mode === 'login' || mode === 'signup') && (
-              <div className="grid grid-cols-2 gap-1 bg-gray-100 dark:bg-[#090f1d] rounded-xl p-1 mb-5">
+              <div className="grid grid-cols-2 gap-1 bg-gray-100 dark:bg-gray-900 rounded-xl p-1 mb-5">
                 {([
                   { value: 'employee', label: 'Employee' },
                   { value: 'admin', label: 'Admin' },
@@ -352,11 +318,10 @@ export function AuthPage() {
                     key={option.value}
                     type="button"
                     onClick={() => setAuthRole(option.value)}
-                    className={`h-9 rounded-lg text-[11px] font-bold transition-all ${
-                      authRole === option.value
-                        ? 'bg-white dark:bg-[#131f30] text-brand-600 shadow-sm'
+                    className={`h-9 rounded-lg text-[11px] font-bold transition-all ${authRole === option.value
+                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm'
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                    }`}
+                      }`}
                   >
                     {option.label}
                   </button>
@@ -367,7 +332,7 @@ export function AuthPage() {
             {/* Credentials Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === 'signup' && (
-                <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                <div className="bg-gray-50/50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
                   <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type="text"
@@ -381,7 +346,7 @@ export function AuthPage() {
               )}
 
               {mode !== 'reset' && (
-                <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                <div className="bg-gray-50/50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
                   <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type="email"
@@ -395,7 +360,7 @@ export function AuthPage() {
               )}
 
               {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
-                <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                <div className="bg-gray-50/50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
                   <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -419,7 +384,7 @@ export function AuthPage() {
               )}
 
               {mode === 'signup' && authRole === 'admin' && (
-                <div className="bg-gray-50/50 dark:bg-[#090f1d] border border-gray-200 dark:border-[#1e293b] focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                <div className="bg-gray-50/50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 focus-within:border-brand-500 rounded-xl px-4 py-3 flex items-center gap-3">
                   <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type="password"
@@ -442,11 +407,11 @@ export function AuthPage() {
 
               <Button type="submit" className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 mt-4 shadow-sm" loading={loading}>
                 <span>
-                  {mode === 'login'       ? 'Sign in'            :
-                   mode === 'signup'      ? 'Create account'     :
-                   mode === 'magic_link'  ? 'Send magic link'    :
-                   mode === 'forgot'      ? 'Send reset email'   :
-                   'Update password'}
+                  {mode === 'login' ? 'Sign in' :
+                    mode === 'signup' ? 'Create account' :
+                      mode === 'magic_link' ? 'Send magic link' :
+                        mode === 'forgot' ? 'Send reset email' :
+                          'Update password'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -456,8 +421,8 @@ export function AuthPage() {
             {(mode === 'login' || mode === 'signup') && (
               <>
                 <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-150 dark:border-[#1e293b]" /></div>
-                  <div className="relative flex justify-center text-xs text-gray-400 dark:text-gray-500 bg-white dark:bg-[#0f172a] px-3 font-medium">or</div>
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-150 dark:border-gray-800" /></div>
+                  <div className="relative flex justify-center text-xs text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-900 px-3 font-medium">or</div>
                 </div>
 
                 <div className="space-y-3">
