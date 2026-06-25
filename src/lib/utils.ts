@@ -60,7 +60,7 @@ export function getInitials(name: string): string {
 }
 
 export function generateAvatarColor(seed: string): string {
-  const colors = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#f59e0b', '#06b6d4', '#6366f1'];
+  const colors = ['#724b68', '#c49ebc', '#10b981', '#8b5cf6', '#ec4899', '#aa7ca3', '#06b6d4', '#6366f1'];
   let hash = 0;
   for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   return colors[Math.abs(hash) % colors.length];
@@ -197,15 +197,15 @@ export interface ZoneColors {
 export function getZoneColors(color: string): ZoneColors {
   const norm = color.toLowerCase();
   
-  // Blue / Engineering / Conference
-  if (norm === '#dbeafe' || norm === '#f0f9ff') {
+  // Blue / Engineering / Conference -> Now Plum
+  if (norm === '#dbeafe' || norm === '#ebdbe4' || norm === '#f0f9ff') {
     return {
-      bgLight: '#dbeafe',
-      textLight: '#1e40af', // blue-800
-      borderLight: '#bfdbfe', // blue-200
-      bgDark: 'rgba(30, 41, 59, 0.85)', // slate-800/85
-      textDark: '#93c5fd', // blue-300
-      borderDark: 'rgba(59, 130, 246, 0.4)', // blue-500/40
+      bgLight: '#ebdbe4',
+      textLight: '#724b68', // brand-700
+      borderLight: '#dac0d2', // brand-300
+      bgDark: 'rgba(30, 41, 59, 0.85)', // slate-850
+      textDark: '#dac0d2', // brand-300
+      borderDark: 'rgba(114, 75, 104, 0.4)', // brand-700/40
     };
   }
   // Pink / Design

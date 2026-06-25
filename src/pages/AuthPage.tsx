@@ -233,7 +233,7 @@ export function AuthPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#030712] flex items-center justify-center p-4 md:p-8">
+    <div className="h-screen w-screen bg-gray-50 dark:bg-[#030712] flex overflow-hidden">
       {/* Responsive SVG Clip-Path Definition for Organic Wave Curve */}
       <svg className="absolute w-0 h-0">
         <defs>
@@ -243,11 +243,11 @@ export function AuthPage() {
         </defs>
       </svg>
 
-      {/* Main card box */}
-      <div className="w-full max-w-6xl bg-white dark:bg-[#090f1d] rounded-[36px] border border-gray-150 dark:border-[#1e293b] shadow-2xl overflow-hidden flex min-h-[680px]">
+      {/* Main split-screen container */}
+      <div className="w-full h-full flex overflow-hidden bg-white dark:bg-[#090f1d]">
         
-        {/* Left Side: Branding & Features (Width: 55%-58%) */}
-        <div className="w-[55%] lg:w-[58%] shrink-0 hidden md:flex p-8 lg:p-12 relative z-10 bg-gray-50/50 dark:bg-[#070b14]/50 border-r border-gray-150 dark:border-[#1e293b]">
+        {/* Left Side: Branding & Features (Width: 50%, full height) */}
+        <div className="w-1/2 shrink-0 hidden md:flex p-8 lg:p-12 relative z-10 bg-gray-50/50 dark:bg-[#070b14]/50 border-r border-gray-150 dark:border-[#1e293b] h-full">
           
           {/* Content column: constrained to leave space for the wavy image */}
           <div className="w-[54%] lg:w-[52%] flex flex-col justify-between h-full relative z-20">
@@ -311,7 +311,7 @@ export function AuthPage() {
         </div>
 
         {/* Right Side: Authentication Form Card */}
-        <div className="flex-1 flex items-center justify-center p-6 md:p-8 relative z-20">
+        <div className="flex-1 h-full flex items-center justify-center p-6 md:p-8 relative z-20 bg-gray-50/20 dark:bg-[#070b14]/10">
                   {/* Main Auth Form Container Card */}
           <div className="w-full max-w-sm bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-150 dark:border-[#1e293b] shadow-xl p-6 sm:p-8 relative flex flex-col pt-10">
             
@@ -483,9 +483,9 @@ export function AuthPage() {
                           handleDemoLogin();
                         }, 1000);
                       }}
-                      className="w-full bg-blue-50 hover:bg-blue-100/80 dark:bg-blue-950/20 hover:dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-semibold text-blue-700 dark:text-blue-400 transition-colors shadow-2xs"
+                      className="w-full bg-brand-200/50 hover:bg-brand-200 dark:bg-brand-900/30 hover:dark:bg-brand-900/50 border border-brand-300 dark:border-brand-800/80 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-bold text-brand-850 dark:text-brand-300 transition-colors shadow-2xs"
                     >
-                      <Lock className="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                      <Lock className="w-4 h-4 shrink-0 text-brand-700 dark:text-brand-400" />
                       <span>Sign in with Okta SSO</span>
                     </button>
                   )}

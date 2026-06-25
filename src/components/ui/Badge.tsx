@@ -13,7 +13,7 @@ export function Badge({ children, variant = 'default', size = 'sm', className }:
     success: 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300',
     warning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300',
     error: 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300',
-    info: 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300',
+    info: 'bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300',
     neutral: 'bg-gray-50 text-gray-500 border border-gray-200 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-800',
   };
   const sizeClasses = { sm: 'text-xs px-2 py-0.5', md: 'text-sm px-2.5 py-1' };

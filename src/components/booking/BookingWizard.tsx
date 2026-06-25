@@ -519,11 +519,10 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                       className={cn(
                         'p-3.5 rounded-xl border text-center transition-all',
                         selectedResourceId === p.id 
-                          ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-400 shadow-sm' 
-                          : '',
-                        p.status === 'available' 
-                          ? 'border-gray-200 dark:border-gray-800 hover:border-brand-400 cursor-pointer hover:bg-gray-50/30 dark:hover:bg-gray-900/60' 
-                          : 'border-gray-100 dark:border-gray-900 opacity-40 cursor-not-allowed',
+                          ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-400 shadow-sm cursor-pointer' 
+                          : p.status === 'available' 
+                            ? 'border-gray-200 dark:border-gray-800 hover:border-brand-400 cursor-pointer hover:bg-gray-50/30 dark:hover:bg-gray-900/60' 
+                            : 'border-gray-100 dark:border-gray-900 opacity-40 cursor-not-allowed',
                       )}
                     >
                       <Car className="w-5 h-5 mx-auto mb-1 text-gray-500 dark:text-gray-400" />
@@ -549,11 +548,10 @@ export function BookingWizard({ isOpen, onClose, prefillDeskId, prefillDate, pre
                       className={cn(
                         'p-3.5 rounded-xl border text-center transition-all',
                         selectedResourceId === l.id 
-                          ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-400 shadow-sm' 
-                          : '',
-                        l.status === 'available' 
-                          ? 'border-gray-200 dark:border-gray-800 hover:border-brand-400 cursor-pointer hover:bg-gray-50/30 dark:hover:bg-gray-900/60' 
-                          : 'border-gray-100 dark:border-gray-900 opacity-40 cursor-not-allowed',
+                          ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20 text-brand-700 dark:text-brand-400 shadow-sm cursor-pointer' 
+                          : l.status === 'available' 
+                            ? 'border-gray-200 dark:border-gray-800 hover:border-brand-400 cursor-pointer hover:bg-gray-50/30 dark:hover:bg-gray-900/60' 
+                            : 'border-gray-100 dark:border-gray-900 opacity-40 cursor-not-allowed',
                       )}
                     >
                       <Lock className="w-5 h-5 mx-auto mb-1 text-gray-500 dark:text-gray-400" />

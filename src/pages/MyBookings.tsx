@@ -135,11 +135,11 @@ export function MyBookings() {
 }
 
 // Visual mini status card matching layouts
-function SummaryCard({ label, count, color, icon }: { label: string; count: number; color: 'blue' | 'green' | 'gray' | 'purple'; icon: string }) {
+function SummaryCard({ label, count, color }: { label: string; count: number; color: 'blue' | 'green' | 'gray' | 'purple'; icon?: string }) {
   const colorMap = {
     blue: 'bg-white hover:border-blue-200 dark:hover:border-blue-900/40 text-blue-700 dark:text-blue-400 border-gray-200 dark:border-gray-850',
     green: 'bg-white hover:border-emerald-200 dark:hover:border-emerald-900/40 text-green-700 dark:text-green-400 border-gray-200 dark:border-gray-850',
-    gray: 'bg-white hover:border-gray-300 dark:hover:border-gray-700 text-gray-650 dark:text-gray-300 border-gray-200 dark:border-gray-850',
+    gray: 'bg-white hover:border-gray-300 dark:hover:border-gray-700 text-gray-655 dark:text-gray-300 border-gray-200 dark:border-gray-850',
     purple: 'bg-white hover:border-purple-200 dark:hover:border-purple-900/40 text-purple-700 dark:text-purple-400 border-gray-200 dark:border-gray-855',
   };
   return (
@@ -148,7 +148,6 @@ function SummaryCard({ label, count, color, icon }: { label: string; count: numb
         <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">{label}</div>
         <div className="text-xl font-extrabold tracking-tight text-gray-950 dark:text-white">{count}</div>
       </div>
-      <span className="text-xl filter drop-shadow-sm select-none opacity-90 shrink-0 ml-2">{icon}</span>
     </div>
   );
 }

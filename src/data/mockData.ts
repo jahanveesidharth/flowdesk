@@ -137,7 +137,7 @@ export const MOCK_FLOORS: Floor[] = [
     gridWidth: 18,
     gridHeight: 14,
     zones: [
-      { id: 'z1', name: 'Engineering', floorId: 'f1', color: '#dbeafe', x: 0, y: 0, width: 9, height: 7 },
+      { id: 'z1', name: 'Engineering', floorId: 'f1', color: '#ebdbe4', x: 0, y: 0, width: 9, height: 7 },
       { id: 'z2', name: 'Design', floorId: 'f1', color: '#fce7f3', x: 9, y: 0, width: 9, height: 7 },
       { id: 'z3', name: 'Quiet Zone', floorId: 'f1', color: '#f0fdf4', x: 0, y: 7, width: 9, height: 7 },
       { id: 'z4', name: 'Collaboration', floorId: 'f1', color: '#fef9c3', x: 9, y: 7, width: 9, height: 7 },
@@ -414,7 +414,7 @@ export const MOCK_BOOKINGS: Booking[] = [
 // ─── Teams ────────────────────────────────────────────────────────────────────
 
 export const MOCK_TEAMS: Team[] = [
-  { id: 't1', name: 'Engineering', description: 'Product engineering team', managerId: 'u3', memberIds: ['u1', 'u3', 'u6'], color: '#3b82f6', department: 'Engineering' },
+  { id: 't1', name: 'Engineering', description: 'Product engineering team', managerId: 'u3', memberIds: ['u1', 'u3', 'u6'], color: '#724b68', department: 'Engineering' },
   { id: 't2', name: 'Design', description: 'Product design team', managerId: 'u4', memberIds: ['u4'], color: '#ec4899', department: 'Design' },
   { id: 't3', name: 'Marketing', description: 'Growth and marketing', managerId: 'u5', memberIds: ['u5'], color: '#8b5cf6', department: 'Marketing' },
   { id: 't4', name: 'HR', description: 'Human resources', managerId: 'u7', memberIds: ['u7'], color: '#10b981', department: 'HR' },

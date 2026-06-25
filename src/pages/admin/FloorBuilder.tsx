@@ -1121,8 +1121,8 @@ export function FloorBuilder() {
             <div className="flex gap-2 flex-wrap pt-1">
               {(['hot', 'fixed', 'standing', 'quiet', 'collaboration'] as const).map(type => {
                 const colors = {
-                  hot: 'bg-brand-50 hover:bg-brand-100 border-brand-200 text-brand-700 dark:bg-brand-950/20 dark:border-brand-900/40 dark:text-brand-400',
-                  fixed: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 dark:bg-blue-950/20 dark:border-blue-900/40 dark:text-blue-400',
+                  hot: 'bg-brand-700 hover:bg-brand-800 border-brand-700 text-white dark:bg-brand-800 dark:hover:bg-brand-700 dark:border-brand-800 dark:text-white',
+                  fixed: 'bg-brand-50 hover:bg-brand-100 border-brand-200 text-brand-700 dark:bg-brand-950/20 dark:border-brand-900/40 dark:text-brand-400',
                   standing: 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 dark:bg-emerald-950/20 dark:border-emerald-900/40 dark:text-emerald-400',
                   quiet: 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 dark:bg-purple-950/20 dark:border-purple-900/40 dark:text-purple-400',
                   collaboration: 'bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-400'
@@ -1202,7 +1202,7 @@ export function FloorBuilder() {
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-all shadow-sm flex-1 sm:flex-none justify-center',
                   snapToGrid 
-                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/30 dark:border-indigo-900/40 dark:text-indigo-400' 
+                    ? 'bg-brand-50 border-brand-200 text-brand-700 dark:bg-brand-950/30 dark:border-brand-900/40 dark:text-brand-400' 
                     : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-850'
                 )}
               >
@@ -1530,7 +1530,7 @@ export function FloorBuilder() {
                                 <div key={i} className="h-2 bg-slate-750 dark:bg-slate-850 rounded flex items-center justify-between px-1.5 border border-slate-700/50">
                                   <div className="flex gap-0.5">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    <div className="w-1 h-1 rounded-full bg-blue-500" />
+                                    <div className="w-1 h-1 rounded-full bg-brand-500" />
                                   </div>
                                   <div className="w-8 h-0.5 bg-slate-600 dark:bg-slate-700 rounded" />
                                 </div>
@@ -1679,7 +1679,7 @@ export function FloorBuilder() {
                 {floorDesks.map(desk => {
                   const typeMarkerColors = {
                     hot: '#ef4444',
-                    fixed: '#3b82f6',
+                    fixed: '#aa7ca3',
                     standing: '#10b981',
                     quiet: '#8b5cf6',
                     collaboration: '#f59e0b'

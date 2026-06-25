@@ -20,9 +20,9 @@ export function AdminPolicies() {
         <Button iconLeft={<Save className="w-4 h-4" />} onClick={handleSave}>Save Policies</Button>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3">
-        <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-        <p className="text-sm text-blue-700">
+      <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 flex gap-3">
+        <Info className="w-5 h-5 text-brand-500 shrink-0 mt-0.5" />
+        <p className="text-sm text-brand-700">
           These policies apply to all users and resource types. Changes take effect immediately.
         </p>
       </div>

@@ -72,13 +72,13 @@ export function TeamPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-        <Card className="text-center bg-blue-50 border-0 dark:bg-blue-950/40">
-          <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{usersWithDept.length - 1}</div>
-          <div className="text-xs text-blue-500 dark:text-blue-300 mt-0.5">Total Colleagues</div>
+        <Card className="text-center bg-brand-50 border-0 dark:bg-brand-950/40">
+          <div className="text-2xl font-bold text-brand-700 dark:text-brand-300">{usersWithDept.length - 1}</div>
+          <div className="text-xs text-brand-500 dark:text-brand-300 mt-0.5">Total Colleagues</div>
         </Card>
-        <Card className="text-center bg-green-50 border-0 dark:bg-green-950/40">
-          <div className="text-2xl font-bold text-green-700 dark:text-green-300">{inOfficeToday.length}</div>
-          <div className="text-xs text-green-500 dark:text-green-300 mt-0.5">In Office {formatDate(selectedDate)}</div>
+        <Card className="text-center bg-brand-800 dark:bg-brand-900/60 border-0 text-white shadow-sm shadow-brand-950/15">
+          <div className="text-2xl font-bold text-white">{inOfficeToday.length}</div>
+          <div className="text-xs text-brand-100/95 dark:text-brand-200/90 mt-0.5">In Office {formatDate(selectedDate)}</div>
         </Card>
         <Card className="text-center bg-gray-50 border-0 dark:bg-gray-900">
           <div className="text-2xl font-bold text-gray-700 dark:text-gray-100">{departments.length}</div>

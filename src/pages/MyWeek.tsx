@@ -110,7 +110,7 @@ export function MyWeek() {
                 isToday 
                   ? 'border-brand-500 shadow-lg shadow-brand-500/10 ring-1 ring-brand-500/20' 
                   : 'border-gray-200/50 dark:border-gray-800/80 hover:border-brand-300/50 dark:hover:border-brand-800/50 shadow-sm',
-                status === 'office' && 'bg-gradient-to-b from-white to-blue-50/20 dark:from-gray-950 dark:to-blue-950/5',
+                status === 'office' && 'bg-gradient-to-b from-white to-brand-50/20 dark:from-gray-950 dark:to-brand-950/5',
                 status === 'remote' && 'bg-gradient-to-b from-white to-emerald-50/20 dark:from-gray-950 dark:to-emerald-950/5',
                 status === 'off' && 'bg-gradient-to-b from-white to-rose-50/10 dark:from-gray-950 dark:to-rose-950/5',
                 isWeekend && 'opacity-60 bg-gray-50/40 dark:bg-gray-900/10'
@@ -135,7 +135,7 @@ export function MyWeek() {
 
               <div className="mt-4 flex items-center justify-center">
                 {status === 'office' && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 border border-brand-100 dark:border-brand-900/40">
                     <Building2 className="w-3.5 h-3.5" />
                     Office
                   </span>
@@ -207,7 +207,7 @@ export function MyWeek() {
                     };
                     
                     const statusStyles = {
-                      office: 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm border border-gray-200/20 dark:border-gray-700/20 font-bold',
+                      office: 'bg-white dark:bg-gray-800 text-brand-600 dark:text-brand-400 shadow-sm border border-gray-200/20 dark:border-gray-700/20 font-bold',
                       remote: 'bg-white dark:bg-gray-800 text-emerald-600 dark:text-emerald-400 shadow-sm border border-gray-200/20 dark:border-gray-700/20 font-bold',
                       off: 'bg-white dark:bg-gray-800 text-rose-600 dark:text-rose-400 shadow-sm border border-gray-200/20 dark:border-gray-700/20 font-bold'
                     };
@@ -247,14 +247,14 @@ export function MyWeek() {
                       const icons = { 
                         desk: <MapPin className="w-3.5 h-3.5 text-brand-500" />, 
                         room: <Building2 className="w-3.5 h-3.5 text-purple-500" />, 
-                        parking: <Car className="w-3.5 h-3.5 text-blue-500" />, 
+                        parking: <Car className="w-3.5 h-3.5 text-brand-500" />, 
                         locker: <Lock className="w-3.5 h-3.5 text-amber-500" /> 
                       };
 
                       const colorClasses = {
                         desk: 'bg-brand-50/50 dark:bg-brand-950/10 border-brand-200/60 dark:border-brand-900/40',
                         room: 'bg-purple-50/50 dark:bg-purple-950/10 border-purple-200/60 dark:border-purple-900/40',
-                        parking: 'bg-blue-50/50 dark:bg-blue-950/10 border-blue-200/60 dark:border-blue-900/40',
+                        parking: 'bg-brand-50/50 dark:bg-brand-950/10 border-brand-200/60 dark:border-brand-900/40',
                         locker: 'bg-amber-50/50 dark:bg-amber-950/10 border-amber-200/60 dark:border-amber-900/40',
                       };
 
@@ -271,7 +271,7 @@ export function MyWeek() {
                           className={cn(
                             'border rounded-xl p-2.5 transition-all hover:scale-[1.02] duration-250 shadow-sm bg-white dark:bg-gray-950',
                             colorClasses[b.resourceType as keyof typeof colorClasses] || 'border-gray-200 dark:border-gray-800',
-                            b.status === 'checked_in' && 'ring-1 ring-blue-500 bg-blue-50/10 dark:bg-blue-950/5'
+                            b.status === 'checked_in' && 'ring-1 ring-brand-500 bg-brand-50/10 dark:bg-brand-950/5'
                           )}
                         >
                           <div className="flex items-start justify-between gap-1">
@@ -280,7 +280,7 @@ export function MyWeek() {
                               <span className="truncate">{b.resourceId.split('-').pop()}</span>
                             </div>
                             {b.status === 'checked_in' && (
-                              <span className="flex items-center gap-0.5 text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1 py-0.5 rounded border border-blue-200/20">
+                              <span className="flex items-center gap-0.5 text-[9px] font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/60 px-1 py-0.5 rounded border border-brand-200/20">
                                 <Check className="w-2.5 h-2.5 stroke-[3]" /> Active
                               </span>
                             )}
@@ -325,7 +325,7 @@ export function MyWeek() {
                     <div className="space-y-1.5">
                       {list.slice(0, 4).map(({ user, status }) => {
                         const statusColors = {
-                          office: 'bg-blue-500 ring-blue-500/20',
+                          office: 'bg-brand-500 ring-brand-500/20',
                           remote: 'bg-emerald-500 ring-emerald-500/20',
                           off: 'bg-rose-500 ring-rose-500/20',
                           unplanned: 'bg-gray-400 ring-gray-400/20'

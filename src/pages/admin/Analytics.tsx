@@ -41,7 +41,7 @@ export function Analytics() {
     users: d.uniqueUsers,
   }));
 
-  const pieColors = ['#f04a16', '#3b82f6', '#10b981', '#8b5cf6'];
+  const pieColors = ['#724b68', '#aa7ca3', '#10b981', '#8b5cf6'];
   const resourceBreakdown = [
     { name: 'Desks', value: stats.reduce((s, d) => s + d.deskBookings, 0) },
     { name: 'Rooms', value: stats.reduce((s, d) => s + d.roomBookings, 0) },
@@ -188,7 +188,7 @@ export function Analytics() {
             <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 mb-4">
               <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200">Daily Booking Volumes</CardTitle>
               <div className="flex gap-4 text-[10px] uppercase font-bold tracking-wider text-gray-400">
-                <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Desks</span>
+                <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-brand-500" /> Desks</span>
                 <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Rooms</span>
               </div>
             </CardHeader>
@@ -196,10 +196,10 @@ export function Analytics() {
               <ResponsiveContainer width="100%" height={260}>
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="colorDesks" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                    </linearGradient>
+                     <linearGradient id="colorDesks" x1="0" y1="0" x2="0" y2="1">
+                       <stop offset="5%" stopColor="#aa7ca3" stopOpacity={0.25} />
+                       <stop offset="95%" stopColor="#aa7ca3" stopOpacity={0} />
+                     </linearGradient>
                     <linearGradient id="colorRooms" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
                       <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
@@ -209,7 +209,7 @@ export function Analytics() {
                   <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} interval={Math.floor(periodDays / 7)} />
                   <YAxis tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" name="Desks" dataKey="desks" stroke="#3b82f6" fill="url(#colorDesks)" strokeWidth={2.5} />
+                   <Area type="monotone" name="Desks" dataKey="desks" stroke="#aa7ca3" fill="url(#colorDesks)" strokeWidth={2.5} />
                   <Area type="monotone" name="Rooms" dataKey="rooms" stroke="#10b981" fill="url(#colorRooms)" strokeWidth={2.5} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -230,7 +230,7 @@ export function Analytics() {
                     <XAxis dataKey="hour" tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar name="Bookings" dataKey="count" fill="#f04a16" radius={[4, 4, 0, 0]} />
+                    <Bar name="Bookings" dataKey="count" fill="#724b68" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -343,8 +343,8 @@ export function Analytics() {
                   <YAxis tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '11px', fontWeight: 'bold' }} />
-                  <Bar name="Desks" dataKey="desks" fill="#f04a16" radius={[2, 2, 0, 0]} />
-                  <Bar name="Rooms" dataKey="rooms" fill="#3b82f6" radius={[2, 2, 0, 0]} />
+                  <Bar name="Desks" dataKey="desks" fill="#724b68" radius={[2, 2, 0, 0]} />
+                   <Bar name="Rooms" dataKey="rooms" fill="#aa7ca3" radius={[2, 2, 0, 0]} />
                   <Bar name="Parking" dataKey="parking" fill="#10b981" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -406,8 +406,8 @@ function KpiCard({ label, value, sub, trend, icon, invertTrend, color }: {
       iconBg: 'bg-orange-50 dark:bg-orange-950/40 text-orange-500'
     },
     blue: {
-      border: 'hover:border-blue-200 dark:hover:border-blue-900/40 hover:shadow-blue-500/5',
-      iconBg: 'bg-blue-50 dark:bg-blue-950/40 text-blue-500'
+      border: 'hover:border-brand-200 dark:hover:border-brand-900/40 hover:shadow-brand-500/5',
+      iconBg: 'bg-brand-50 dark:bg-brand-950/40 text-brand-700'
     },
     green: {
       border: 'hover:border-emerald-200 dark:hover:border-emerald-900/40 hover:shadow-emerald-500/5',

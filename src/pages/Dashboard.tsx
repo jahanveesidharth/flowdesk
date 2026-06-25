@@ -149,16 +149,16 @@ export function Dashboard() {
 
         {/* Interactive Date & Clock Card */}
         <div className={cn(
-          "flex flex-col items-center justify-center p-4 px-6 rounded-[48px] shrink-0 min-w-[220px] transition-all duration-300 shadow-sm",
-          "bg-[#D1D5DB] text-white",
-          "dark:bg-zinc-800/80 dark:text-white"
+          "flex flex-col items-center justify-center p-4 px-6 rounded-[32px] shrink-0 min-w-[220px] transition-all duration-300 shadow-sm border",
+          "bg-brand-50 text-brand-700 border-brand-100/50",
+          "dark:bg-brand-950/20 dark:text-brand-300 dark:border-brand-900/30"
         )}>
-          <span className="text-[10px] font-bold tracking-wider uppercase text-white/90">{format(time, 'EEEE, d MMMM')}</span>
-          <span className="text-2xl md:text-3xl font-extrabold tracking-tight tabular-nums mt-0.5">
-            {format(time, 'hh:mm:ss')}<span className="text-sm font-normal uppercase ml-1 text-white/90">{format(time, 'a')}</span>
+          <span className="text-[10px] font-bold tracking-wider uppercase text-brand-500/90 dark:text-brand-400/90">{format(time, 'EEEE, d MMMM')}</span>
+          <span className="text-2xl md:text-3xl font-extrabold tracking-tight tabular-nums mt-0.5 text-brand-850 dark:text-white">
+            {format(time, 'hh:mm:ss')}<span className="text-sm font-normal uppercase ml-1 text-brand-500 dark:text-brand-400">{format(time, 'a')}</span>
           </span>
-          <div className="flex items-center gap-1.5 mt-1 text-[10px] font-semibold text-white/90">
-            <CloudSun className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+          <div className="flex items-center gap-1.5 mt-1 text-[10px] font-bold text-brand-600 dark:text-brand-400/95">
+            <CloudSun className="w-3.5 h-3.5 text-brand-500 dark:text-brand-400 shrink-0" />
             <span>
               {weather.loading
                 ? 'Detecting weather...'
@@ -195,7 +195,7 @@ export function Dashboard() {
           value={todayDesk ? desks.find(d => d.id === todayDesk.resourceId)?.label || '—' : 'Not Booked'}
           sublabel={todayDesk ? formatTimeRange(todayDesk.startTime, todayDesk.endTime) : 'No desk selected'}
           badgeText={todayDesk ? 'Active' : 'Unassigned'}
-          badgeVariant={todayDesk ? 'success' : 'warning'}
+          badgeVariant="info"
           color="blue"
           onClick={() => setShowBooking(true)}
         />
@@ -215,7 +215,7 @@ export function Dashboard() {
           value={`${teamInOffice.length} In-Office`}
           sublabel="teammates sitting today"
           badgeText="Active"
-          badgeVariant="success"
+          badgeVariant="info"
           color="purple"
           onClick={() => navigate('/team')}
         />
@@ -225,7 +225,7 @@ export function Dashboard() {
           value={`${unreadNotifs.length} Unread`}
           sublabel="notifications pending"
           badgeText={unreadNotifs.length > 0 ? 'Action' : 'Up to date'}
-          badgeVariant={unreadNotifs.length > 0 ? 'error' : 'neutral'}
+          badgeVariant={unreadNotifs.length > 0 ? 'info' : 'neutral'}
           color="orange"
           onClick={() => navigate('/notifications')}
         />
@@ -247,7 +247,7 @@ export function Dashboard() {
           </div>
 
           {todayBookings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-[48px] shadow-sm">
+            <div className="flex flex-col items-center justify-center text-center p-8 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-[32px] shadow-sm">
               <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4 text-gray-400">
                 <Calendar className="w-6 h-6" />
               </div>
@@ -400,7 +400,7 @@ export function Dashboard() {
                   <UserCheck className="w-4.5 h-4.5 text-brand-500" />
                   <CardTitle>Team Presence</CardTitle>
                 </div>
-                <Badge variant="success" className="animate-pulse">{teamInOffice.length} sitting</Badge>
+                <Badge variant="info" className="animate-pulse">{teamInOffice.length} sitting</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -427,7 +427,7 @@ export function Dashboard() {
                         </div>
                         <div className="flex items-center gap-2">
                           {floor && (
-                            <span className="text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-300 rounded px-1.5 py-0.5">
+                            <span className="text-[10px] font-semibold bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-400 border border-brand-100/50 dark:border-brand-900/30 rounded px-1.5 py-0.5">
                               {floor.name}
                             </span>
                           )}
@@ -502,8 +502,8 @@ function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color
 }) {
   const colorMap = {
     blue: {
-      card: 'bg-white hover:border-blue-200 dark:hover:border-blue-900/40 hover:shadow-blue-500/5',
-      iconBg: 'bg-blue-50 dark:bg-blue-950/40 text-blue-500'
+      card: 'bg-white hover:border-brand-200 dark:hover:border-brand-900/40 hover:shadow-brand-500/5',
+      iconBg: 'bg-brand-50 dark:bg-brand-950/40 text-brand-700'
     },
     green: {
       card: 'bg-white hover:border-emerald-200 dark:hover:border-emerald-900/40 hover:shadow-emerald-500/5',
@@ -525,7 +525,7 @@ function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color
     <div
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col justify-between p-4 sm:p-5 min-h-[136px] sm:min-h-[148px] rounded-[48px] border border-gray-200 dark:border-gray-800/80 cursor-pointer shadow-sm",
+        "group relative flex flex-col justify-between p-4 sm:p-5 min-h-[136px] sm:min-h-[148px] rounded-[32px] border border-gray-200 dark:border-gray-800/80 cursor-pointer shadow-sm",
         "transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
         scheme.card,
         "bg-white dark:bg-gray-950"

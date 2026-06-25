@@ -87,7 +87,7 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
   return (
     <>
       <div className={cn(
-        'bg-white rounded-[48px] border border-gray-200 p-4 hover:shadow-md transition-all',
+        'bg-white rounded-[32px] border border-gray-200 p-4 hover:shadow-md transition-all',
         booking.status === 'checked_in' && 'border-blue-300 ring-1 ring-blue-200',
         booking.status === 'cancelled' && 'opacity-60',
         booking.status === 'completed' && 'border-gray-100',
@@ -113,7 +113,7 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
               <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {formatTimeRange(booking.startTime, booking.endTime)}</span>
               {floor && <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {floor.name}</span>}
               {googleCalendarConnected && (
-                <span className="inline-flex items-center gap-0.5 text-xs text-blue-500 bg-blue-50 dark:bg-blue-950/20 px-1.5 py-0.5 rounded font-medium border border-blue-100 dark:border-blue-900/30">
+                <span className="inline-flex items-center gap-0.5 text-xs text-brand-700 bg-brand-50 dark:bg-brand-950/20 px-1.5 py-0.5 rounded font-medium border border-brand-100/50 dark:border-brand-900/30">
                   📅 Synced
                 </span>
               )}

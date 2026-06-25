@@ -87,15 +87,15 @@ export function AdminUsers() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="text-center bg-blue-50 border-0">
-          <div className="text-2xl font-bold text-blue-700">{users.length}</div>
-          <div className="text-xs text-blue-500">Total Users</div>
+        <Card className="text-center bg-brand-50 border-0">
+          <div className="text-2xl font-bold text-brand-700">{users.length}</div>
+          <div className="text-xs text-brand-500">Total Users</div>
         </Card>
-        <Card className="text-center bg-green-50 border-0">
-          <div className="text-2xl font-bold text-green-700">
+        <Card className="text-center bg-brand-800 dark:bg-brand-900/60 border-0 text-white shadow-sm shadow-brand-950/15">
+          <div className="text-2xl font-bold text-white">
             {users.filter(u => bookings.some(b => b.userId === u.id && b.date === today && !['cancelled', 'completed'].includes(b.status))).length}
           </div>
-          <div className="text-xs text-green-500">In Office Today</div>
+          <div className="text-xs text-brand-100/95 dark:text-brand-200/90">In Office Today</div>
         </Card>
         <Card className="text-center bg-purple-50 border-0">
           <div className="text-2xl font-bold text-purple-700">{users.filter(u => u.role === 'manager').length}</div>

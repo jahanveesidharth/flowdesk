@@ -66,7 +66,7 @@ export default function App() {
         toastOptions={{
           duration: 3000,
           style: { borderRadius: '18px', fontSize: '14px', fontFamily: 'Inter, sans-serif' },
-          success: { iconTheme: { primary: '#f04a16', secondary: 'white' } },
+          success: { iconTheme: { primary: '#724b68', secondary: 'white' } },
         }}
       />
     </BrowserRouter>

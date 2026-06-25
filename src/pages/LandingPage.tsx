@@ -749,8 +749,9 @@ export function LandingPage() {
                 </div>
               </div>
 
-              {/* Blueprint Layout Grid */}
-              <div className="relative border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-4 bg-gray-50 dark:bg-gray-950/50 min-h-[400px] grid grid-cols-12 gap-4">
+              {/* Blueprint Layout Grid with horizontal scroll on mobile to preserve office layout */}
+              <div className="w-full overflow-x-auto pb-4 scrollbar-thin select-none">
+                <div className="relative border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-4 bg-gray-50 dark:bg-gray-950/50 min-h-[400px] grid grid-cols-12 gap-4 min-w-[760px]">
 
                 {/* Boardroom (Left Top) */}
                 <div
@@ -889,6 +890,7 @@ export function LandingPage() {
                   })}
                 </div>
               </div>
+            </div>
             </div>
 
             {/* Selection Sidebar Console */}
@@ -1242,8 +1244,8 @@ export function LandingPage() {
           </div>
 
           {/* Feature Tabs header */}
-          <div className="flex justify-center mb-10">
-            <div className="inline-flex p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
+          <div className="flex justify-center mb-10 max-w-full">
+            <div className="inline-flex p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl max-w-full overflow-x-auto scrollbar-none">
               {(['desks', 'rooms', 'parking', 'lockers'] as const).map(tab => (
                 <button
                   key={tab}
@@ -1549,7 +1551,7 @@ export function LandingPage() {
                               cx="50"
                               cy="50"
                               r="40"
-                              stroke="#f04a16"
+                              stroke="#724b68"
                               strokeWidth="10"
                               fill="transparent"
                               strokeDasharray="251.2"

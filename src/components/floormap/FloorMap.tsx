@@ -31,8 +31,8 @@ const markerStyles: Record<DisplayStatus, { dot: string; ring: string; label: st
   available: { dot: 'bg-emerald-400', ring: 'ring-emerald-100', label: 'Available' },
   occupied: { dot: 'bg-rose-500', ring: 'ring-rose-100', label: 'Occupied' },
   reserved: { dot: 'bg-amber-400', ring: 'ring-amber-100', label: 'Booked' },
-  mine: { dot: 'bg-sky-500', ring: 'ring-sky-100', label: 'Mine' },
-  selected: { dot: 'bg-blue-600', ring: 'ring-blue-100', label: 'Selected' },
+  mine: { dot: 'bg-brand-500', ring: 'ring-brand-100', label: 'Mine' },
+  selected: { dot: 'bg-brand-700', ring: 'ring-brand-200', label: 'Selected' },
   maintenance: { dot: 'bg-slate-400', ring: 'ring-slate-100', label: 'Offline' },
 };
 
@@ -507,7 +507,7 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
 
         const typeMarkerColors = {
           hot: '#ef4444',
-          fixed: '#3b82f6',
+          fixed: '#aa7ca3',
           standing: '#10b981',
           quiet: '#8b5cf6',
           collaboration: '#f59e0b'
@@ -520,7 +520,7 @@ export function FloorMap({ floor, onDeskClick, onRoomClick, selectedDeskId, high
               'desk-cell absolute transition-all flex items-center justify-center shadow-sm z-[8]',
               status === 'maintenance' && 'cursor-not-allowed opacity-70',
               selectedDeskId === desk.id 
-                ? 'ring-2 ring-blue-500 border-blue-500 shadow-md shadow-blue-500/10 z-[10]' 
+                ? 'ring-2 ring-brand-500 border-brand-500 shadow-md shadow-brand-500/10 z-[10]' 
                 : 'bg-[#e8d2ba] dark:bg-[#5a4632] border-[#cfa376] dark:border-[#423120]',
               borderClasses
             )}

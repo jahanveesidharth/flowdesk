@@ -5,11 +5,11 @@ import { Badge } from '../components/ui/Badge';
 import { cn, formatTimeAgo } from '../lib/utils';
 
 const typeConfig: Record<string, { icon: string; color: string }> = {
-  booking_confirmed: { icon: '✅', color: 'bg-green-50 border-green-100 dark:bg-green-950/30 dark:border-green-900/60' },
+  booking_confirmed: { icon: '✅', color: 'bg-brand-50 border-brand-100 dark:bg-brand-950/30 dark:border-brand-900/60' },
   booking_cancelled: { icon: '❌', color: 'bg-red-50 border-red-100 dark:bg-red-950/30 dark:border-red-900/60' },
   checkin_reminder: { icon: '⏰', color: 'bg-yellow-50 border-yellow-100 dark:bg-yellow-950/30 dark:border-yellow-900/60' },
   waitlist_available: { icon: '🎉', color: 'bg-blue-50 border-blue-100 dark:bg-blue-950/30 dark:border-blue-900/60' },
-  desk_released: { icon: '🆓', color: 'bg-green-50 border-green-100 dark:bg-green-950/30 dark:border-green-900/60' },
+  desk_released: { icon: '🆓', color: 'bg-brand-50 border-brand-100 dark:bg-brand-950/30 dark:border-brand-900/60' },
   policy_update: { icon: '📋', color: 'bg-purple-50 border-purple-100 dark:bg-purple-950/30 dark:border-purple-900/60' },
   admin_message: { icon: '📣', color: 'bg-orange-50 border-orange-100 dark:bg-orange-950/30 dark:border-orange-900/60' },
 };
@@ -48,17 +48,19 @@ export function NotificationsPage() {
                 onClick={() => !n.read && markNotificationRead(n.id)}
                 className={cn(
                   'flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all hover:shadow-sm',
-                  n.read ? 'bg-white dark:bg-gray-950 border-gray-100 dark:border-gray-800' : `${cfg.color} border`,
+                  n.read 
+                    ? 'bg-gray-50/50 dark:bg-gray-900/30 border-gray-150 dark:border-gray-805/80' 
+                    : `${cfg.color} border-2 shadow-sm`,
                 )}
               >
                 <span className="text-xl shrink-0">{cfg.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <p className={cn('text-sm font-semibold', n.read ? 'text-gray-700 dark:text-gray-300' : 'text-gray-900 dark:text-white')}>{n.title}</p>
-                    {!n.read && <div className="w-2 h-2 rounded-full bg-brand-500 shrink-0" />}
+                    <p className={cn('text-sm transition-all', n.read ? 'font-normal text-gray-550 dark:text-gray-400' : 'font-extrabold text-gray-950 dark:text-white')}>{n.title}</p>
+                    {!n.read && <div className="w-2 h-2 rounded-full bg-brand-500 shrink-0 animate-pulse" />}
                   </div>
-                  <p className={cn('text-sm', n.read ? 'text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-gray-300')}>{n.message}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatTimeAgo(n.createdAt)}</p>
+                  <p className={cn('text-sm transition-all', n.read ? 'font-normal text-gray-400 dark:text-gray-500' : 'font-bold text-gray-800 dark:text-gray-250')}>{n.message}</p>
+                  <p className={cn('text-xs mt-1 transition-all', n.read ? 'font-normal text-gray-405 dark:text-gray-550' : 'font-semibold text-brand-650 dark:text-brand-400')}>{formatTimeAgo(n.createdAt)}</p>
                 </div>
               </div>
             );

@@ -35,9 +35,9 @@ export function AdminDashboard() {
   }));
 
   const pieData = [
-    { name: 'Desks', value: todayBookings.filter(b => b.resourceType === 'desk').length, color: '#f04a16' }, // Brand Orange
+    { name: 'Desks', value: todayBookings.filter(b => b.resourceType === 'desk').length, color: '#724b68' }, // Brand Plum
     { name: 'Rooms', value: todayBookings.filter(b => b.resourceType === 'room').length, color: '#8b5cf6' }, // Purple
-    { name: 'Parking', value: todayBookings.filter(b => b.resourceType === 'parking').length, color: '#3b82f6' }, // Blue
+    { name: 'Parking', value: todayBookings.filter(b => b.resourceType === 'parking').length, color: '#aa7ca3' }, // Brand Plum (Light)
     { name: 'Lockers', value: todayBookings.filter(b => b.resourceType === 'locker').length, color: '#10b981' }, // Emerald
   ].filter(d => d.value > 0);
 
@@ -76,8 +76,8 @@ export function AdminDashboard() {
             label: 'Today\'s Bookings', 
             value: todayBookings.length, 
             sub: `of ${totalDesks} seat capacity`, 
-            icon: <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />, 
-            color: 'bg-blue-50 dark:bg-blue-950/30 border-blue-100/50 dark:border-blue-900/30' 
+            icon: <Calendar className="w-5 h-5 text-brand-600 dark:text-brand-400" />, 
+            color: 'bg-brand-50 dark:bg-brand-950/30 border-brand-100/50 dark:border-brand-900/30' 
           },
           { 
             label: 'Active Users', 
@@ -91,7 +91,7 @@ export function AdminDashboard() {
             value: `${occupancyRate}%`, 
             sub: `${occupiedDesks} of ${totalDesks} desks occupied`, 
             icon: <TrendingUp className="w-5 h-5 text-brand-500 dark:text-brand-400" />, 
-            color: 'bg-brand-50 dark:bg-brand-950/30 border-brand-100/50 dark:border-brand-900/30 shadow-[0_0_15px_rgba(240,74,22,0.02)]' 
+            color: 'bg-brand-50 dark:bg-brand-950/30 border-brand-100/50 dark:border-brand-900/30 shadow-[0_0_15px_rgba(114,75,104,0.02)]' 
           },
           { 
             label: 'Check-ins Today', 
@@ -143,7 +143,7 @@ export function AdminDashboard() {
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
                   }} 
                 />
-                <Bar dataKey="desks" fill="#f04a16" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="desks" fill="#724b68" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="rooms" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -264,7 +264,7 @@ export function AdminDashboard() {
         <Card className="bg-white dark:bg-gray-950 border-gray-200/60 dark:border-gray-800/80 shadow-sm">
           <CardHeader className="border-b border-gray-100 dark:border-gray-900 pb-3">
             <CardTitle className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-              <Calendar className="w-4.5 h-4.5 text-blue-500" />
+              <Calendar className="w-4.5 h-4.5 text-brand-500" />
               Recent Booking Activities
             </CardTitle>
           </CardHeader>

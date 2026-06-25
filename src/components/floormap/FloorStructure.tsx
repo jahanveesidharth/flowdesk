@@ -343,7 +343,7 @@ export function FloorStructure({
       })}
 
       {/* Dynamic Main Entrance indicator at bottom center */}
-      <g transform={`translate(${(gridWidth / 2) * cellW - 25}, ${height - 20})`} fill={isDark ? '#f04a16' : '#ea580c'}>
+      <g transform={`translate(${(gridWidth / 2) * cellW - 25}, ${height - 20})`} fill={isDark ? '#724b68' : '#8c5f85'}>
         <path d="M 25 0 L 10 15 L 20 15 L 20 20 L 30 20 L 30 15 L 40 15 Z" />
         {showLabels && (
           <text x="25" y="-12" textAnchor="middle" fontSize="10" fontWeight="900" fill={isDark ? '#94a3b8' : '#475569'} fontFamily="Inter, sans-serif">

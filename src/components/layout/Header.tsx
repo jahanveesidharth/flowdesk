@@ -1,4 +1,4 @@
-import { Bell, Plus, ChevronDown, Sun, Moon, CalendarDays, Menu } from 'lucide-react';
+import { Bell, Plus, Sun, Moon, CalendarDays, Menu } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
@@ -25,9 +25,11 @@ export function Header({ title }: { title?: string }) {
 
         <div className="min-w-0 mr-auto">
           <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 hidden md:block">Workspace</p>
-          <h1 className="truncate text-base font-extrabold tracking-tight text-gray-950 dark:text-white">
-            {title || 'GrabDesk'}
-          </h1>
+          {title && title !== 'GrabDesk' && (
+            <h1 className="truncate text-base font-extrabold tracking-tight">
+              <span className="text-gray-950 dark:text-white">{title}</span>
+            </h1>
+          )}
         </div>
 
         {/* Date picker */}
@@ -86,7 +88,6 @@ export function Header({ title }: { title?: string }) {
             <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">{currentUser.name}</p>
             <p className="text-[10px] text-gray-405 dark:text-gray-450 leading-none capitalize mt-0.5">{currentUser.role}</p>
           </div>
-          <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
         </button>
       </header>
 
