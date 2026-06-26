@@ -8,10 +8,30 @@ import { cn } from '../lib/utils';
 import { Avatar } from '../components/ui/Avatar';
 
 export function MyWeek() {
-  const { bookings, currentUser, users, attendancePlans, setAttendancePlan } = useAppStore();
+  const { bookings, currentUser, users, attendancePlans, setAttendancePlan, desks, rooms, parkingSpaces, lockers } = useAppStore();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [showBooking, setShowBooking] = useState(false);
   const [prefillDate, setPrefillDate] = useState('');
+
+  const getResourceLabel = (booking: any) => {
+    if (booking.resourceType === 'desk') {
+      const d = desks.find(desk => desk.id === booking.resourceId);
+      return d ? d.label : `Desk ${booking.resourceId.split('-').pop()}`;
+    }
+    if (booking.resourceType === 'room') {
+      const r = rooms.find(room => room.id === booking.resourceId);
+      return r ? r.name : `Room ${booking.resourceId.split('-').pop()}`;
+    }
+    if (booking.resourceType === 'parking') {
+      const p = parkingSpaces.find(space => space.id === booking.resourceId);
+      return p ? p.label : `Parking ${booking.resourceId.split('-').pop()}`;
+    }
+    if (booking.resourceType === 'locker') {
+      const l = lockers.find(locker => locker.id === booking.resourceId);
+      return l ? l.label : `Locker ${booking.resourceId.split('-').pop()}`;
+    }
+    return booking.resourceId.split('-').pop();
+  };
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -43,50 +63,47 @@ export function MyWeek() {
 
   return (
     <div className="space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
-      {/* Header section with glass banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-800/80 bg-white/60 dark:bg-gray-955/60 backdrop-blur-md p-4 sm:p-6 shadow-sm">
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-purple-500/5 dark:from-brand-500/10 dark:to-purple-500/10" />
-        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
-              <Calendar className="w-6 h-6 text-brand-500" />
-              Hybrid Planner
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Plan your weekly attendance, reserve office workspace, and stay synced with your teammates.
-            </p>
-          </div>
-          <div className="flex items-center justify-between sm:justify-start gap-1 w-full sm:w-auto bg-gray-100/80 dark:bg-gray-900/80 p-1.5 rounded-xl border border-gray-200/40 dark:border-gray-800/40">
+      {/* Header section */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
+            <Calendar className="w-6 h-6 text-brand-500" />
+            Hybrid Planner
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Plan your weekly attendance, reserve office workspace, and stay synced with your teammates.
+          </p>
+        </div>
+        <div className="flex items-center justify-between sm:justify-start gap-1 w-full sm:w-auto bg-white dark:bg-gray-950 p-1.5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={goToday}
+            className="px-2.5 py-1.5 h-8 text-xs font-semibold rounded-lg bg-gray-50 dark:bg-gray-900 shadow-2xs text-gray-900 dark:text-white border border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-100"
+          >
+            Today
+          </Button>
+          <div className="h-4 w-px bg-gray-200 dark:bg-gray-800 mx-1 hidden xs:block" />
+          <div className="flex items-center gap-1">
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={goToday}
-              className="px-2.5 py-1.5 h-8 text-xs font-semibold rounded-lg bg-white dark:bg-gray-800 shadow-sm text-gray-900 dark:text-white border border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-55"
+              onClick={prevWeek}
+              className="h-8 w-8 text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center justify-center p-0"
             >
-              Today
+              <ChevronLeft className="w-4 h-4" />
             </Button>
-            <div className="h-4 w-px bg-gray-200 dark:bg-gray-800 mx-1 hidden xs:block" />
-            <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={prevWeek}
-                className="h-8 w-8 text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center justify-center p-0"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-[10px] sm:text-xs font-bold text-gray-700 dark:text-gray-300 min-w-[125px] sm:min-w-[170px] text-center tracking-tight">
-                {format(weekStart, 'MMM d')} – {format(addDays(weekStart, 6), 'MMM d, yyyy')}
-              </span>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={nextWeek}
-                className="h-8 w-8 text-gray-500 hover:text-gray-950 dark:hover:text-white flex items-center justify-center p-0"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
+            <span className="text-[10px] sm:text-xs font-bold text-gray-700 dark:text-gray-300 min-w-[125px] sm:min-w-[170px] text-center tracking-tight">
+              {format(weekStart, 'MMM d')} – {format(addDays(weekStart, 6), 'MMM d, yyyy')}
+            </span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={nextWeek}
+              className="h-8 w-8 text-gray-500 hover:text-gray-950 dark:hover:text-white flex items-center justify-center p-0"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </div>
@@ -106,7 +123,7 @@ export function MyWeek() {
             <div 
               key={dateStr} 
               className={cn(
-                'relative flex flex-col justify-between rounded-2xl p-4 text-center border-2 transition-all duration-300 bg-white dark:bg-gray-950',
+                'relative flex flex-col justify-between rounded-[22px] p-4 text-center border-2 transition-all duration-300 bg-white dark:bg-gray-955',
                 isToday 
                   ? 'border-brand-500 shadow-lg shadow-brand-500/10 ring-1 ring-brand-500/20' 
                   : 'border-gray-200/50 dark:border-gray-800/80 hover:border-brand-300/50 dark:hover:border-brand-800/50 shadow-sm',
@@ -175,7 +192,7 @@ export function MyWeek() {
             <div 
               key={dateStr} 
               className={cn(
-                'flex flex-col border transition-all duration-300 rounded-2xl p-4 bg-white dark:bg-gray-950/40',
+                'flex flex-col border transition-all duration-300 rounded-[22px] p-4 bg-white dark:bg-gray-955/40',
                 isToday 
                   ? 'border-brand-500/50 shadow-md shadow-brand-500/5 ring-1 ring-brand-500/10' 
                   : 'border-gray-200/60 dark:border-gray-800/80 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700',
@@ -184,12 +201,11 @@ export function MyWeek() {
             >
               {/* Card Header */}
               <div className="text-center pb-3 border-b border-gray-100 dark:border-gray-800">
-                <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{format(day, 'EEEE')}</div>
                 <div className={cn(
-                  'font-extrabold text-base mt-0.5 tracking-tight', 
-                  isToday ? 'text-brand-500' : 'text-gray-800 dark:text-gray-200'
+                  'font-extrabold text-xs uppercase tracking-wider', 
+                  isToday ? 'text-brand-500' : 'text-gray-500 dark:text-gray-400'
                 )}>
-                  {format(day, 'MMM d')}
+                  {format(day, 'EEEE')}
                 </div>
               </div>
 
@@ -277,7 +293,7 @@ export function MyWeek() {
                           <div className="flex items-start justify-between gap-1">
                             <div className="font-semibold text-gray-900 dark:text-gray-150 flex items-center gap-1.5 text-xs truncate">
                               {icons[b.resourceType as keyof typeof icons]}
-                              <span className="truncate">{b.resourceId.split('-').pop()}</span>
+                              <span className="truncate">{getResourceLabel(b)}</span>
                             </div>
                             {b.status === 'checked_in' && (
                               <span className="flex items-center gap-0.5 text-[9px] font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/60 px-1 py-0.5 rounded border border-brand-200/20">
