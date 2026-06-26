@@ -417,14 +417,14 @@ export function AuthPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {/* Try Demo Option */}
+                  {/* View Demo Option */}
                   <button
                     type="button"
                     onClick={() => handleDemoLogin()}
                     className="w-full bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/20 hover:dark:bg-brand-950/35 border border-brand-200 dark:border-brand-900/40 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-bold text-brand-600 dark:text-brand-400 transition-colors shadow-2xs"
                   >
                     <User className="w-4 h-4 shrink-0 text-brand-500" />
-                    <span>Try Demo Login</span>
+                    <span>View Demo</span>
                   </button>
 
 

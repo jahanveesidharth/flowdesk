@@ -188,6 +188,7 @@ export function MyWeek() {
           const dayBookings = getBookingsForDay(day);
           const isToday = dateStr === today;
           const isWeekend = [0, 6].includes(day.getDay());
+          const isPast = dateStr < today;
 
           return (
             <div 
@@ -310,10 +311,16 @@ export function MyWeek() {
                 ) : (
                   !isWeekend && (
                     <button
-                      onClick={() => { setPrefillDate(dateStr); setShowBooking(true); }}
-                      className="w-full h-14 border-2 border-dashed border-gray-200 dark:border-gray-850 hover:border-brand-400 dark:hover:border-brand-900/60 rounded-xl text-xs text-gray-400 dark:text-gray-500 hover:text-brand-500 hover:bg-brand-50/10 dark:hover:bg-brand-950/10 transition-all flex flex-col items-center justify-center gap-1 font-semibold group"
+                      disabled={isPast}
+                      onClick={() => { if (!isPast) { setPrefillDate(dateStr); setShowBooking(true); } }}
+                      className={cn(
+                        "w-full h-14 border-2 border-dashed rounded-xl text-xs flex flex-col items-center justify-center gap-1 font-semibold group transition-all",
+                        isPast 
+                          ? "border-gray-150 dark:border-gray-900 text-gray-305 dark:text-gray-600 opacity-40 cursor-not-allowed" 
+                          : "border-gray-200 dark:border-gray-850 hover:border-brand-400 dark:hover:border-brand-900/60 text-gray-400 dark:text-gray-500 hover:text-brand-500 hover:bg-brand-50/10 dark:hover:bg-brand-950/10 cursor-pointer"
+                      )}
                     >
-                      <Plus className="w-4 h-4 text-gray-400 group-hover:text-brand-500 transition-colors" />
+                      <Plus className={cn("w-4 h-4 transition-colors", isPast ? "text-gray-305 dark:text-gray-600" : "text-gray-400 group-hover:text-brand-500")} />
                       <span>Book Space</span>
                     </button>
                   )

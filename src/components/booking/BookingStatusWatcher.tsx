@@ -29,10 +29,9 @@ export function BookingStatusWatcher() {
         return label;
       };
 
-      const userBookings = bookings.filter(booking => booking.userId === currentUser.id);
-
-      userBookings.forEach((booking) => {
+      bookings.forEach((booking) => {
         const { end } = getBookingTimes(booking.date, booking.startTime, booking.endTime);
+        const isCurrentUser = booking.userId === currentUser.id;
 
         // Auto check-out if checked in and end time has passed
         if (booking.status === 'checked_in') {
@@ -40,10 +39,12 @@ export function BookingStatusWatcher() {
             const label = getLabel(booking);
             checkOut(booking.id)
               .then(() => {
-                toast.success(`Automatically checked out from booking for ${label} as the booking time has ended.`, {
-                  duration: 5000,
-                  position: 'top-right',
-                });
+                if (isCurrentUser) {
+                  toast.success(`Automatically checked out from booking for ${label} as the booking time has ended.`, {
+                    duration: 5000,
+                    position: 'top-right',
+                  });
+                }
               })
               .catch((err) => {
                 console.error('Failed to auto check-out booking:', err);
@@ -57,10 +58,12 @@ export function BookingStatusWatcher() {
             const label = getLabel(booking);
             cancelBooking(booking.id, 'No-show: booking expired without check-in')
               .then(() => {
-                toast.error(`Automatically cancelled booking for ${label} as it expired without check-in.`, {
-                  duration: 5000,
-                  position: 'top-right',
-                });
+                if (isCurrentUser) {
+                  toast.error(`Automatically cancelled booking for ${label} as it expired without check-in.`, {
+                    duration: 5000,
+                    position: 'top-right',
+                  });
+                }
               })
               .catch((err) => {
                 console.error('Failed to auto-cancel booking:', err);
