@@ -229,11 +229,17 @@ export function MyWeek() {
                     return (
                       <button
                         key={status}
-                        title={tooltips[status]}
-                        onClick={() => setAttendancePlan(currentUser.id, dateStr, status)}
+                        title={isPast ? undefined : tooltips[status]}
+                        disabled={isPast}
+                        onClick={() => { if (!isPast) setAttendancePlan(currentUser.id, dateStr, status); }}
                         className={cn(
-                          'flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
-                          isActive ? statusStyles[status] : 'hover:bg-white/30 dark:hover:bg-gray-800/10'
+                          'flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center text-gray-400',
+                          isPast 
+                            ? 'opacity-50 cursor-not-allowed' 
+                            : 'hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer',
+                          isActive 
+                            ? statusStyles[status] 
+                            : (!isPast ? 'hover:bg-white/30 dark:hover:bg-gray-800/10' : '')
                         )}
                       >
                         {icons[status]}
