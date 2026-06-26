@@ -281,15 +281,6 @@ export function AuthPage() {
           {/* Main Auth Form Container Card */}
           <div className="w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-xl p-6 sm:p-8 relative flex flex-col pt-10">
 
-            {/* Floating Logo Badge */}
-            <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-white dark:bg-gray-900 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-md flex items-center justify-center">
-              <img
-                src={theme === 'dark' ? '/grabdesk favicon light.svg' : '/grabdesk favicon.svg'}
-                alt="GrabDesk Badge"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-
             {/* Title / Header */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">

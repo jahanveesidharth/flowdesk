@@ -94,8 +94,8 @@ export function AdminBookings() {
               textColor: "text-[#734B69] dark:text-[#e8c0de]"
             },
             'Active': {
-              className: "border-[#b54687]/25 hover:border-[#b54687]/60 dark:border-[#b54687]/40 bg-[#FFF0F5] dark:bg-[#b54687]/20",
-              textColor: "text-[#b54687] dark:text-[#fdaada]"
+              className: "border-[#cc7768]/25 hover:border-[#cc7768]/60 dark:border-[#cc7768]/40 bg-[#cc7768]/15 dark:bg-[#cc7768]/20",
+              textColor: "text-[#cc7768] dark:text-[#ffaa9e]"
             },
             'Check-ins': {
               className: "border-[#46909e]/25 hover:border-[#46909e]/60 dark:border-[#46909e]/40 bg-[#ecf4f6] dark:bg-[#46909e]/20",
@@ -235,7 +235,7 @@ export function AdminBookings() {
 
       {/* Detail modal */}
       <Modal isOpen={!!selectedBooking} onClose={() => setSelectedBooking(null)} title="Booking Details" size="md">
-        {selectedBooking && <BookingCard booking={selectedBooking} showUser />}
+        {selectedBooking && <BookingCard booking={selectedBooking} showUser className="rounded-[22px]" />}
       </Modal>
     </div>
   );

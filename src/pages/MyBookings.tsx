@@ -107,7 +107,7 @@ export function MyBookings() {
 
       {/* Bookings Feed */}
       {filtered.length === 0 ? (
-        <Card className="text-center py-16 dark:bg-gray-950 dark:border-gray-800/80">
+        <Card className="text-center py-16 dark:bg-gray-950 dark:border-gray-800/80 rounded-[22px]">
           <div className="w-12 h-12 bg-gray-55/60 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
             <Calendar className="w-6 h-6" />
           </div>
@@ -123,7 +123,7 @@ export function MyBookings() {
         <div className="space-y-4">
           {filtered.map(b => (
             <div key={b.id} className="transition-all hover:scale-[1.008] duration-300">
-              <BookingCard booking={b} />
+              <BookingCard booking={b} className="rounded-[22px]" />
             </div>
           ))}
         </div>
@@ -142,8 +142,8 @@ function SummaryCard({ label, count, variant }: { label: string; count: number; 
       textColor: "text-[#734B69] dark:text-[#e8c0de]"
     },
     upcoming: {
-      className: "border-[#b54687]/25 hover:border-[#b54687]/60 dark:border-[#b54687]/40 bg-[#FFF0F5] dark:bg-[#b54687]/20",
-      textColor: "text-[#b54687] dark:text-[#fdaada]"
+      className: "border-[#cc7768]/25 hover:border-[#cc7768]/60 dark:border-[#cc7768]/40 bg-[#cc7768]/15 dark:bg-[#cc7768]/20",
+      textColor: "text-[#cc7768] dark:text-[#ffaa9e]"
     },
     past: {
       className: "border-[#46909e]/25 hover:border-[#46909e]/60 dark:border-[#46909e]/40 bg-[#ecf4f6] dark:bg-[#46909e]/20",

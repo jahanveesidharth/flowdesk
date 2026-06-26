@@ -85,8 +85,8 @@ export function AdminDashboard() {
             label: 'Active Users',
             value: activeUsers,
             sub: `${users.length} registered members`,
-            icon: <Users className="w-5 h-5 text-[#b54687] dark:text-[#fdaada]" />,
-            color: 'bg-[#FFF0F5] dark:bg-[#b54687]/20 border-[#b54687]/25 dark:border-[#b54687]/40'
+            icon: <Users className="w-5 h-5 text-[#cc7768] dark:text-[#ffaa9e]" />,
+            color: 'bg-[#cc7768]/15 dark:bg-[#cc7768]/20 border-[#cc7768]/25 dark:border-[#cc7768]/40'
           },
           {
             label: 'Occupancy Rate',

@@ -11,8 +11,8 @@ const dayAfter = format(addDays(new Date(), 2), 'yyyy-MM-dd');
 export const MOCK_USERS: User[] = [
   {
     id: 'u1',
-    name: 'Lisa Chen',
-    email: 'lisa@deskflow.io',
+    name: 'Aarav Sharma',
+    email: 'aarav@deskflow.io',
     role: 'employee',
     department: 'Engineering',
     teamId: 't1',
@@ -22,8 +22,8 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'u2',
-    name: 'James Walker',
-    email: 'james@deskflow.io',
+    name: 'Vikram Malhotra',
+    email: 'vikram@deskflow.io',
     role: 'admin',
     department: 'Operations',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&h=120&q=80',
@@ -32,8 +32,8 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'u3',
-    name: 'Sarah Mitchell',
-    email: 'sarah@deskflow.io',
+    name: 'Shreya Sen',
+    email: 'shreya@deskflow.io',
     role: 'manager',
     department: 'Engineering',
     teamId: 't1',
@@ -43,8 +43,8 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'u4',
-    name: 'David Park',
-    email: 'david@deskflow.io',
+    name: 'Dev Patel',
+    email: 'dev@deskflow.io',
     role: 'employee',
     department: 'Design',
     teamId: 't2',
@@ -54,8 +54,8 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'u5',
-    name: 'Maria Torres',
-    email: 'maria@deskflow.io',
+    name: 'Meera Nair',
+    email: 'meera@deskflow.io',
     role: 'employee',
     department: 'Marketing',
     teamId: 't3',
@@ -65,8 +65,8 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'u6',
-    name: 'Alex Johnson',
-    email: 'alex@deskflow.io',
+    name: 'Amit Joshi',
+    email: 'amit@deskflow.io',
     role: 'employee',
     department: 'Engineering',
     teamId: 't1',
@@ -76,8 +76,8 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'u7',
-    name: 'Emma Wilson',
-    email: 'emma@deskflow.io',
+    name: 'Esha Gupta',
+    email: 'esha@deskflow.io',
     role: 'employee',
     department: 'HR',
     teamId: 't4',
@@ -87,8 +87,8 @@ export const MOCK_USERS: User[] = [
   },
   {
     id: 'u8',
-    name: 'Chris Brown',
-    email: 'chris@deskflow.io',
+    name: 'Chetan Sharma',
+    email: 'chetan@deskflow.io',
     role: 'employee',
     department: 'Sales',
     teamId: 't5',
@@ -98,8 +98,8 @@ export const MOCK_USERS: User[] = [
   },
 ];
 
-export const CURRENT_USER = MOCK_USERS[0]; // Lisa Chen - employee view
-export const ADMIN_USER = MOCK_USERS[1];   // James Walker - admin view
+export const CURRENT_USER = MOCK_USERS[0]; // Aarav Sharma - employee view
+export const ADMIN_USER = MOCK_USERS[1];   // Vikram Malhotra - admin view
 
 // ─── Buildings ────────────────────────────────────────────────────────────────
 

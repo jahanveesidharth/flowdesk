@@ -72,15 +72,15 @@ export function TeamPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-        <Card className="text-center bg-[#FFF0F5] border-[#b54687]/25 border dark:bg-[#b54687]/20 dark:border-[#b54687]/40 shadow-sm">
-          <div className="text-2xl font-bold text-[#b54687] dark:text-[#fdaada]">{usersWithDept.length - 1}</div>
-          <div className="text-xs font-bold text-[#b54687]/80 dark:text-[#fdaada]/80 mt-0.5">Total Colleagues</div>
+        <Card className="text-center bg-[#cc7768]/15 border-[#cc7768]/25 border dark:bg-[#cc7768]/20 dark:border-[#cc7768]/40 shadow-sm rounded-[22px]">
+          <div className="text-2xl font-bold text-[#cc7768] dark:text-[#ffaa9e]">{usersWithDept.length - 1}</div>
+          <div className="text-xs font-bold text-[#cc7768]/80 dark:text-[#ffaa9e]/80 mt-0.5">Total Colleagues</div>
         </Card>
-        <Card className="text-center bg-[#ecf4f6] border-[#46909e]/25 border dark:bg-[#46909e]/20 dark:border-[#46909e]/40 shadow-sm">
+        <Card className="text-center bg-[#ecf4f6] border-[#46909e]/25 border dark:bg-[#46909e]/20 dark:border-[#46909e]/40 shadow-sm rounded-[22px]">
           <div className="text-2xl font-bold text-[#286f7c] dark:text-[#8ccce4]">{inOfficeToday.length}</div>
           <div className="text-xs font-bold text-[#286f7c]/80 dark:text-[#8ccce4]/80 mt-0.5 font-sans">In Office {formatDate(selectedDate)}</div>
         </Card>
-        <Card className="text-center bg-[#E6E6FA] border-[#5c5c94]/25 border dark:bg-[#5c5c94]/20 dark:border-[#5c5c94]/40 shadow-sm">
+        <Card className="text-center bg-[#E6E6FA] border-[#5c5c94]/25 border dark:bg-[#5c5c94]/20 dark:border-[#5c5c94]/40 shadow-sm rounded-[22px]">
           <div className="text-2xl font-bold text-[#5c5c94] dark:text-[#b4b4e8]">{departments.length}</div>
           <div className="text-xs font-bold text-[#5c5c94]/80 dark:text-[#b4b4e8]/80 mt-0.5">Departments</div>
         </Card>
@@ -110,7 +110,7 @@ export function TeamPage() {
                 const { status, text, floor, desk, booking } = getUserStatus(user.id, selectedDate);
                 const isInOffice = status === 'office';
                 return (
-                  <Card key={user.id} hover className={cn(isInOffice && 'border-green-200/80 shadow-sm shadow-green-500/2')}>
+                  <Card key={user.id} hover className={cn('rounded-[22px]', isInOffice && 'border-green-200/80 shadow-sm shadow-green-500/2')}>
                     <div className="flex items-start gap-3">
                       <div className="relative">
                         <Avatar name={user.name} size="lg" />

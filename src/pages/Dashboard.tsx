@@ -507,9 +507,9 @@ function StatCard({ icon, label, value, sublabel, badgeText, badgeVariant, color
       textColor: 'text-[#734B69] dark:text-[#e8c0de]'
     },
     green: {
-      card: 'bg-[#FFF0F5] hover:bg-[#fae3ed] dark:bg-[#b54687]/20 border-[#b54687]/25 hover:border-[#b54687]/60 dark:border-[#b54687]/40',
-      iconBg: 'bg-[#b54687]/10 text-[#b54687] dark:text-[#fdaada]',
-      textColor: 'text-[#b54687] dark:text-[#fdaada]'
+      card: 'bg-[#cc7768]/15 hover:bg-[#cc7768]/25 dark:bg-[#cc7768]/20 border-[#cc7768]/25 hover:border-[#cc7768]/60 dark:border-[#cc7768]/40',
+      iconBg: 'bg-[#cc7768]/10 text-[#cc7768] dark:text-[#ffaa9e]',
+      textColor: 'text-[#cc7768] dark:text-[#ffaa9e]'
     },
     purple: {
       card: 'bg-[#ecf4f6] hover:bg-[#dbebf0] dark:bg-[#46909e]/20 border-[#46909e]/25 hover:border-[#46909e]/60 dark:border-[#46909e]/40',

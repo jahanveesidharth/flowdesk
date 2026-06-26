@@ -13,9 +13,10 @@ interface BookingCardProps {
   booking: Booking;
   compact?: boolean;
   showUser?: boolean;
+  className?: string;
 }
 
-export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
+export function BookingCard({ booking, compact, showUser, className }: BookingCardProps) {
   const { desks, rooms, parkingSpaces, lockers, floors, users, cancelBooking, checkIn, checkOut, currentUser, integrations } = useAppStore();
   const [showCancel, setShowCancel] = useState(false);
   const [showQrCheckIn, setShowQrCheckIn] = useState(false);
@@ -91,6 +92,7 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
         booking.status === 'checked_in' && 'border-blue-300 ring-1 ring-blue-200',
         booking.status === 'cancelled' && 'opacity-60',
         booking.status === 'completed' && 'border-gray-100',
+        className
       )}>
         <div className="flex items-start gap-3">
           <div className={cn(
@@ -137,11 +139,11 @@ export function BookingCard({ booking, compact, showUser }: BookingCardProps) {
           <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 items-center">
             {canCheckIn && (
               qrSystemConnected ? (
-                <Button size="xs" variant="success" iconLeft={<LogIn className="w-3.5 h-3.5" />} onClick={() => setShowQrCheckIn(true)}>
+                <Button size="xs" variant="primary" iconLeft={<LogIn className="w-3.5 h-3.5" />} onClick={() => setShowQrCheckIn(true)}>
                   Check In / QR
                 </Button>
               ) : (
-                <Button size="xs" variant="success" iconLeft={<LogIn className="w-3.5 h-3.5" />} onClick={handleCheckIn}>
+                <Button size="xs" variant="primary" iconLeft={<LogIn className="w-3.5 h-3.5" />} onClick={handleCheckIn}>
                   Check In
                 </Button>
               )
