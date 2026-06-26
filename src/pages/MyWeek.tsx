@@ -108,8 +108,9 @@ export function MyWeek() {
         </div>
       </div>
 
-      {/* Week summary bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pb-1">
+      <div className="space-y-2.5">
+        {/* Week summary bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pb-1">
         {weekDays.map(day => {
           const dateStr = format(day, 'yyyy-MM-dd');
           const isToday = dateStr === today;
@@ -199,19 +200,9 @@ export function MyWeek() {
                 isWeekend && 'opacity-65 bg-gray-50/30 dark:bg-gray-900/10'
               )}
             >
-              {/* Card Header */}
-              <div className="text-center pb-3 border-b border-gray-100 dark:border-gray-800">
-                <div className={cn(
-                  'font-extrabold text-xs uppercase tracking-wider', 
-                  isToday ? 'text-brand-500' : 'text-gray-500 dark:text-gray-400'
-                )}>
-                  {format(day, 'EEEE')}
-                </div>
-              </div>
-
               {/* Attendance Planner Toggle */}
               {!isWeekend ? (
-                <div className="my-3 flex items-center gap-1 p-1 bg-gray-100/70 dark:bg-gray-900/70 rounded-xl border border-gray-200/10 dark:border-gray-700/10">
+                <div className="mb-3 flex items-center gap-1 p-1 bg-gray-100/70 dark:bg-gray-900/70 rounded-xl border border-gray-200/10 dark:border-gray-700/10">
                   {(['office', 'remote', 'off'] as const).map(status => {
                     const myPlan = attendancePlans.find(ap => ap.userId === currentUser.id && ap.date === dateStr);
                     const isActive = myPlan ? myPlan.status === status : (status === 'office' && dayBookings.length > 0);
@@ -250,7 +241,7 @@ export function MyWeek() {
                   })}
                 </div>
               ) : (
-                <div className="my-3 text-center py-1.5 text-xs text-gray-400 dark:text-gray-500 font-semibold italic bg-gray-50 dark:bg-gray-900/30 rounded-lg">
+                <div className="mb-3 text-center py-1.5 text-xs text-gray-400 dark:text-gray-500 font-semibold italic bg-gray-50 dark:bg-gray-900/30 rounded-lg">
                   Weekend
                 </div>
               )}
@@ -392,6 +383,7 @@ export function MyWeek() {
           );
         })}
       </div>
+    </div>
 
       <BookingWizard
         isOpen={showBooking}
