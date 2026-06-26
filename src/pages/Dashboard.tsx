@@ -143,7 +143,7 @@ export function Dashboard() {
       
       {/* 1. Welcome Row */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 py-2">
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+        <h1 id="tour-welcome" className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
           {getGreeting()}, {currentUser.name.split(' ')[0]} 👋
         </h1>
 
@@ -188,7 +188,7 @@ export function Dashboard() {
       )}
 
       {/* 2. Stat Widgets Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+      <div id="tour-stats-grid" className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         <StatCard
           icon="🪑"
           label="Today's Desk"

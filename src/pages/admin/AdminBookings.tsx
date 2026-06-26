@@ -72,7 +72,7 @@ export function AdminBookings() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div id="tour-admin-bookings-page" className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">All Bookings</h1>
         <Button variant="outline" size="sm" iconLeft={<Download className="w-4 h-4" />} onClick={handleExportCsv}>
@@ -117,7 +117,7 @@ export function AdminBookings() {
             >
               <div className={cn("text-2xl font-extrabold tracking-tight", style.textColor)}>{value}</div>
               <div className="text-xs font-bold text-gray-800 dark:text-gray-250 mt-1">{label}</div>
-              <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">{sub}</div>
+              <div className="text-[10px] font-bold text-gray-800 dark:text-gray-250 uppercase tracking-wider">{sub}</div>
             </div>
           );
         })}

@@ -7,15 +7,16 @@
 -- 3. It will populate 30 Indian profiles, set up multiple teams, and then
 --    run a high-volume data generator to seed over 1,000+ bookings and 
 --    attendance plan records spanning 37 days (from 30 days ago to 7 days ahead).
--- 4. It uses exception-handling to automatically skip double-booking conflicts
---    so it runs completely error-free.
+-- 4. It automatically cleans up any existing '@deskflow.io' demo accounts
+--    first to prevent duplicate email constraint violations.
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- 1. [OPTIONAL] CLEAN OLD DATA (Uncomment if you want to wipe existing mock data first)
--- DELETE FROM public.bookings;
--- DELETE FROM public.attendance_plans;
--- DELETE FROM public.profiles WHERE email LIKE '%@deskflow.io';
--- DELETE FROM auth.users WHERE email LIKE '%@deskflow.io';
+-- 1. CLEAN OLD DATA TO AVOID DUPLICATE EMAIL KEY VIOLATIONS
+-- This deletes bookings, attendance, profiles, and auth users linked to '@deskflow.io'.
+-- Thanks to cascade deletes, deleting from auth.users also cleans public.profiles.
+DELETE FROM public.bookings WHERE user_id IN (SELECT id FROM public.profiles WHERE email LIKE '%@deskflow.io');
+DELETE FROM public.attendance_plans WHERE user_id IN (SELECT id FROM public.profiles WHERE email LIKE '%@deskflow.io');
+DELETE FROM auth.users WHERE email LIKE '%@deskflow.io';
 
 -- 2. INSERT 30 DEMO USERS INTO AUTH SCHEMA
 -- Password for all accounts is 'password123'. 
@@ -206,9 +207,10 @@ BEGIN
         END;
       END IF;
 
-      -- B. Insert Booking (High probability on weekdays when user is planned for office)
+      -- B. Insert Booking (High probability on weekdays. Force booking on today for first 20 users to ensure a stable pool)
       rand_val := random();
-      IF (NOT is_wknd AND rand_val < 0.78) OR (is_wknd AND rand_val < 0.04) THEN
+      IF (target_date = CURRENT_DATE AND array_position(user_ids, curr_user) <= 20)
+         OR (target_date != CURRENT_DATE AND ((NOT is_wknd AND rand_val < 0.78) OR (is_wknd AND rand_val < 0.04))) THEN
         
         -- Pick resource type distribution
         rand_val := random();
@@ -249,34 +251,19 @@ BEGIN
         END IF;
 
         -- Booking status assignment based on past, present, or future
+        -- Note: We initially assign only 'completed', 'no_show', and 'confirmed'.
+        -- We will adjust exactly 7 bookings today to 'checked_in' and exactly 80 total bookings to 'cancelled' post-loop.
         IF target_date < CURRENT_DATE THEN
-          -- Past: Completed, Cancelled, or No-shows
+          -- Past: Completed or No-shows
           rand_val := random();
-          IF rand_val < 0.88 THEN
+          IF rand_val < 0.90 THEN
             b_status := 'completed';
-          ELSIF rand_val < 0.95 THEN
-            b_status := 'cancelled';
           ELSE
             b_status := 'no_show';
           END IF;
-        ELSIF target_date = CURRENT_DATE THEN
-          -- Today: Checked in or confirmed/pending
-          rand_val := random();
-          IF rand_val < 0.70 THEN
-            b_status := 'checked_in';
-          ELSIF rand_val < 0.93 THEN
-            b_status := 'confirmed';
-          ELSE
-            b_status := 'cancelled';
-          END IF;
         ELSE
-          -- Future: Confirmed or Cancelled
-          rand_val := random();
-          IF rand_val < 0.94 THEN
-            b_status := 'confirmed';
-          ELSE
-            b_status := 'cancelled';
-          END IF;
+          -- Today and Future: Confirmed
+          b_status := 'confirmed';
         END IF;
 
         -- Perform insertion, ignoring conflict blocks
@@ -303,9 +290,9 @@ BEGIN
               ELSE 'Storage Locker Allocation'
             END,
             CASE WHEN e_time - s_time <= '4.5 hours'::interval THEN 'half_day_am'::public.booking_duration_type ELSE 'full_day'::public.booking_duration_type END,
-            CASE WHEN b_status IN ('checked_in', 'completed') THEN (s_time + (random() * 12 || ' minutes')::interval)::time ELSE NULL END,
-            CASE WHEN b_status = 'completed' THEN (e_time + (random() * 10 || ' minutes')::interval)::time ELSE NULL END,
-            CASE WHEN b_status = 'cancelled' THEN 'Schedule conflicts/Work from home' ELSE NULL END
+            NULL,
+            NULL,
+            NULL
           );
         EXCEPTION WHEN OTHERS THEN
           -- Bypasses conflict blocks silently (e.g. double bookings, exclusions)
@@ -316,4 +303,29 @@ BEGIN
     END LOOP;
     target_date := target_date + 1;
   END LOOP;
+
+  -- 3. Adjust exactly 7 bookings today to 'checked_in'
+  UPDATE public.bookings
+  SET status = 'checked_in',
+      check_in_time = (start_time + (random() * 12 || ' minutes')::interval)::time
+  WHERE id IN (
+    SELECT id
+    FROM public.bookings
+    WHERE date = CURRENT_DATE
+    LIMIT 7
+  );
+
+  -- 4. Adjust exactly 80 bookings to 'cancelled' across all dates (excluding today's checked_in bookings)
+  UPDATE public.bookings
+  SET status = 'cancelled',
+      cancel_reason = 'Schedule conflicts/Work from home',
+      check_in_time = NULL,
+      check_out_time = NULL
+  WHERE id IN (
+    SELECT id
+    FROM public.bookings
+    WHERE status != 'checked_in'
+    ORDER BY random()
+    LIMIT 80
+  );
 END$$;

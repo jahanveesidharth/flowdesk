@@ -1049,7 +1049,7 @@ export function FloorBuilder() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
+    <div id="tour-floor-builder-page" className="space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
       {/* Header section with layout saving */}
       <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-800/80 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md p-6 shadow-sm">
         <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-indigo-500/5 dark:from-brand-500/10 dark:to-indigo-500/10" />

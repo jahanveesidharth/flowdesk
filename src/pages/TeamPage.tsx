@@ -59,7 +59,7 @@ export function TeamPage() {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div id="tour-team-page" className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">Team</h1>
         <input

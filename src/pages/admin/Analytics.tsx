@@ -100,7 +100,7 @@ export function Analytics() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div id="tour-admin-analytics-page" className="space-y-6 animate-fade-in">
       
       {/* Header controls */}
       <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-100 dark:border-gray-850/80 pb-4">

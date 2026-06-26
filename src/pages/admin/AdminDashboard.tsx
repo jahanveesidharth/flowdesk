@@ -51,7 +51,7 @@ export function AdminDashboard() {
   return (
     <div className="space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
       {/* Page Title Header */}
-      <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-800/80 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md p-6 shadow-sm">
+      <div id="tour-admin-welcome" className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-800/80 bg-white/60 dark:bg-gray-950/60 backdrop-blur-md p-6 shadow-sm">
         <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-amber-500/5 dark:from-brand-500/10 dark:to-amber-500/10" />
         <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -72,7 +72,7 @@ export function AdminDashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div id="tour-admin-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
             label: 'Today\'s Bookings',

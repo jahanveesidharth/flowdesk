@@ -229,16 +229,39 @@ function generateDesks(floorId: string, zoneId: string, startX: number, startY: 
 type DeskStatus = 'available' | 'occupied' | 'reserved' | 'maintenance' | 'blocked';
 
 export const MOCK_DESKS: Desk[] = [
-  // Floor 1 - Engineering zone (z1)
-  ...generateDesks('f1', 'z1', 1, 1, 3, 2, 1, 'hot'),
-  ...generateDesks('f1', 'z1', 5, 1, 3, 2, 7, 'standing'),
-  // Floor 1 - Design zone (z2)
-  ...generateDesks('f1', 'z2', 10, 1, 3, 2, 13, 'hot'),
-  ...generateDesks('f1', 'z2', 14, 1, 3, 2, 19, 'collaboration'),
-  // Floor 1 - Quiet zone (z3)
-  ...generateDesks('f1', 'z3', 1, 8, 4, 2, 25, 'quiet'),
-  // Floor 1 - Collaboration zone (z4)
-  ...generateDesks('f1', 'z4', 10, 8, 4, 2, 33, 'collaboration'),
+  // Boss Cabin & Conference Room desks (inside the rooms)
+  { id: 'f1-d_boss', label: 'Boss Desk', floorId: 'f1', zoneId: 'z1', type: 'fixed', status: 'available', x: 2, y: 1, width: 1, height: 1, amenities: ['monitor', 'window'], isActive: true },
+  { id: 'f1-d_cr1', label: 'CR-01', floorId: 'f1', zoneId: 'z1', type: 'collaboration', status: 'available', x: 6, y: 1, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d_cr2', label: 'CR-02', floorId: 'f1', zoneId: 'z1', type: 'collaboration', status: 'available', x: 7, y: 1, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d_cr3', label: 'CR-03', floorId: 'f1', zoneId: 'z1', type: 'collaboration', status: 'available', x: 8, y: 1, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d_cr4', label: 'CR-04', floorId: 'f1', zoneId: 'z1', type: 'collaboration', status: 'available', x: 9, y: 1, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+
+  // Ground Floor (f1) desks matching the Work Stations blueprint
+  { id: 'f1-d1', label: 'WS-01', floorId: 'f1', zoneId: 'z1', type: 'hot', status: 'occupied', x: 1, y: 5, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d2', label: 'WS-02', floorId: 'f1', zoneId: 'z1', type: 'hot', status: 'available', x: 2, y: 5, width: 1, height: 1, amenities: ['monitor', 'window'], isActive: true },
+  { id: 'f1-d3', label: 'WS-03', floorId: 'f1', zoneId: 'z1', type: 'hot', status: 'available', x: 1, y: 6, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d4', label: 'WS-04', floorId: 'f1', zoneId: 'z1', type: 'hot', status: 'available', x: 2, y: 6, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d5', label: 'WS-05', floorId: 'f1', zoneId: 'z1', type: 'hot', status: 'available', x: 1, y: 7, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d6', label: 'WS-06', floorId: 'f1', zoneId: 'z1', type: 'hot', status: 'available', x: 2, y: 7, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+
+  { id: 'f1-d7', label: 'WS-07', floorId: 'f1', zoneId: 'z3', type: 'standing', status: 'available', x: 4, y: 5, width: 1, height: 1, amenities: ['standing_desk'], isActive: true },
+  { id: 'f1-d8', label: 'WS-08', floorId: 'f1', zoneId: 'z3', type: 'standing', status: 'available', x: 5, y: 5, width: 1, height: 1, amenities: ['standing_desk'], isActive: true },
+  { id: 'f1-d9', label: 'WS-09', floorId: 'f1', zoneId: 'z3', type: 'standing', status: 'available', x: 4, y: 6, width: 1, height: 1, amenities: ['standing_desk'], isActive: true },
+  { id: 'f1-d10', label: 'WS-10', floorId: 'f1', zoneId: 'z3', type: 'standing', status: 'available', x: 5, y: 6, width: 1, height: 1, amenities: ['standing_desk'], isActive: true },
+  { id: 'f1-d11', label: 'WS-11', floorId: 'f1', zoneId: 'z3', type: 'hot', status: 'available', x: 4, y: 7, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d12', label: 'WS-12', floorId: 'f1', zoneId: 'z3', type: 'hot', status: 'available', x: 5, y: 7, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d13', label: 'WS-13', floorId: 'f1', zoneId: 'z3', type: 'hot', status: 'available', x: 4, y: 8, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d14', label: 'WS-14', floorId: 'f1', zoneId: 'z3', type: 'hot', status: 'available', x: 5, y: 8, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+
+  { id: 'f1-d15', label: 'WS-15', floorId: 'f1', zoneId: 'z4', type: 'collaboration', status: 'available', x: 7, y: 5, width: 1, height: 1, amenities: ['whiteboard'], isActive: true },
+  { id: 'f1-d16', label: 'WS-16', floorId: 'f1', zoneId: 'z4', type: 'collaboration', status: 'available', x: 8, y: 5, width: 1, height: 1, amenities: ['whiteboard'], isActive: true },
+  { id: 'f1-d17', label: 'WS-17', floorId: 'f1', zoneId: 'z4', type: 'collaboration', status: 'available', x: 7, y: 6, width: 1, height: 1, amenities: ['whiteboard'], isActive: true },
+  { id: 'f1-d18', label: 'WS-18', floorId: 'f1', zoneId: 'z4', type: 'collaboration', status: 'available', x: 8, y: 6, width: 1, height: 1, amenities: ['whiteboard'], isActive: true },
+  { id: 'f1-d19', label: 'WS-19', floorId: 'f1', zoneId: 'z4', type: 'hot', status: 'available', x: 7, y: 7, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d20', label: 'WS-20', floorId: 'f1', zoneId: 'z4', type: 'hot', status: 'available', x: 8, y: 7, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d21', label: 'WS-21', floorId: 'f1', zoneId: 'z4', type: 'hot', status: 'available', x: 7, y: 8, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+  { id: 'f1-d22', label: 'WS-22', floorId: 'f1', zoneId: 'z4', type: 'hot', status: 'available', x: 8, y: 8, width: 1, height: 1, amenities: ['monitor'], isActive: true },
+
   // Floor 2
   ...generateDesks('f2', 'z5', 1, 1, 4, 2, 41, 'fixed'),
   ...generateDesks('f2', 'z6', 10, 1, 2, 2, 49, 'hot'),
@@ -253,23 +276,15 @@ export const MOCK_DESKS: Desk[] = [
 // ─── Rooms ────────────────────────────────────────────────────────────────────
 
 export const MOCK_ROOMS: Room[] = [
-  // Ground Floor (f1)
-  { id: 'r1', name: 'Private Office 1', floorId: 'f1', capacity: 4, type: 'meeting', status: 'available', amenities: ['tv', 'whiteboard'], x: 6, y: 0, width: 3, height: 3, isActive: true },
-  { id: 'r2', name: 'Conference Room', floorId: 'f1', capacity: 12, type: 'boardroom', status: 'available', amenities: ['projector', 'whiteboard', 'video_conf'], x: 12, y: 2.5, width: 6, height: 6, isActive: true },
-  { id: 'r3', name: 'Manager Office', floorId: 'f1', capacity: 3, type: 'meeting', status: 'occupied', amenities: ['tv'], x: 6, y: 5, width: 3, height: 3.5, isActive: true },
-  { id: 'r4', name: 'Meeting Room', floorId: 'f1', capacity: 6, type: 'meeting', status: 'available', amenities: ['whiteboard'], x: 9, y: 5, width: 3, height: 3.5, isActive: true },
-  { id: 'r5', name: 'Bedroom Suite', floorId: 'f1', capacity: 2, type: 'focus', status: 'available', amenities: ['phone'], x: 0, y: 8, width: 3.5, height: 3.5, isActive: true },
-  { id: 'r6', name: 'Private Office 2', floorId: 'f1', capacity: 4, type: 'meeting', status: 'available', amenities: ['tv'], x: 15, y: 8.5, width: 3, height: 4, isActive: true },
-  // Non-bookable structural rooms for f1 (Ground Floor)
-  { id: 'f1-r_wc1', name: 'Washroom', floorId: 'f1', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 9, y: 0, width: 1.5, height: 3, isActive: true },
-  { id: 'f1-r_wc2', name: 'Washroom', floorId: 'f1', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 10.5, y: 0, width: 1.5, height: 3, isActive: true },
-  { id: 'f1-r_pantry', name: 'Pantry', floorId: 'f1', capacity: 8, type: 'pantry', status: 'available', amenities: [], x: 12, y: 0, width: 3, height: 2.5, isActive: true },
-  { id: 'f1-r_storage', name: 'Storage', floorId: 'f1', capacity: 0, type: 'storage', status: 'available', amenities: [], x: 15, y: 0, width: 3, height: 2.5, isActive: true },
-  { id: 'f1-r_wc3', name: 'Washroom', floorId: 'f1', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 3.5, y: 9, width: 2.5, height: 2.5, isActive: true },
-  { id: 'f1-r_server', name: 'Server Room', floorId: 'f1', capacity: 0, type: 'server_room', status: 'available', amenities: [], x: 0, y: 11.5, width: 3, height: 2.5, isActive: true },
-  { id: 'f1-r_printer', name: 'Printer / Copy Room', floorId: 'f1', capacity: 2, type: 'printer_room', status: 'available', amenities: [], x: 3, y: 11.5, width: 3, height: 2.5, isActive: true },
-  { id: 'f1-r_lobby', name: 'Lobby / Reception', floorId: 'f1', capacity: 10, type: 'meeting', status: 'available', amenities: [], x: 6, y: 8.5, width: 6, height: 4, isActive: true },
-  { id: 'f1-r_waiting', name: 'Waiting Area', floorId: 'f1', capacity: 6, type: 'meeting', status: 'available', amenities: [], x: 12, y: 8.5, width: 3, height: 4, isActive: true },
+  // Ground Floor (f1) custom office blueprint
+  { id: 'r1', name: 'Mandir', floorId: 'f1', capacity: 1, type: 'focus', status: 'available', amenities: [], x: 0, y: 0, width: 1, height: 3, isActive: true },
+  { id: 'r2', name: 'Boss Cabin', floorId: 'f1', capacity: 4, type: 'meeting', status: 'available', amenities: ['tv', 'whiteboard'], x: 1, y: 0, width: 4, height: 3, isActive: true },
+  { id: 'r3', name: 'Conference Room', floorId: 'f1', capacity: 10, type: 'boardroom', status: 'available', amenities: ['projector', 'video_conf'], x: 5, y: 0, width: 6, height: 3, isActive: true },
+  { id: 'f1-r_staircase', name: 'Staircase', floorId: 'f1', capacity: 0, type: 'focus', status: 'available', amenities: [], x: 11, y: 0, width: 4, height: 3, isActive: true },
+  { id: 'f1-r_lift', name: 'Lift', floorId: 'f1', capacity: 0, type: 'focus', status: 'available', amenities: [], x: 15, y: 1, width: 2, height: 2, isActive: true },
+  { id: 'f1-r_wc1', name: 'Toilet', floorId: 'f1', capacity: 1, type: 'washroom', status: 'available', amenities: [], x: 15, y: 4, width: 2, height: 2, isActive: true },
+  { id: 'f1-r_pantry', name: 'Pantry Area', floorId: 'f1', capacity: 8, type: 'pantry', status: 'available', amenities: [], x: 12, y: 4, width: 5, height: 9, isActive: true },
+
 
   // First Floor (f2)
   { id: 'r7', name: 'Sales Manager', floorId: 'f2', capacity: 4, type: 'meeting', status: 'available', amenities: ['tv'], x: 6, y: 4.5, width: 3, height: 3.5, isActive: true },

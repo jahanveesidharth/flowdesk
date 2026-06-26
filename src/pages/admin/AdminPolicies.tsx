@@ -14,7 +14,7 @@ export function AdminPolicies() {
   };
 
   return (
-    <div className="max-w-3xl space-y-6 animate-fade-in">
+    <div id="tour-admin-policies-page" className="max-w-3xl space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">Booking Policies</h1>
         <Button iconLeft={<Save className="w-4 h-4" />} onClick={handleSave}>Save Policies</Button>

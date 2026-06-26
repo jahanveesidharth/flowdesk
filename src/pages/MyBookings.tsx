@@ -48,7 +48,7 @@ export function MyBookings() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div id="tour-bookings-page" className="space-y-6 animate-fade-in">
 
       {/* Header section */}
       <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-100 dark:border-gray-850/80 pb-4">
@@ -161,7 +161,7 @@ function SummaryCard({ label, count, variant }: { label: string; count: number; 
       styles[variant].className
     )}>
       <div className="space-y-0.5">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">{label}</div>
+        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-800 dark:text-gray-250">{label}</div>
         <div className={cn("text-xl font-extrabold tracking-tight", styles[variant].textColor)}>{count}</div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { cn } from '../../lib/utils';
 import { DatabaseSync } from './DatabaseSync';
 import { BookingStatusWatcher } from '../booking/BookingStatusWatcher';
+import { TourGuide } from './TourGuide';
 import toast from 'react-hot-toast';
 
 export function Layout() {
@@ -43,6 +44,7 @@ export function Layout() {
     <div className="flex h-screen bg-[#f6f7f9] text-gray-900 dark:bg-gray-950 dark:text-gray-100 relative overflow-hidden">
       <DatabaseSync />
       <BookingStatusWatcher />
+      <TourGuide />
       
       {/* Mobile Sidebar Drawer Backdrop */}
       {mobileSidebarOpen && (

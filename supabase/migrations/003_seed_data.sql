@@ -25,21 +25,40 @@ insert into zones (floor_id, name, color, x, y, width, height) values
 ('f1000000-0000-0000-0000-000000000001', 'Collaboration',  '#fef9c3', 9, 7, 9, 7),
 ('f1000000-0000-0000-0000-000000000002', 'Hot Desks',      '#f3f4f6', 0, 0, 18, 14);
 
--- ─── DESKS (Ground Floor — 12 desks) ─────────────────────────────────────────
+-- ─── DESKS (Ground Floor — 22 desks from Work Stations) ────────────────────────
 
 insert into desks (floor_id, label, type, x, y, amenities) values
-('f1000000-0000-0000-0000-000000000001', 'D-01', 'hot',           1, 1, '{monitor,window}'),
-('f1000000-0000-0000-0000-000000000001', 'D-02', 'hot',           2, 1, '{monitor}'),
-('f1000000-0000-0000-0000-000000000001', 'D-03', 'hot',           3, 1, '{monitor,docking_station}'),
-('f1000000-0000-0000-0000-000000000001', 'D-04', 'standing',      5, 1, '{standing_desk,monitor}'),
-('f1000000-0000-0000-0000-000000000001', 'D-05', 'standing',      6, 1, '{standing_desk}'),
-('f1000000-0000-0000-0000-000000000001', 'D-06', 'hot',          10, 1, '{monitor}'),
-('f1000000-0000-0000-0000-000000000001', 'D-07', 'hot',          11, 1, '{monitor,window}'),
-('f1000000-0000-0000-0000-000000000001', 'D-08', 'collaboration', 13, 1, '{whiteboard}'),
-('f1000000-0000-0000-0000-000000000001', 'D-09', 'quiet',         1, 8, '{monitor,quiet_zone}'),
-('f1000000-0000-0000-0000-000000000001', 'D-10', 'quiet',         2, 8, '{monitor,quiet_zone}'),
-('f1000000-0000-0000-0000-000000000001', 'D-11', 'hot',          10, 8, '{monitor}'),
-('f1000000-0000-0000-0000-000000000001', 'D-12', 'hot',          11, 8, '{monitor,docking_station}');
+-- Boss Cabin & Conference Room desks (inside the rooms)
+('f1000000-0000-0000-0000-000000000001', 'Boss Desk', 'fixed', 2, 1, '{monitor,window}'),
+('f1000000-0000-0000-0000-000000000001', 'CR-01', 'collaboration', 6, 1, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'CR-02', 'collaboration', 7, 1, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'CR-03', 'collaboration', 8, 1, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'CR-04', 'collaboration', 9, 1, '{monitor}'),
+-- Cluster 1
+('f1000000-0000-0000-0000-000000000001', 'WS-01', 'hot', 1, 5, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-02', 'hot', 2, 5, '{monitor,window}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-03', 'hot', 1, 6, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-04', 'hot', 2, 6, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-05', 'hot', 1, 7, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-06', 'hot', 2, 7, '{monitor}'),
+-- Cluster 2
+('f1000000-0000-0000-0000-000000000001', 'WS-07', 'standing', 4, 5, '{standing_desk}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-08', 'standing', 5, 5, '{standing_desk}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-09', 'standing', 4, 6, '{standing_desk}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-10', 'standing', 5, 6, '{standing_desk}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-11', 'hot', 4, 7, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-12', 'hot', 5, 7, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-13', 'hot', 4, 8, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-14', 'hot', 5, 8, '{monitor}'),
+-- Cluster 3
+('f1000000-0000-0000-0000-000000000001', 'WS-15', 'collaboration', 7, 5, '{whiteboard}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-16', 'collaboration', 8, 5, '{whiteboard}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-17', 'collaboration', 7, 6, '{whiteboard}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-18', 'collaboration', 8, 6, '{whiteboard}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-19', 'hot', 7, 7, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-20', 'hot', 8, 7, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-21', 'hot', 7, 8, '{monitor}'),
+('f1000000-0000-0000-0000-000000000001', 'WS-22', 'hot', 8, 8, '{monitor}');
 
 -- First floor desks
 insert into desks (floor_id, label, type, x, y, amenities) values
@@ -52,9 +71,13 @@ insert into desks (floor_id, label, type, x, y, amenities) values
 -- ─── ROOMS ───────────────────────────────────────────────────────────────────
 
 insert into rooms (floor_id, name, capacity, type, amenities, x, y, width, height) values
-('f1000000-0000-0000-0000-000000000001', 'Maple',   8,  'meeting',    '{tv,whiteboard,video_conf}', 1, 11, 3, 2),
-('f1000000-0000-0000-0000-000000000001', 'Oak',     2,  'phone_booth','{phone}',                   5, 11, 2, 2),
-('f1000000-0000-0000-0000-000000000001', 'Cedar',  12,  'training',   '{projector,whiteboard,tv}', 11, 11, 4, 2),
+('f1000000-0000-0000-0000-000000000001', 'Mandir',          1,  'focus',      '{quiet_zone}',              0, 0, 1, 3),
+('f1000000-0000-0000-0000-000000000001', 'Boss Cabin',      4,  'meeting',    '{tv,whiteboard}',           1, 0, 4, 3),
+('f1000000-0000-0000-0000-000000000001', 'Conference Room', 10, 'boardroom',  '{projector,video_conf}',    5, 0, 6, 3),
+('f1000000-0000-0000-0000-000000000001', 'Staircase',       0,  'focus',      '{}',                       11, 0, 4, 3),
+('f1000000-0000-0000-0000-000000000001', 'Lift',            0,  'focus',      '{}',                       15, 1, 2, 2),
+('f1000000-0000-0000-0000-000000000001', 'Toilet',          1,  'focus',      '{}',                       15, 4, 2, 2),
+('f1000000-0000-0000-0000-000000000001', 'Pantry Area',     8,  'focus',      '{kitchen}',                12, 4, 5, 9),
 ('f1000000-0000-0000-0000-000000000002', 'Birch',   6,  'meeting',    '{tv,whiteboard}',            1, 11, 3, 2),
 ('f1000000-0000-0000-0000-000000000003', 'Sequoia', 20, 'boardroom',  '{projector,video_conf,whiteboard}', 1, 1, 6, 4);
 

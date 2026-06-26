@@ -29,7 +29,7 @@ export function NotificationsPage() {
   });
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
+    <div id="tour-notifications-page" className="max-w-2xl mx-auto space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
 
       {/* Header section matching screenshot */}
       <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-900/60 pb-4">

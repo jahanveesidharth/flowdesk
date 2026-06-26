@@ -40,7 +40,7 @@ export function ParkingLockers() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
+    <div id="tour-parking-page" className="space-y-6 animate-fade-in text-gray-900 dark:text-gray-100">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">Parking & Lockers</h1>
         <div className="flex gap-2">

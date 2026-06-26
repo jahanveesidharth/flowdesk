@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2, Mail, Lock, User, Eye, EyeOff, ArrowRight,
@@ -32,6 +32,8 @@ export function AuthPage() {
   const [authRole, setAuthRole] = useState<AuthRole>('employee');
   const [adminKey, setAdminKey] = useState('');
 
+  const isSubmittingRef = useRef(false);
+
   const resetToDemoData = useAppStore(s => s.resetToDemoData);
   const setDemoRole = useAppStore(s => s.setDemoRole);
   const setCurrentUserFromProfile = useAppStore(s => s.setCurrentUserFromProfile);
@@ -54,6 +56,7 @@ export function AuthPage() {
 
     // If already authed and not in reset mode, redirect to dashboard
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (isSubmittingRef.current) return;
       if (session && mode !== 'reset') {
         supabase
           .from('profiles')
@@ -71,6 +74,7 @@ export function AuthPage() {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (isSubmittingRef.current) return;
       if (session) {
         if (event === 'PASSWORD_RECOVERY') {
           setMode('reset');
@@ -127,6 +131,7 @@ export function AuthPage() {
 
     if (notConfigured) { handleDemoLogin(); return; }
     setLoading(true);
+    isSubmittingRef.current = true;
 
     try {
       if (mode === 'magic_link') {
@@ -147,7 +152,6 @@ export function AuthPage() {
       } else if (mode === 'login') {
         const { data, error } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password });
         if (error) throw error;
-        let nextRole: AuthRole | 'manager' = authRole;
         const userId = data.user?.id;
         if (userId) {
           const { data: profile } = await supabase
@@ -156,12 +160,29 @@ export function AuthPage() {
             .eq('id', userId)
             .single() as { data: ProfileRow | null };
           if (profile) {
+            const role = profile.role || 'employee';
+            
+            // Enforce role-toggle restrictions:
+            // - If user selected 'Admin' tab: role MUST be 'admin'
+            // - If user selected 'Employee' tab: role MUST be 'employee' or 'manager'
+            if (authRole === 'admin' && role !== 'admin') {
+              await supabase.auth.signOut();
+              throw new Error('Access Denied: Only administrators can sign in under the Admin portal.');
+            }
+            if (authRole === 'employee' && role === 'admin') {
+              await supabase.auth.signOut();
+              throw new Error('Access Denied: Administrators must sign in under the Admin portal.');
+            }
+            
             setCurrentUserFromProfile(profile);
-            nextRole = profile.role || authRole;
+            const search = window.location.search;
+            navigate(role === 'admin' ? `/admin/dashboard${search}` : `/dashboard${search}`);
+            return;
+          } else {
+            await supabase.auth.signOut();
+            throw new Error('Profile not found in system database.');
           }
         }
-        const search = window.location.search;
-        navigate(nextRole === 'admin' || nextRole === 'manager' ? `/admin/dashboard${search}` : `/dashboard${search}`);
       } else if (mode === 'forgot') {
         const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
           redirectTo: `${window.location.origin}/reset-password`,
@@ -194,6 +215,7 @@ export function AuthPage() {
       const message = err instanceof Error ? err.message : 'Something went wrong';
       toast.error(message);
     } finally {
+      isSubmittingRef.current = false;
       setLoading(false);
     }
   };
@@ -417,14 +439,18 @@ export function AuthPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {/* View Demo Option */}
+                  {/* Try Demo Mode Option */}
                   <button
                     type="button"
-                    onClick={() => handleDemoLogin()}
+                    onClick={() => {
+                      resetToDemoData();
+                      localStorage.setItem('show_demo_mode', 'true');
+                      handleDemoLogin(authRole);
+                    }}
                     className="w-full bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/20 hover:dark:bg-brand-950/35 border border-brand-200 dark:border-brand-900/40 rounded-xl py-3 flex items-center justify-center gap-2 text-sm font-bold text-brand-600 dark:text-brand-400 transition-colors shadow-2xs"
                   >
-                    <User className="w-4 h-4 shrink-0 text-brand-500" />
-                    <span>View Demo</span>
+                    <Sparkles className="w-4 h-4 shrink-0 text-brand-500 animate-pulse" />
+                    <span>Try Demo Mode</span>
                   </button>
 
 

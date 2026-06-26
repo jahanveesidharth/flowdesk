@@ -52,7 +52,7 @@ export function Sidebar() {
   const roleLabel = isAdmin ? 'Admin Panel' : isManager ? 'Manager Panel' : 'Workspace';
 
   return (
-    <aside className={cn(
+    <aside id="tour-sidebar" className={cn(
       'fixed top-0 left-0 h-screen bg-white/95 dark:bg-gray-950/95 border-r border-gray-200/70 dark:border-gray-850/90 flex flex-col transition-all duration-300 z-40 backdrop-blur-md shadow-sm',
       // Desktop widths
       sidebarOpen ? 'md:w-56' : 'md:w-16',

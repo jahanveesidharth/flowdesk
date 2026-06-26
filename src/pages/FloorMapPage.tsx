@@ -175,7 +175,7 @@ export function FloorMapPage() {
   const bookedByUser = deskBooking ? users.find(u => u.id === deskBooking.userId) : null;
 
   return (
-    <div className="flex flex-col h-full gap-6 animate-fade-in text-gray-900 dark:text-gray-100">
+    <div id="tour-floor-map-page" className="flex flex-col h-full gap-6 animate-fade-in text-gray-900 dark:text-gray-100">
       
       {/* 1. Header controls */}
       <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-100 dark:border-gray-850/80 pb-4">

@@ -20,7 +20,7 @@ export function AdminSettings() {
   const handleSave = () => toast.success('Settings saved!');
 
   return (
-    <div className="max-w-3xl space-y-6 animate-fade-in">
+    <div id="tour-admin-settings-page" className="max-w-3xl space-y-6 animate-fade-in">
       <h1 className="text-xl font-bold text-gray-900">Admin Settings</h1>
 
       <Tabs tabs={[

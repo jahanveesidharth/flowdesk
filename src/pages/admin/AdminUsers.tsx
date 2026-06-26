@@ -75,7 +75,7 @@ export function AdminUsers() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div id="tour-admin-users-page" className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">Users</h1>
         {canChangeRoles && (
