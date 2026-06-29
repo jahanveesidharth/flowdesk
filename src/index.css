@@ -380,6 +380,40 @@ input[type="date"] {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+/* Custom Spotlight and Tooltip Animations */
+@keyframes spotlight-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(170, 124, 163, 0.5), inset 0 0 6px rgba(170, 124, 163, 0.3);
+    border-color: rgba(170, 124, 163, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(170, 124, 163, 0.85), inset 0 0 12px rgba(170, 124, 163, 0.5);
+    border-color: rgba(170, 124, 163, 1);
+  }
+}
+
+@keyframes spotlight-pulse-ring {
+  0% {
+    transform: scale(1);
+    border-color: rgba(170, 124, 163, 0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.12);
+    border-color: rgba(170, 124, 163, 0);
+    opacity: 0;
+  }
+}
+
+.animate-spotlight-glow {
+  animation: spotlight-glow 2s infinite ease-in-out;
+}
+
+.animate-spotlight-pulse {
+  animation: spotlight-pulse-ring 2s infinite cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
 /* Print styles */
 @media print {
   .no-print { display: none !important; }
